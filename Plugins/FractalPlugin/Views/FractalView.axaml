@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:FractalPlugin.Controls"
+             x:Class="FractalPlugin.Views.FractalView">
+  <Grid RowDefinitions="10,100,Auto" ColumnDefinitions="10,100,Auto" Margin="6">
+    <local:MandelbrotView
+      Grid.Row="1"
+      Grid.Column="1"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      MaxIterations="100"
+      Scale="0.0045"
+      CenterX="-0.5"
+      CenterY="0"/>
+  </Grid>
+</UserControl>

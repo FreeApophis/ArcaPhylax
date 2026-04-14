@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ArcaPhylax.ViewModels"
+        xmlns:ir="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.ItemsRepeater"
+        xmlns:irl="clr-namespace:Avalonia.Layout;assembly=Avalonia.Controls.ItemsRepeater"
+        x:Class="ArcaPhylax.Views.MainWindow"
+        x:Name="Root"
+        x:DataType="vm:MainWindowViewModel"
+        Width="1280" Height="820"
+        Title="Avalonia Dashboard"
+        ExtendClientAreaToDecorationsHint="True">
+
+  <Grid ColumnDefinitions="88,5,*,5,444" RowDefinitions="Auto,*" Margin="16">
+
+    <!-- Left: square tabs -->
+    <Border Classes="Card" Grid.Column="0" Grid.RowSpan="2" Padding="10">
+      <StackPanel Spacing="10">
+        <ItemsControl ItemsSource="{Binding Tabs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <ToggleButton
+                Classes="SquareTab"
+                Content="{Binding Icon}"
+                ToolTip.Tip="{Binding Title}"
+                Command="{Binding SelectCommand}"
+                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <!-- Center: main area content resolved via DI -->
+    <Border Classes="Card" Grid.Column="2" Grid.RowSpan="2" Padding="14">
+      <ContentControl Content="{Binding CurrentContent}" />
+    </Border>
+
+    <!-- Left: Search -->
+    <Border Classes="Card" Grid.Column="4" Grid.Row="0" Padding="12">
+      <TextBox Classes="SearchBox" PlaceholderText="Search documents, images, tags…" Text="{Binding Query}"/>
+    </Border>
+
+    <!-- Left: High-performance virtualized icon grid -->
+    <Border Classes="Card" Grid.Column="4" Grid.Row="1" Padding="12">
+      <ScrollViewer>
+        <ir:ItemsRepeater ItemsSource="{Binding Items}">
+          <ir:ItemsRepeater.Layout>
+            <irl:UniformGridLayout MinItemWidth="118" MinItemHeight="118" MinColumnSpacing="10" MinRowSpacing="10"/>
+          </ir:ItemsRepeater.Layout>
+
+          <ir:ItemsRepeater.ItemTemplate>
+            <DataTemplate>
+              <Border Classes="Tile" Width="118" Height="118" Padding="10">
+                <StackPanel Spacing="8">
+                  <!-- Thumbnail placeholder -->
+                  <Border Height="58" CornerRadius="10" Background="#20252B">
+                    <TextBlock Text="{Binding Kind}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#8C98A6" FontSize="12"/>
+                  </Border>
+
+                  <TextBlock Text="{Binding Title}" Foreground="#D9DEE5" FontSize="12" TextTrimming="CharacterEllipsis"/>
+
+                  <TextBlock Text="{Binding Subtitle}" Foreground="#8C98A6" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ir:ItemsRepeater.ItemTemplate>
+        </ir:ItemsRepeater>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</Window>

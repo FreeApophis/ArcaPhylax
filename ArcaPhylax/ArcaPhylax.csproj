@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<OutputType>WinExe</OutputType>
+		<ApplicationIcon>Resources/arca-phylax.ico</ApplicationIcon>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.0.0" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.0.0" />
+		<PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.0" />
+		<PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+		<PackageReference Include="Autofac" Version="9.1.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Dapper" Version="2.1.72" />
+		<PackageReference Include="Funcky" Version="3.6.0" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.2.26159.112" />
+
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Migrations/**/*.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PluginProject Include="..\Plugins\CharacterPlugin\CharacterPlugin.csproj" />
+		<PluginProject Include="..\Plugins\FractalPlugin\FractalPlugin.csproj" />
+		<PluginProject Include="..\Plugins\ScannerPlugin\ScannerPlugin.csproj" />
+	</ItemGroup>
+
+	<!-- DEBUG : Copy the plugins -->
+	<Target Name="PublishPluginsForBuild" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true'">
+		<PropertyGroup>
+			<_HostPluginsDir>$([System.IO.Path]::GetFullPath('$(TargetDir)Plugins\'))</_HostPluginsDir>
+		</PropertyGroup>
+
+		<Message Importance="high" Text="Publishing plugins for build to '$(_HostPluginsDir)'" />
+
+		<!-- Optional aufräumen, damit keine alten Plugin-Dateien liegen bleiben -->
+		<RemoveDir Directories="$(_HostPluginsDir)" Condition="Exists('$(_HostPluginsDir)')" />
+		<MakeDir Directories="$(_HostPluginsDir)" />
+
+		<MSBuild Projects="@(PluginProject)" Targets="Publish" BuildInParallel="true" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        PublishDir=$([System.IO.Path]::Combine('$(_HostPluginsDir)', '%(PluginProject.Filename)\'));&#xD;&#xA;        _PluginPublishFromHost=true" />
+	</Target>
+
+	<!-- PUBLISH : Copy the plugins -->
+	<Target Name="PublishPluginsForPublish" AfterTargets="Publish" Condition="'$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true'">
+
+		<PropertyGroup>
+			<_PublishedPluginsDir>$([System.IO.Path]::GetFullPath('$(PublishDir)Plugins\'))</_PublishedPluginsDir>
+		</PropertyGroup>
+
+		<Message Importance="high" Text="Publishing plugins for publish to '$(_PublishedPluginsDir)'" />
+
+		<!-- dotnet publish leert den Zielordner nicht automatisch -->
+		<RemoveDir Directories="$(_PublishedPluginsDir)" Condition="Exists('$(_PublishedPluginsDir)')" />
+		<MakeDir Directories="$(_PublishedPluginsDir)" />
+
+		<MSBuild Projects="@(PluginProject)" Targets="Publish" BuildInParallel="true" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        PublishDir=$([System.IO.Path]::Combine('$(_PublishedPluginsDir)', '%(PluginProject.Filename)\'));&#xD;&#xA;        _PluginPublishFromHost=true" />
+	</Target>
+
+</Project>

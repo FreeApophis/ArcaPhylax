@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{ACF5C77D-57AC-4915-BF18-C93EFE0D13BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcaPhylax", "ArcaPhylax\ArcaPhylax.csproj", "{5A23CE65-83F4-8611-DC2A-BB09E83BD59C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcaPhylax.Abstractions", "ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj", "{436EA2C7-D217-79AD-24E5-1F316F42CFAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CharacterPlugin", "Plugins\CharacterPlugin\CharacterPlugin.csproj", "{1BBB5BD8-A452-A68D-97B9-BE57A96F62BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerPlugin", "Plugins\ScannerPlugin\ScannerPlugin.csproj", "{F4B7D693-8BD3-D6BA-1ECE-DA1D2E2919D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractalPlugin", "Plugins\FractalPlugin\FractalPlugin.csproj", "{C3835D92-DBEE-4461-B531-5743C8998AAC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Configuration", "Build Configuration", "{11C2500D-32A1-45FD-A74A-35004578C041}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cornocopia", "Cornocopia", "{CEF39825-24DC-4A0A-B4A2-F938B7FD4588}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A23CE65-83F4-8611-DC2A-BB09E83BD59C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A23CE65-83F4-8611-DC2A-BB09E83BD59C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A23CE65-83F4-8611-DC2A-BB09E83BD59C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A23CE65-83F4-8611-DC2A-BB09E83BD59C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{436EA2C7-D217-79AD-24E5-1F316F42CFAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{436EA2C7-D217-79AD-24E5-1F316F42CFAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{436EA2C7-D217-79AD-24E5-1F316F42CFAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{436EA2C7-D217-79AD-24E5-1F316F42CFAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BBB5BD8-A452-A68D-97B9-BE57A96F62BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BBB5BD8-A452-A68D-97B9-BE57A96F62BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BBB5BD8-A452-A68D-97B9-BE57A96F62BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BBB5BD8-A452-A68D-97B9-BE57A96F62BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4B7D693-8BD3-D6BA-1ECE-DA1D2E2919D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4B7D693-8BD3-D6BA-1ECE-DA1D2E2919D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4B7D693-8BD3-D6BA-1ECE-DA1D2E2919D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4B7D693-8BD3-D6BA-1ECE-DA1D2E2919D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3835D92-DBEE-4461-B531-5743C8998AAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3835D92-DBEE-4461-B531-5743C8998AAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3835D92-DBEE-4461-B531-5743C8998AAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3835D92-DBEE-4461-B531-5743C8998AAC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1BBB5BD8-A452-A68D-97B9-BE57A96F62BA} = {ACF5C77D-57AC-4915-BF18-C93EFE0D13BD}
+		{F4B7D693-8BD3-D6BA-1ECE-DA1D2E2919D9} = {ACF5C77D-57AC-4915-BF18-C93EFE0D13BD}
+		{C3835D92-DBEE-4461-B531-5743C8998AAC} = {ACF5C77D-57AC-4915-BF18-C93EFE0D13BD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B36B4351-6708-4FC2-9C92-475D8A543345}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,56 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ArcaPhylax.App.App">
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+    <!-- Global flat dashboard styles -->
+    <!--<Style Selector="Window">
+      <Setter Property="Background" Value="#111315"/>
+    </Style>
+
+    <Style Selector="TextBox.SearchBox">
+      <Setter Property="Background" Value="#121416"/>
+      <Setter Property="BorderBrush" Value="#2A2F35"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="Padding" Value="10,8"/>
+      <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <Style Selector="ToggleButton.SquareTab">
+      <Setter Property="Width" Value="56"/>
+      <Setter Property="Height" Value="56"/>
+      <Setter Property="CornerRadius" Value="14"/>
+      <Setter Property="Background" Value="#121416"/>
+      <Setter Property="BorderBrush" Value="#2A2F35"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontSize" Value="18"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="ToggleButton.SquareTab:pointerover">
+      <Setter Property="Background" Value="#171B1F"/>
+    </Style>
+    <Style Selector="ToggleButton.SquareTab:checked">
+      <Setter Property="Background" Value="#1E2430"/>
+      <Setter Property="BorderBrush" Value="#3A7AFE"/>
+    </Style>
+
+    <Style Selector="Border.Card">
+      <Setter Property="Background" Value="#1A1D20"/>
+      <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+
+    <Style Selector="Border.Tile">
+      <Setter Property="Background" Value="#121416"/>
+      <Setter Property="BorderBrush" Value="#2A2F35"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+    <Style Selector="Border.Tile:pointerover">
+      <Setter Property="Background" Value="#171B1F"/>
+      <Setter Property="BorderBrush" Value="#36404B"/>
+    </Style>-->
+  </Application.Styles>
+</Application>
