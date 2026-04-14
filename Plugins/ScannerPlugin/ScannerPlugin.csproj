@@ -1,35 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Avalonia.Desktop" />
+		<PackageReference Include="Tmds.DBus.Protocol" />
+		<PackageReference Include="Avalonia.Themes.Fluent" />
+		<PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" />
+		<PackageReference Include="Autofac" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Dapper" />
+		<PackageReference Include="Funcky" />
+		<PackageReference Include="Microsoft.Data.Sqlite" />
+		<PackageReference Include="NAPS2.Sdk" />
+		<PackageReference Include="NAPS2.Images.ImageSharp" />
+
+		<!-- Optional, aber für TWAIN unter Windows oft nötig -->
+		<PackageReference Include="NAPS2.Sdk.Worker.Win32" Condition="'$(OS)' == 'Windows_NT'" />
+		<PackageReference Include="SixLabors.ImageSharp" />
+	</ItemGroup>
 
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.0.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="12.0.0" />
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.0" />
-    <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
-    <PackageReference Include="Autofac" Version="9.1.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Dapper" Version="2.1.72" />
-    <PackageReference Include="Funcky" Version="3.6.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.2.26159.112" />
-    <PackageReference Include="NAPS2.Sdk" Version="1.2.1" />
-    <PackageReference Include="NAPS2.Images.ImageSharp" Version="1.2.1" />
-
-    <!-- Optional, aber für TWAIN unter Windows oft nötig -->
-    <PackageReference Include="NAPS2.Sdk.Worker.Win32" Version="1.2.1" Condition="'$(OS)' == 'Windows_NT'" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -8,18 +8,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Autofac" Version="9.1.0" />
-		<PackageReference Include="Funcky" Version="3.6.0" />
+		<PackageReference Include="Autofac" />
+		<PackageReference Include="Funcky" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="12.0.0" />
-		<PackageReference Include="Avalonia.Desktop" Version="12.0.0" />
-		<PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.0" />
-		<PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
-		<PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Avalonia.Desktop" />
+		<!-- Fix a vulnerable dependency -->
+		<PackageReference Include="Tmds.DBus.Protocol" />
+		<PackageReference Include="Avalonia.Themes.Fluent" />
+		<PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+
+
 	</ItemGroup>
 
 	<ItemGroup>

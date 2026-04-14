@@ -16,9 +16,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractalPlugin", "Plugins\FractalPlugin\FractalPlugin.csproj", "{C3835D92-DBEE-4461-B531-5743C8998AAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Configuration", "Build Configuration", "{11C2500D-32A1-45FD-A74A-35004578C041}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cornocopia", "Cornocopia", "{CEF39825-24DC-4A0A-B4A2-F938B7FD4588}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEF39825-24DC-4A0A-B4A2-F938B7FD4588}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		README.md = README.md
 	EndProjectSection
 EndProject
