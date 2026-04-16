@@ -1,6 +1,7 @@
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Composition;
 using ArcaPhylax.Data;
+using ArcaPhylax.PluginSystem;
 using Avalonia.Controls;
 using System.Collections.ObjectModel;
 
@@ -54,14 +55,14 @@ public sealed class MainWindowViewModel : NotifyBase
 
     public MainWindowViewModel(
         IViewFactory views,
-        IEnumerable<ITabContentViewModel> tabs,
+        PluginManager pluginManager,
         IDbInitializer dbInit,
         IDocumentRepository repo)
     {
         _views = views;
         _repo = repo;
 
-        Tabs = new ObservableCollection<TabButtonViewModel>(tabs.Select(Mushelbar()));
+        Tabs = new ObservableCollection<TabButtonViewModel>(pluginManager.AllTabs.Select(Mushelbar()));
 
         SelectedTab = Tabs.FirstOrDefault()?.Tab;
 

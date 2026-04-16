@@ -1,20 +1,17 @@
-﻿using Autofac;
+﻿using ArcaPhylax.Abstractions;
+using Autofac;
+using FractalPlugin.ViewModels;
 using FractalPlugin.Views;
 
-namespace FractalPlugin
+namespace FractalPlugin;
+
+internal class FactalPluginModule : Module
 {
-    internal class FactalPluginModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            ////builder.RegisterType<ScanPageViewModel>().SingleInstance();
-            ////builder.RegisterType<ScanWorkflowViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<FractalViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<FractalView>();
 
-            ////builder.RegisterType<ScanWorkflowView>();
-
-            builder.RegisterType<FractalView>();
-
-            base.Load(builder);
-        }
+        base.Load(builder);
     }
 }

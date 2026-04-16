@@ -1,5 +1,6 @@
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Data;
+using ArcaPhylax.PluginSystem;
 using ArcaPhylax.ViewModels;
 using ArcaPhylax.Views;
 using Autofac;
@@ -15,6 +16,8 @@ public static class CompositionRoot
 
         // The Appplication
         builder.RegisterType<App.App>().SingleInstance();
+
+        builder.RegisterType<PluginManager>().SingleInstance();
 
         // View factory: VM -> View (resolved via Autofac)
         builder.RegisterType<ViewFactory>().As<IViewFactory>().SingleInstance();
@@ -32,12 +35,12 @@ public static class CompositionRoot
 
         // ViewModels
         builder.RegisterType<MainWindowViewModel>().SingleInstance();
-        builder.RegisterType<ImagesViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
-        builder.RegisterType<VideosViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
-        builder.RegisterType<DocumentsViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
-        builder.RegisterType<TagsViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
-        builder.RegisterType<ChatViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
-        builder.RegisterType<SettingsViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<ImagesViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<VideosViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<DocumentsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<TagsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<ChatViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<SettingsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
 
         // Views
         builder.RegisterType<MainWindow>().SingleInstance();
@@ -48,22 +51,6 @@ public static class CompositionRoot
         builder.RegisterType<ChatView>();
         builder.RegisterType<SettingsView>();
 
-        //// builder.FindAndRegisterPlugins();
-
         return builder.Build();
-    }
-
-    private static void FindAndRegisterPlugins(this ContainerBuilder builder)
-    {
-        builder.RegisterAssemblyModules(FindPluginAssemblies());
-    }
-
-    private static Assembly[] FindPluginAssemblies()
-    {
-        var pluginLocation = "C:\\_Repositories\\ArcaPhylax\\Plugins\\FractalPlugin\\bin\\Release\\net10.0\\publish\\";
-        PluginLoadContext loadContext = new(pluginLocation);
-        var assembly = loadContext.LoadFromAssemblyName(new AssemblyName("ScannerPlugin"));
-
-        return [assembly];
     }
 }

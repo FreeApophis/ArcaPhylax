@@ -1,6 +1,6 @@
 ﻿using ArcaPhylax.Abstractions;
 
-namespace ArcaPhylax.ViewModels;
+namespace FractalPlugin.ViewModels;
 
 public sealed class FractalViewModel : NotifyBase, ITabContentViewModel
 {

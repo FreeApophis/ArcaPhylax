@@ -1,9 +1,10 @@
+using ArcaPhylax.PluginSystem;
 using Autofac;
 using Avalonia.Controls;
 
 namespace ArcaPhylax.Composition;
 
-public sealed class ViewFactory(IComponentContext ctx) : IViewFactory
+public sealed class ViewFactory(PluginManager pluginManager) : IViewFactory
 {
     private const string ViewModelPostfix = "ViewModel";
     private const string ViewPostfix = "View";
@@ -15,7 +16,7 @@ public sealed class ViewFactory(IComponentContext ctx) : IViewFactory
         var viewType = viewModelType.Assembly.GetType(viewTypeName)
             ?? throw new InvalidOperationException($"No view found for {viewModelType.Name} (expected {viewTypeName}).");
 
-        var view = (Control)ctx.Resolve(viewType);
+        var view = (Control)pluginManager.Resolve(viewType);
         view.DataContext = viewModel;
         return view;
     }
