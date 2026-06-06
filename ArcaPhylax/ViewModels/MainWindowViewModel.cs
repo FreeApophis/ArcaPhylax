@@ -56,7 +56,6 @@ public sealed class MainWindowViewModel : NotifyBase
     public MainWindowViewModel(
         IViewFactory views,
         PluginManager pluginManager,
-        IDbInitializer dbInit,
         IDocumentRepository repo)
     {
         _views = views;
@@ -65,8 +64,6 @@ public sealed class MainWindowViewModel : NotifyBase
         Tabs = new ObservableCollection<TabButtonViewModel>(pluginManager.AllTabs.Select(Mushelbar()));
 
         SelectedTab = Tabs.FirstOrDefault()?.Tab;
-
-        dbInit.EnsureCreatedAndSeed();
 
         ReloadTiles();
     }

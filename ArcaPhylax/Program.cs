@@ -13,7 +13,12 @@ namespace ArcaPhylax;
 internal static class Program
 {
     [STAThread]
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
+    {
+        MainAsync(args).GetAwaiter().GetResult();
+    }
+
+    public static async Task MainAsync(string[] args)
     {
         var container = CompositionRoot.BuildContainer();
 
@@ -21,10 +26,7 @@ internal static class Program
 
         await pluginManager.LoadAllPluginsAsync();
 
-
-
         //bool unloaded = await PluginManager.UnloadAsync(plugin);
-
         //Console.WriteLine($"Unloaded: {unloaded}");
 
         AppBuilder.Configure(container.Resolve<Func<App.App>>())
