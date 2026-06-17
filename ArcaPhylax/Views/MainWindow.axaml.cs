@@ -8,10 +8,9 @@ namespace ArcaPhylax.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(IComponentContext ctx)
+    public MainWindow()
     {
         InitializeComponent();
-        DataContext = ctx.Resolve<MainWindowViewModel>();
 
         // The accent pill is a single Border that slides to overlay the selected
         // nav item. Selection changes and layout passes (initial container
@@ -19,6 +18,9 @@ public partial class MainWindow : Window
         NavList.SelectionChanged += (_, _) => MoveHighlight();
         NavList.LayoutUpdated += (_, _) => MoveHighlight();
     }
+
+    public MainWindow(IComponentContext ctx) : this()
+        => DataContext = ctx.Resolve<MainWindowViewModel>();
 
     private void MoveHighlight()
     {

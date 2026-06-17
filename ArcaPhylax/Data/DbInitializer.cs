@@ -169,9 +169,10 @@ public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
 
     public void EnsureCreatedAndSeed()
     {
-        EnsurePostgresAsync();
+        // Postgres provisioning is background, best-effort infrastructure (it handles its own
+        // exceptions); SQLite is the path the app actually depends on, so run it synchronously.
+        _ = EnsurePostgresAsync();
         EnusureSqLite();
-
     }
 
     private async Task EnsurePostgresAsync()
