@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace ArcaPhylax.Views;
 
-public partial class SettingsView : UserControl
+public partial class AboutView : UserControl
 {
-    public SettingsView()
+    public AboutView()
     {
         InitializeComponent();
     }

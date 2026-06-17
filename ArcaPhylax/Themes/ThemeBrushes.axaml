@@ -1,0 +1,44 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Accent gradient: shared across both themes for a consistent brand. -->
+    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#14B8A6" Offset="0"/>
+        <GradientStop Color="#6366F1" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="AccentBrushHover" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#19C8B6" Offset="0"/>
+        <GradientStop Color="#7376F4" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="AccentColorBrush" Color="#14B8A6"/>
+    <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF"/>
+
+    <!-- Per-variant brushes; flat surfaces with a very subtle background gradient. -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#F7F8FB" Offset="0"/>
+                <GradientStop Color="#EBEEF4" Offset="1"/>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="SidebarBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#E3E7EE"/>
+            <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1F2533"/>
+            <SolidColorBrush x:Key="SubtleTextBrush" Color="#6B7280"/>
+            <SolidColorBrush x:Key="NavHoverBrush" Color="#0F000000"/>
+            <SolidColorBrush x:Key="ThumbBackgroundBrush" Color="#F1F3F7"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#1C1F27" Offset="0"/>
+                <GradientStop Color="#14161C" Offset="1"/>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="SidebarBrush" Color="#1E212A"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#24262F"/>
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#343844"/>
+            <SolidColorBrush x:Key="PrimaryTextBrush" Color="#E8EAEF"/>
+            <SolidColorBrush x:Key="SubtleTextBrush" Color="#9AA1AD"/>
+            <SolidColorBrush x:Key="NavHoverBrush" Color="#1AFFFFFF"/>
+            <SolidColorBrush x:Key="ThumbBackgroundBrush" Color="#1A1C22"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

@@ -3,14 +3,23 @@ using ArcaPhylax.Composition;
 using ArcaPhylax.Data;
 using ArcaPhylax.PluginSystem;
 using Avalonia.Controls;
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
 namespace ArcaPhylax.ViewModels;
 
-public sealed class MainWindowViewModel : NotifyBase
+public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IViewFactory _views;
     private readonly IDocumentRepository _repo;
+
+    [ObservableProperty]
+    public partial bool IsPaneOpen { get; set; }
+
+    /// <summary>Icon for the kebab/menu toggle button.</summary>
+    public Geometry MenuIcon { get; } = Geometry.Parse(NavigationIcons.Menu);
 
     public ObservableCollection<DocumentTileVm> Items { get; } = new();
 
@@ -19,34 +28,25 @@ public sealed class MainWindowViewModel : NotifyBase
         get => field;
         set
         {
-            if (!Set(ref field, value))
-            {
-                return;
-            }
+            SetProperty(ref field, value);
 
             ReloadTiles();
         }
     }
 
     private Control? _currentContent;
-    public Control? CurrentContent { get => _currentContent; private set => Set(ref _currentContent, value); }
+    public Control? CurrentContent { get => _currentContent; private set => SetProperty(ref _currentContent, value); }
 
     public ObservableCollection<TabButtonViewModel> Tabs { get; }
 
-    public ITabContentViewModel? SelectedTab
+    public TabButtonViewModel? SelectedTab
     {
         get => field;
         set
         {
-            if (Set(ref field, value))
+            if (SetProperty(ref field, value))
             {
-                CurrentContent = value is null ? null : _views.Create(value);
-
-                // keep button state in sync
-                foreach (var tab in Tabs)
-                {
-                    tab.IsSelected = ReferenceEquals(tab.Tab, value);
-                }
+                CurrentContent = value is null ? null : _views.Create(value.Tab);
             }
         }
     }
@@ -61,16 +61,12 @@ public sealed class MainWindowViewModel : NotifyBase
         _views = views;
         _repo = repo;
 
-        Tabs = new ObservableCollection<TabButtonViewModel>(pluginManager.AllTabs.Select(Mushelbar()));
+        Tabs = new ObservableCollection<TabButtonViewModel>(
+            pluginManager.AllTabs.Select(tab => new TabButtonViewModel(tab)));
 
-        SelectedTab = Tabs.FirstOrDefault()?.Tab;
+        SelectedTab = Tabs.FirstOrDefault();
 
         ReloadTiles();
-    }
-
-    private Func<ITabContentViewModel, TabButtonViewModel> Mushelbar()
-    {
-        return tab => new TabButtonViewModel(tab, tab => SelectedTab = tab);
     }
 
     private void ReloadTiles()
@@ -83,4 +79,7 @@ public sealed class MainWindowViewModel : NotifyBase
             Items.Add(new DocumentTileVm(t.Id, t.Title, t.Kind, t.Subtitle));
         }
     }
+
+    [RelayCommand]
+    private void TogglePane() => IsPaneOpen = !IsPaneOpen;
 }

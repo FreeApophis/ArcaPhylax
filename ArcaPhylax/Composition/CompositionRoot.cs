@@ -3,6 +3,7 @@ using ArcaPhylax.Data;
 using ArcaPhylax.Data.Content;
 using ArcaPhylax.Data.Postgres.Provisioning;
 using ArcaPhylax.PluginSystem;
+using ArcaPhylax.Services;
 using ArcaPhylax.ViewModels;
 using ArcaPhylax.Views;
 using Autofac;
@@ -32,12 +33,12 @@ public static class CompositionRoot
         builder.RegisterType<DroppedItemsRepository>().As<IDroppedItemsRepository>().SingleInstance();
 
         // Content store
-        builder.RegisterType<ItemRepository>()      .As<IItemRepository>()      .SingleInstance();
-        builder.RegisterType<BlobRepository>()      .As<IBlobRepository>()      .SingleInstance();
-        builder.RegisterType<TagRepository>()       .As<ITagRepository>()       .SingleInstance();
-        builder.RegisterType<AttributeRepository>() .As<IAttributeRepository>() .SingleInstance();
-        builder.RegisterType<SetRepository>()       .As<ISetRepository>()       .SingleInstance();
-        builder.RegisterType<SearchService>()       .As<ISearchService>()       .SingleInstance();
+        builder.RegisterType<ItemRepository>().As<IItemRepository>().SingleInstance();
+        builder.RegisterType<BlobRepository>().As<IBlobRepository>().SingleInstance();
+        builder.RegisterType<TagRepository>().As<ITagRepository>().SingleInstance();
+        builder.RegisterType<AttributeRepository>().As<IAttributeRepository>().SingleInstance();
+        builder.RegisterType<SetRepository>().As<ISetRepository>().SingleInstance();
+        builder.RegisterType<SearchService>().As<ISearchService>().SingleInstance();
 
         builder.RegisterType<IndexingQueue>().AsSelf().SingleInstance();
         builder.RegisterType<IndexingQueue>().As<IIndexingQueue>().SingleInstance();
@@ -50,7 +51,8 @@ public static class CompositionRoot
         builder.RegisterType<DocumentsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<TagsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<ChatViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
-        builder.RegisterType<SettingsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<ConfigureViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<AboutViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
 
         // Views
         builder.RegisterType<MainWindow>().SingleInstance();
@@ -59,7 +61,8 @@ public static class CompositionRoot
         builder.RegisterType<DocumentsView>();
         builder.RegisterType<TagsView>();
         builder.RegisterType<ChatView>();
-        builder.RegisterType<SettingsView>();
+        builder.RegisterType<AboutView>();
+        builder.RegisterType<ConfigureView>();
 
         // Postgres Provisioning
         builder.RegisterType<PostgresProvisioningOptions>().AsSelf().SingleInstance();
@@ -69,6 +72,8 @@ public static class CompositionRoot
         builder.RegisterType<PostgresDetector>().As<IPostgresDetector>().SingleInstance();
         builder.RegisterType<CompositePostgresInstaller>().As<IPostgresInstaller>().SingleInstance();
         builder.RegisterType<PostgresProvisioner>().As<IPostgresProvisioner>().SingleInstance();
+
+        builder.RegisterType<AppSettings>().SingleInstance();
 
         return builder.Build();
     }

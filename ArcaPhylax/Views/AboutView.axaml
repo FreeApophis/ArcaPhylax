@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ArcaPhylax.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="560"
+             x:Class="ArcaPhylax.Views.AboutView"
+             x:DataType="vm:AboutViewModel">
+
+    <Design.DataContext>
+        <vm:AboutViewModel/>
+    </Design.DataContext>
+
+    <ScrollViewer>
+        <StackPanel Spacing="20">
+
+            <StackPanel Spacing="4">
+                <TextBlock Classes="pageTitle" Text="About"/>
+                <TextBlock Classes="pageSubtitle" Text="What ArcaPhylax is and what it is built on."/>
+            </StackPanel>
+
+            <Border Classes="card">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                        <Border Width="48" Height="48" CornerRadius="12"
+                                Background="{DynamicResource AccentBrush}"/>
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="{Binding AppName}" FontSize="22" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <Border Background="{DynamicResource ThumbBackgroundBrush}"
+                                        BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"
+                                        CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
+                                               FontSize="12" Classes="subtle"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="{Binding Tagline}" Classes="subtle"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Classes="sectionTitle" Text="Built with"/>
+                    <ItemsControl ItemsSource="{Binding TechStack}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AboutEntry">
+                                <Grid ColumnDefinitions="160,*" Margin="0,3">
+                                    <TextBlock Grid.Column="0" Text="{Binding Label}" Classes="subtle"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

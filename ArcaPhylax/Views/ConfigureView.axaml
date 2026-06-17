@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ArcaPhylax.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="560"
+             x:Class="ArcaPhylax.Views.ConfigureView"
+             x:DataType="vm:ConfigureViewModel">
+
+  <ScrollViewer>
+    <StackPanel Spacing="20">
+
+      <StackPanel Spacing="4">
+        <TextBlock Classes="pageTitle" Text="Configure"/>
+        <TextBlock Classes="pageSubtitle"
+                   Text="Appearance, default search behaviour, and index maintenance."/>
+      </StackPanel>
+
+      <!-- Appearance -->
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="sectionTitle" Text="Appearance"/>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="Theme" VerticalAlignment="Center" Width="120"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+            <ComboBox ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding Settings.Theme}" Width="160"/>
+          </StackPanel>
+          <TextBlock Classes="subtle" FontSize="12"
+                     Text="System follows your operating-system light/dark setting."/>
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

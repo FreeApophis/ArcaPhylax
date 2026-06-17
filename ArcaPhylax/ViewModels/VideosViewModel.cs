@@ -2,8 +2,8 @@
 
 namespace ArcaPhylax.ViewModels;
 
-public sealed class VideosViewModel : NotifyBase, ITabContentViewModel
+public sealed class VideosViewModel : ViewModelBase, ITabContentViewModel
 {
     public string Title => "Videos";
-    public string Icon => "🎬";
+    public string Icon => NavigationIcons.Videos;
 }

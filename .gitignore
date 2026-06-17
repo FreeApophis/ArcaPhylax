@@ -8,3 +8,5 @@ obj/
 
 # User files
 *.user
+/app.db
+/run_err.txt

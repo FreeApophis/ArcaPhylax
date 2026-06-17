@@ -2,8 +2,8 @@
 
 namespace ArcaPhylax.ViewModels;
 
-public sealed class ChatViewModel : NotifyBase, ITabContentViewModel
+public sealed class ChatViewModel : ViewModelBase, ITabContentViewModel
 {
     public string Title => "Chat and Messaging";
-    public string Icon => "💬";
+    public string Icon => NavigationIcons.Chat;
 }

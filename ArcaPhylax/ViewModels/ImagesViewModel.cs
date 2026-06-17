@@ -2,8 +2,8 @@
 
 namespace ArcaPhylax.ViewModels;
 
-public sealed class ImagesViewModel : NotifyBase, ITabContentViewModel
+public sealed class ImagesViewModel : ViewModelBase, ITabContentViewModel
 {
     public string Title => "Images";
-    public string Icon => "🖼";
+    public string Icon => NavigationIcons.Images;
 }

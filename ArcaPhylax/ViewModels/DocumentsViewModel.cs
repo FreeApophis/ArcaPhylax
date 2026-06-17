@@ -1,22 +1,23 @@
-using System.Collections.ObjectModel;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Data;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace ArcaPhylax.ViewModels;
 
-public sealed class DocumentsViewModel : NotifyBase, ITabContentViewModel
+public sealed partial class DocumentsViewModel : ViewModelBase, ITabContentViewModel
 {
     private readonly IDroppedItemsRepository _droppedRepo;
     private readonly IIndexingQueue _queue;
 
     public ObservableCollection<DroppedItemRowVm> Recent { get; } = new();
 
-    private string? _status;
-    public string? Status { get => _status; set => Set(ref _status, value); }
+    [ObservableProperty]
+    public partial string? Status { get; set; }
 
     public string Title => "Documents";
-    public string Icon => "📄";
+    public string Icon => NavigationIcons.Documents;
 
 
     public DocumentsViewModel(IDroppedItemsRepository droppedRepo, IIndexingQueue queue)

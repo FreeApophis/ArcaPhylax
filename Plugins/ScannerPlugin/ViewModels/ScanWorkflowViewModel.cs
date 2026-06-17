@@ -21,7 +21,7 @@ public partial class ScanWorkflowViewModel : ObservableObject, ITabContentViewMo
 
     public string Title => "Scan";
 
-    public string Icon => "S";
+    public string Icon => ScannerIcons.Scan;
 
 
     public ScanWorkflowViewModel()

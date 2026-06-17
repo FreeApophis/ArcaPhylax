@@ -2,9 +2,9 @@
 
 namespace ArcaPhylax.ViewModels;
 
-public sealed class TagsViewModel : NotifyBase, ITabContentViewModel
+public sealed class TagsViewModel : ViewModelBase, ITabContentViewModel
 {
     public string Title => "Tags";
-    public string Icon => "🏷";
+    public string Icon => NavigationIcons.Tags;
     public bool IsActive { get; set; }
 }
