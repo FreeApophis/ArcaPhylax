@@ -20,6 +20,8 @@ internal sealed class DashboardViewModel : ViewModelBase, ITabContentViewModel
 
     public string Icon => NavigationIcons.Dashboard;
 
+    public int NavigationWeight => 10;
+
     public ObservableCollection<DocumentTileVm> Items { get; } = new();
 
     public string? Query

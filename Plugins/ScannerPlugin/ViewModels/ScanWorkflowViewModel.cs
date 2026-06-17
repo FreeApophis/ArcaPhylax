@@ -23,6 +23,8 @@ public partial class ScanWorkflowViewModel : ObservableObject, ITabContentViewMo
 
     public string Icon => ScannerIcons.Scan;
 
+    public int NavigationWeight => 80;
+
 
     public ScanWorkflowViewModel()
     {

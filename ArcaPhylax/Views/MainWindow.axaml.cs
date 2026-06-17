@@ -12,11 +12,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // The accent pill is a single Border that slides to overlay the selected
-        // nav item. Selection changes and layout passes (initial container
-        // realisation, window resizing) both require repositioning it.
-        NavList.SelectionChanged += (_, _) => MoveHighlight();
-        NavList.LayoutUpdated += (_, _) => MoveHighlight();
+        // The accent pill is a single Border that slides to overlay the selected nav item,
+        // wherever it lives. Selection changes and layout passes (initial container realisation,
+        // window resizing) both require repositioning it.
+        foreach (var list in new[] { NavList, NavListBottom })
+        {
+            list.SelectionChanged += (_, _) => MoveHighlight();
+            list.LayoutUpdated += (_, _) => MoveHighlight();
+        }
     }
 
     public MainWindow(IComponentContext ctx) : this()
@@ -24,17 +27,19 @@ public partial class MainWindow : Window
 
     private void MoveHighlight()
     {
-        if (NavList.SelectedItem is null)
+        if (SelectedContainer() is not { } container)
         {
-            NavHighlight.IsVisible = false;
+            // Nothing selected -> hide. If something is selected but its container is not realised
+            // yet, leave the pill as-is; a later LayoutUpdated pass will reposition it.
+            if (NavList.SelectedItem is null && NavListBottom.SelectedItem is null)
+            {
+                NavHighlight.IsVisible = false;
+            }
+
             return;
         }
 
-        // Container may not be realised yet; leave the pill as-is and a later
-        // LayoutUpdated pass will reposition it.
-        if (NavList.ContainerFromItem(NavList.SelectedItem) is not Control container
-            || container.Bounds.Height == 0
-            || container.TranslatePoint(default, NavArea) is not { } top)
+        if (container.Bounds.Height == 0 || container.TranslatePoint(default, NavArea) is not { } top)
         {
             return;
         }
@@ -46,4 +51,12 @@ public partial class MainWindow : Window
         if (transform.Y != top.Y) transform.Y = top.Y;
         if (!NavHighlight.IsVisible) NavHighlight.IsVisible = true;
     }
+
+    private Control? SelectedContainer()
+        => SelectedContainer(NavList) ?? SelectedContainer(NavListBottom);
+
+    private static Control? SelectedContainer(ListBox list)
+        => list.SelectedItem is { } item && list.ContainerFromItem(item) is Control container
+            ? container
+            : null;
 }

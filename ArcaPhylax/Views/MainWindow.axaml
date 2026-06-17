@@ -36,9 +36,20 @@
           </StackPanel>
         </Grid>
 
-        <!-- Navigation items, with a single accent pill that slides to the selected item. -->
-        <Grid Grid.Row="1" x:Name="NavArea">
-          <Border x:Name="NavHighlight"
+        <!-- Navigation: weighted tabs fill the top, Configure/About are pinned to the bottom.
+             A single accent pill slides to the selected item across both lists. -->
+        <Grid Grid.Row="1" x:Name="NavArea" RowDefinitions="*,Auto">
+          <Grid.Resources>
+            <DataTemplate x:Key="NavItemTemplate" x:DataType="vm:TabButtonViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <PathIcon Data="{Binding Icon}" Width="20" Height="20"/>
+                <TextBlock Text="{Binding Title}" FontSize="14"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+          </Grid.Resources>
+
+          <Border x:Name="NavHighlight" Grid.RowSpan="2"
                   Background="{DynamicResource AccentBrush}"
                   CornerRadius="10" Margin="8,0"
                   HorizontalAlignment="Stretch" VerticalAlignment="Top"
@@ -54,19 +65,16 @@
             </Border.RenderTransform>
           </Border>
 
-          <ListBox x:Name="NavList" Classes="nav"
+          <ListBox x:Name="NavList" Grid.Row="0" Classes="nav"
                    ItemsSource="{Binding Tabs}"
-                   SelectedItem="{Binding SelectedTab}">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:TabButtonViewModel">
-                <StackPanel Orientation="Horizontal" Spacing="16">
-                  <PathIcon Data="{Binding Icon}" Width="20" Height="20"/>
-                  <TextBlock Text="{Binding Title}" FontSize="14"
-                             VerticalAlignment="Center"/>
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+                   SelectedItem="{Binding SelectedMainTab}"
+                   ItemTemplate="{StaticResource NavItemTemplate}"/>
+
+          <ListBox x:Name="NavListBottom" Grid.Row="1" Classes="nav"
+                   VerticalAlignment="Bottom"
+                   ItemsSource="{Binding BottomTabs}"
+                   SelectedItem="{Binding SelectedBottomTab}"
+                   ItemTemplate="{StaticResource NavItemTemplate}"/>
         </Grid>
       </Grid>
     </SplitView.Pane>

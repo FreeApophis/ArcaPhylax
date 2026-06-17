@@ -19,6 +19,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, ITabContentViewM
     public string Title => "Documents";
     public string Icon => NavigationIcons.Documents;
 
+    public int NavigationWeight => 20;
+
 
     public DocumentsViewModel(IDroppedItemsRepository droppedRepo, IIndexingQueue queue)
     {
