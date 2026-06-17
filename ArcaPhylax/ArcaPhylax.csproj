@@ -30,6 +30,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<AvaloniaResource Include="Resources/arca-phylax-icon.png" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
 	</ItemGroup>
 

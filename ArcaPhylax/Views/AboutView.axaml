@@ -22,8 +22,8 @@
             <Border Classes="card">
                 <StackPanel Spacing="16">
                     <StackPanel Orientation="Horizontal" Spacing="14">
-                        <Border Width="48" Height="48" CornerRadius="12"
-                                Background="{DynamicResource AccentBrush}"/>
+                        <Image Width="48" Height="48"
+                               Source="avares://ArcaPhylax/Resources/arca-phylax-icon.png"/>
                         <StackPanel VerticalAlignment="Center" Spacing="2">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <TextBlock Text="{Binding AppName}" FontSize="22" FontWeight="SemiBold"
