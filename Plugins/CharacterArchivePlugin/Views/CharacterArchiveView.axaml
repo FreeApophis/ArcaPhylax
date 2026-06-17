@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CharacterArchivePlugin.ViewModels"
+             x:Class="CharacterArchivePlugin.Views.CharacterArchiveView"
+             x:DataType="vm:CharacterArchiveViewModel">
+
+  <Grid ColumnDefinitions="*,8,420" Margin="12">
+
+    <!-- Left: search + result grid -->
+    <Grid Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
+      <StackPanel Grid.Row="0" Spacing="6">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBox Width="360" PlaceholderText="Search characters…" Text="{Binding SearchText}">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}"/>
+            </TextBox.KeyBindings>
+          </TextBox>
+          <Button Content="Search" Classes="accent" Command="{Binding SearchCommand}"/>
+        </StackPanel>
+        <TextBlock Text="{Binding Status}" Opacity="0.7" FontSize="12"/>
+      </StackPanel>
+
+      <Border Grid.Row="1" Classes="card" Padding="6">
+        <ListBox ItemsSource="{Binding Results}"
+                 SelectedItem="{Binding SelectedTile}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CharacterTileVm">
+              <StackPanel Width="170" Margin="4" Spacing="6">
+                <Border Height="200" CornerRadius="6" ClipToBounds="True"
+                        Background="{DynamicResource ThumbBackgroundBrush}">
+                  <Image Source="{Binding Thumbnail}" Stretch="UniformToFill"/>
+                </Border>
+                <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxLines="2"
+                           TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+    </Grid>
+
+    <!-- Right: detail pane -->
+    <Border Grid.Column="2" Classes="card" Padding="14">
+      <Panel>
+        <TextBlock Text="Select a character to see its description."
+                   IsVisible="{Binding !HasSelection}"
+                   Opacity="0.6" TextWrapping="Wrap"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+          <Border Grid.Row="0" Height="280" CornerRadius="8" ClipToBounds="True"
+                  Background="{DynamicResource ThumbBackgroundBrush}">
+            <Image Source="{Binding SelectedImage}" Stretch="Uniform"/>
+          </Border>
+
+          <TextBlock Grid.Row="1" Text="{Binding SelectedDetail.Name}"
+                     FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+
+          <TextBlock Grid.Row="2" Text="{Binding SelectedDetail.Source}"
+                     Opacity="0.6" FontSize="12"/>
+
+          <ScrollViewer Grid.Row="3" Margin="0,4,0,0">
+            <TextBlock Text="{Binding SelectedDetail.Description}" TextWrapping="Wrap"/>
+          </ScrollViewer>
+        </Grid>
+      </Panel>
+    </Border>
+
+  </Grid>
+</UserControl>
