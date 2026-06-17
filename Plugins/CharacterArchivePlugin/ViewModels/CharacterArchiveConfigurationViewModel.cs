@@ -14,15 +14,18 @@ public sealed partial class CharacterArchiveConfigurationViewModel : ObservableO
 {
     private readonly CharacterArchiveSettingsStore _store;
     private readonly INpgsqlConnectionFactory _connectionFactory;
+    private readonly SearchIndexBuilder _searchIndex;
 
     public CharacterArchiveConfigurationViewModel(
         CharacterArchiveSettings settings,
         CharacterArchiveSettingsStore store,
-        INpgsqlConnectionFactory connectionFactory)
+        INpgsqlConnectionFactory connectionFactory,
+        SearchIndexBuilder searchIndex)
     {
         Settings = settings;
         _store = store;
         _connectionFactory = connectionFactory;
+        _searchIndex = searchIndex;
 
         _store.Load(settings);
     }
@@ -63,6 +66,23 @@ public sealed partial class CharacterArchiveConfigurationViewModel : ObservableO
         catch (Exception ex)
         {
             Status = $"Connection failed: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task RebuildSearchIndex()
+    {
+        Status = "Rebuilding search index… (this can take a minute)";
+
+        try
+        {
+            _store.Save(Settings);
+            await _searchIndex.RebuildAsync();
+            Status = "Search index rebuilt.";
+        }
+        catch (Exception ex)
+        {
+            Status = $"Search index rebuild failed: {ex.Message}";
         }
     }
 }

@@ -16,6 +16,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Data\character_search.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
 	</ItemGroup>
 

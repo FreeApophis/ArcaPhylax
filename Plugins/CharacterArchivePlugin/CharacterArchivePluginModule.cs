@@ -20,6 +20,7 @@ internal sealed class CharacterArchivePluginModule : Module
         builder.RegisterType<NpgsqlConnectionFactory>().As<INpgsqlConnectionFactory>().SingleInstance();
         builder.RegisterType<PostgresCharacterRepository>().As<ICharacterRepository>().SingleInstance();
         builder.RegisterType<HashedImageStore>().As<IImageStore>().SingleInstance();
+        builder.RegisterType<SearchIndexBuilder>().AsSelf().SingleInstance();
 
         // Tab.
         builder.RegisterType<CharacterArchiveViewModel>().As<ITabContentViewModel>().AsSelf().SingleInstance();

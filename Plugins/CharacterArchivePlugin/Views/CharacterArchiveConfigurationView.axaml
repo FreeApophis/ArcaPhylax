@@ -20,7 +20,11 @@
     <StackPanel Orientation="Horizontal" Spacing="8">
       <Button Content="Test connection" Classes="accent" Command="{Binding TestConnectionCommand}"/>
       <Button Content="Save" Command="{Binding SaveCommand}"/>
+      <Button Content="Rebuild search index" Command="{Binding RebuildSearchIndexCommand}"/>
     </StackPanel>
+
+    <TextBlock Text="Rebuild the search index after the archive changes (creates it if missing)."
+               Opacity="0.6" FontSize="11" TextWrapping="Wrap"/>
 
     <TextBlock Text="{Binding Status}" Opacity="0.7" FontSize="12"/>
   </StackPanel>

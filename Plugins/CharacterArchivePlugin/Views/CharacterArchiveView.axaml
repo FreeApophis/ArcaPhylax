@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:CharacterArchivePlugin.ViewModels"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             xmlns:sys="using:System"
              x:Class="CharacterArchivePlugin.Views.CharacterArchiveView"
              x:DataType="vm:CharacterArchiveViewModel">
 
@@ -55,7 +57,7 @@
                    Opacity="0.6" TextWrapping="Wrap"
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
           <Border Grid.Row="0" Height="280" CornerRadius="8" ClipToBounds="True"
                   Background="{DynamicResource ThumbBackgroundBrush}">
             <Image Source="{Binding SelectedImage}" Stretch="Uniform"/>
@@ -64,10 +66,34 @@
           <TextBlock Grid.Row="1" Text="{Binding SelectedDetail.Name}"
                      FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
 
-          <TextBlock Grid.Row="2" Text="{Binding SelectedDetail.Source}"
-                     Opacity="0.6" FontSize="12"/>
+          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding SelectedDetail.Source}" Opacity="0.6" FontSize="12"/>
+            <TextBlock Text="·" Opacity="0.6" FontSize="12"
+                       IsVisible="{Binding SelectedDetail.Author, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+            <TextBlock Text="{Binding SelectedDetail.Author}" Opacity="0.6" FontSize="12"/>
+          </StackPanel>
 
-          <ScrollViewer Grid.Row="3" Margin="0,4,0,0">
+          <ItemsControl Grid.Row="3" ItemsSource="{Binding SelectedDetail.Tags}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="sys:String">
+                <Border Margin="0,0,6,6" Padding="8,3" CornerRadius="10"
+                        Background="{DynamicResource ThumbBackgroundBrush}">
+                  <TextBlock Text="{Binding}" FontSize="11"/>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Grid.Row="4" Text="{Binding SelectedDetail.Summary}"
+                     FontStyle="Italic" Opacity="0.85" TextWrapping="Wrap"
+                     IsVisible="{Binding SelectedDetail.Summary, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+
+          <ScrollViewer Grid.Row="5" Margin="0,4,0,0">
             <TextBlock Text="{Binding SelectedDetail.Description}" TextWrapping="Wrap"/>
           </ScrollViewer>
         </Grid>
