@@ -25,13 +25,11 @@
           <Button Grid.Column="0" Classes="kebab"
                   Command="{Binding TogglePaneCommand}"
                   ToolTip.Tip="Toggle menu">
-            <PathIcon Data="{Binding MenuIcon}"/>
+            <Image Width="32" Height="32" Source="avares://ArcaPhylax/Resources/arca-phylax-icon.png"/>
           </Button>
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
                       VerticalAlignment="Center" Margin="6,0,0,0"
                       IsVisible="{Binding IsPaneOpen}">
-            <Image Width="22" Height="22"
-                   Source="avares://ArcaPhylax/Resources/arca-phylax-icon.png"/>
             <TextBlock Text="ArcaPhylax" FontSize="17" FontWeight="SemiBold"
                        Foreground="{DynamicResource PrimaryTextBrush}"
                        VerticalAlignment="Center"/>
