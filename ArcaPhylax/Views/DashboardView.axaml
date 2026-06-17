@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vm="clr-namespace:ArcaPhylax.ViewModels"
+             xmlns:ir="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.ItemsRepeater"
+             xmlns:irl="clr-namespace:Avalonia.Layout;assembly=Avalonia.Controls.ItemsRepeater"
+             x:Class="ArcaPhylax.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto,*" Margin="16">
+
+
+    <!-- Left: Search -->
+    <Border Classes="Card" Grid.Column="0" Grid.Row="0" Padding="12">
+      <TextBox Classes="SearchBox" PlaceholderText="Search documents, images, tags…" Text="{Binding Query}"/>
+    </Border>
+
+    <!-- Left: High-performance virtualized icon grid -->
+    <Border Classes="Card" Grid.Column="0" Grid.Row="1" Padding="12">
+      <ScrollViewer>
+        <ir:ItemsRepeater ItemsSource="{Binding Items}">
+          <ir:ItemsRepeater.Layout>
+            <irl:UniformGridLayout MinItemWidth="118" MinItemHeight="118" MinColumnSpacing="10" MinRowSpacing="10"/>
+          </ir:ItemsRepeater.Layout>
+
+          <ir:ItemsRepeater.ItemTemplate>
+            <DataTemplate x:DataType="vm:DocumentTileVm">
+              <Border Classes="Tile" Width="118" Height="118" Padding="10">
+                <StackPanel Spacing="8">
+                  <!-- Thumbnail placeholder -->
+                  <Border Height="58" CornerRadius="10" Background="#20252B">
+                    <TextBlock Text="{Binding Kind}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#8C98A6" FontSize="12"/>
+                  </Border>
+
+                  <TextBlock Text="{Binding Title}" Foreground="#D9DEE5" FontSize="12" TextTrimming="CharacterEllipsis"/>
+
+                  <TextBlock Text="{Binding Subtitle}" Foreground="#8C98A6" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ir:ItemsRepeater.ItemTemplate>
+        </ir:ItemsRepeater>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

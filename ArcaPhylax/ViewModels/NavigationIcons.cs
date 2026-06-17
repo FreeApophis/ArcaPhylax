@@ -8,9 +8,11 @@ namespace ArcaPhylax.ViewModels;
 /// </summary>
 public static class NavigationIcons
 {
-    /// <summary>Three horizontal bars — the kebab/menu toggle.</summary>
-    public const string Menu =
-        "M3,5 H21 V7.4 H3 Z M3,10.8 H21 V13.2 H3 Z M3,16.6 H21 V19 H3 Z";
+    /// <summary>
+    /// Two rectangles side by side — the dashboard. The left one is slightly narrower to create
+    /// </summary>
+    public const string Dashboard =
+        "M3,5 H10 V19 H3 Z M12,5 H21 V19 H12 Z";
 
     /// <summary>Dog-eared page with text lines — documents.</summary>
     public const string Documents =

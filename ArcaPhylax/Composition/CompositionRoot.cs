@@ -53,6 +53,7 @@ public static class CompositionRoot
         builder.RegisterType<ChatViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<ConfigureViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<AboutViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<DashboardViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
 
         // Views
         builder.RegisterType<MainWindow>().SingleInstance();
@@ -61,8 +62,9 @@ public static class CompositionRoot
         builder.RegisterType<DocumentsView>();
         builder.RegisterType<TagsView>();
         builder.RegisterType<ChatView>();
-        builder.RegisterType<AboutView>();
         builder.RegisterType<ConfigureView>();
+        builder.RegisterType<AboutView>();
+        builder.RegisterType<DashboardView>();
 
         // Postgres Provisioning
         builder.RegisterType<PostgresProvisioningOptions>().AsSelf().SingleInstance();
