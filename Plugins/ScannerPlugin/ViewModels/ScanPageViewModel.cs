@@ -10,7 +10,7 @@ public partial class ScanPageViewModel : ObservableObject, IDisposable
     public ScanPageViewModel(ProcessedImage processed)
     {
         ProcessedImage = processed ?? throw new ArgumentNullException(nameof(processed));
-        DisplayName = $"Seite {processed.PostProcessingData?.PageNumber ?? 0}";
+        DisplayName = $"Page {processed.PostProcessingData?.PageNumber ?? 0}";
         Info = processed.PostProcessingData?.PageSide.ToString() ?? "";
     }
 

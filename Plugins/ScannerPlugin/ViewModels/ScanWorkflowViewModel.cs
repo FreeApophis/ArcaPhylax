@@ -1,6 +1,12 @@
-﻿using ArcaPhylax.Abstractions;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ArcaPhylax.Abstractions;
 using Avalonia.Controls;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,154 +14,116 @@ using NAPS2.Images;
 using NAPS2.Images.ImageSharp;
 using NAPS2.Pdf;
 using NAPS2.Scan;
-using System.Collections.ObjectModel;
+using ScannerPlugin.Models;
+using ScannerPlugin.Services;
 
 namespace ArcaPhylax.ViewModels;
 
-public partial class ScanWorkflowViewModel : ObservableObject, ITabContentViewModel, IDisposable
+/// <summary>
+/// Scan page: pick a profile (the scanner is configured on the Configure page), scan one or more
+/// pages, select pages, and save them as a single PDF or as individual images.
+/// </summary>
+public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabContentViewModel, IDisposable
 {
     private readonly ScanningContext _scanningContext;
     private readonly ScanController _controller;
 
     private CancellationTokenSource? _scanCts;
 
-    public string Title => "Scan";
-
-    public string Icon => ScannerIcons.Scan;
-
-    public int NavigationWeight => 80;
-
-
-    public ScanWorkflowViewModel()
+    public ScanWorkflowViewModel(ScannerSettings settings)
     {
-        // Plattformunabhängig: ImageSharp
-        _scanningContext = new ScanningContext(new ImageSharpImageContext()); // :contentReference[oaicite:4]{index=4}
+        Settings = settings;
+        Settings.PropertyChanged += OnSettingsChanged;
+
+        _scanningContext = new ScanningContext(new ImageSharpImageContext());
         _controller = new ScanController(_scanningContext);
 
         Pages = new ObservableCollection<ScanPageViewModel>();
-        Devices = new ObservableCollection<ScanDevice>();
-
-        DocumentName = "Scan";
-        TagsText = "";
-
-        RefreshDevicesCommand.Execute(null);
+        Pages.CollectionChanged += (_, _) => NotifySaveState();
     }
 
+    public string Title => "Scan";
+    public string Icon => ScannerIcons.Scan;
+    public int NavigationWeight => 80;
+
+    /// <summary>Set by the view so the file pickers have a parent window.</summary>
     public TopLevel? HostTopLevel { get; set; }
 
-    public ObservableCollection<ScanDevice> Devices { get; }
+    public ScannerSettings Settings { get; }
+
     public ObservableCollection<ScanPageViewModel> Pages { get; }
 
-    [ObservableProperty] private ScanDevice? selectedDevice;
-    [ObservableProperty] private ScanPageViewModel? activePage;
+    [ObservableProperty]
+    private string _fileName = "Scan";
 
-    [ObservableProperty] private string status = "Bereit.";
-    [ObservableProperty] private bool isScanning;
+    [ObservableProperty]
+    private string _status = "Pick a profile and press Scan.";
 
-    [ObservableProperty] private string documentName;
-    [ObservableProperty] private string tagsText;
+    [ObservableProperty]
+    private bool _isScanning;
 
-    [ObservableProperty] private Bitmap? activePagePreview;
+    public string DeviceDisplay => Settings.SelectedDevice?.Name ?? "No scanner configured (see Configuration)";
 
-    public bool CanScan => SelectedDevice != null && !IsScanning;
-    public bool CanExport => Pages.Any(p => p.IsSelected) && !IsScanning;
-    public bool HasAnySelected => Pages.Any(p => p.IsSelected);
-
-    partial void OnSelectedDeviceChanged(ScanDevice? value)
-        => OnPropertyChanged(nameof(CanScan));
+    public bool CanScan => Settings.SelectedDevice is not null && Settings.SelectedProfile is not null && !IsScanning;
+    public bool HasSelection => Pages.Any(p => p.IsSelected);
+    public bool CanSave => HasSelection && !IsScanning;
 
     partial void OnIsScanningChanged(bool value)
     {
-        OnPropertyChanged(nameof(CanScan));
-        OnPropertyChanged(nameof(CanExport));
-    }
-
-    partial void OnActivePageChanged(ScanPageViewModel? value)
-    {
-        if (value?.ProcessedImage is null)
-        {
-            ActivePagePreview = null;
-            return;
-        }
-
-        // Preview (größer): als PNG in MemoryStream speichern und in Avalonia Bitmap laden
-        ActivePagePreview = ToAvaloniaBitmap(value.ProcessedImage, thumbnail: false);
-    }
-
-    [RelayCommand]
-    private async Task RefreshDevices()
-    {
-        try
-        {
-            Status = "Scanner werden gesucht...";
-            Devices.Clear();
-
-            // Alternativ: GetDeviceList() liefert Task<List<ScanDevice>> :contentReference[oaicite:5]{index=5}
-            var list = await _controller.GetDeviceList();
-            foreach (var d in list.OrderBy(x => x.Name))
-                Devices.Add(d);
-
-            SelectedDevice ??= Devices.FirstOrDefault();
-            Status = Devices.Count == 0 ? "Keine Scanner gefunden." : $"{Devices.Count} Scanner gefunden.";
-        }
-        catch (Exception ex)
-        {
-            Status = $"Fehler beim Laden der Scanner: {ex.Message}";
-        }
+        ScanCommand.NotifyCanExecuteChanged();
+        CancelScanCommand.NotifyCanExecuteChanged();
+        NotifySaveState();
     }
 
     [RelayCommand(CanExecute = nameof(CanScan))]
     private async Task Scan()
     {
-        if (SelectedDevice is null) return;
+        if (Settings.SelectedDevice is not { } device || Settings.SelectedProfile is not { } profile)
+        {
+            return;
+        }
 
         IsScanning = true;
         _scanCts = new CancellationTokenSource();
 
         try
         {
-            Status = "Scan läuft...";
+            Status = "Scanning...";
 
             var options = new ScanOptions
             {
-                Device = SelectedDevice,
-                Dpi = 300,
-                PageSize = PageSize.A4,
-                PaperSource = PaperSource.Feeder,
-                ThumbnailSize = 256
+                Device = device,
+                Dpi = profile.Dpi,
+                PageSize = ToPageSize(profile.PageSize),
+                PaperSource = profile.PaperSource,
+                BitDepth = profile.BitDepth,
+                ThumbnailSize = 256,
             };
 
-            int pageCounter = 0;
-
-            await foreach (var img in _controller.Scan(options, _scanCts.Token)) // :contentReference[oaicite:6]{index=6}
+            var count = 0;
+            await foreach (var image in _controller.Scan(options, _scanCts.Token))
             {
-                pageCounter++;
-
-                var pageVm = new ScanPageViewModel(img)
+                var page = new ScanPageViewModel(image)
                 {
-                    IsSelected = true
+                    IsSelected = true,
+                    Thumbnail = ToBitmap(image),
                 };
+                page.PropertyChanged += OnPageChanged;
+                Pages.Add(page);
 
-                // Thumbnail aus PostProcessingData, falls vorhanden
-                pageVm.Thumbnail = ToAvaloniaBitmap(img, thumbnail: true);
-
-                Pages.Add(pageVm);
-
-                ActivePage ??= pageVm;
-                Status = $"Gescannt: {pageCounter} Seite(n)";
-                OnPropertyChanged(nameof(CanExport));
-                OnPropertyChanged(nameof(HasAnySelected));
+                count++;
+                Status = $"Scanned {count} page(s)...";
             }
 
-            Status = $"Scan fertig ({pageCounter} Seite(n)).";
+            Status = $"Done. Scanned {count} page(s).";
         }
         catch (OperationCanceledException)
         {
-            Status = "Scan abgebrochen.";
+            Status = "Scan cancelled.";
         }
         catch (Exception ex)
         {
-            Status = $"Scan-Fehler: {ex.Message}";
+            Status = $"Scan failed: {ex.Message}";
         }
         finally
         {
@@ -165,173 +133,198 @@ public partial class ScanWorkflowViewModel : ObservableObject, ITabContentViewMo
         }
     }
 
-    [RelayCommand]
-    private void CancelScan()
-    {
-        if (!IsScanning) return;
-        _scanCts?.Cancel();
-    }
+    [RelayCommand(CanExecute = nameof(IsScanning))]
+    private void CancelScan() => _scanCts?.Cancel();
 
     [RelayCommand]
     private void SelectAll()
     {
-        foreach (var p in Pages) p.IsSelected = true;
-        OnPropertyChanged(nameof(CanExport));
-        OnPropertyChanged(nameof(HasAnySelected));
+        foreach (var page in Pages)
+        {
+            page.IsSelected = true;
+        }
     }
 
     [RelayCommand]
     private void SelectNone()
     {
-        foreach (var p in Pages) p.IsSelected = false;
-        OnPropertyChanged(nameof(CanExport));
-        OnPropertyChanged(nameof(HasAnySelected));
+        foreach (var page in Pages)
+        {
+            page.IsSelected = false;
+        }
     }
 
     [RelayCommand]
-    private void DeleteSelectedPages()
+    private void DeleteSelected()
     {
-        var toDelete = Pages.Where(p => p.IsSelected).ToList();
-        foreach (var p in toDelete)
+        foreach (var page in Pages.Where(p => p.IsSelected).ToList())
         {
-            p.Dispose();
-            Pages.Remove(p);
+            page.PropertyChanged -= OnPageChanged;
+            Pages.Remove(page);
+            page.Dispose();
         }
-
-        ActivePage = Pages.FirstOrDefault();
-        OnPropertyChanged(nameof(CanExport));
-        OnPropertyChanged(nameof(HasAnySelected));
     }
 
-    [RelayCommand(CanExecute = nameof(CanExport))]
-    private async Task ExportPdf()
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsPdf()
     {
-        if (HostTopLevel?.StorageProvider is null)
+        if (HostTopLevel?.StorageProvider is not { } storage)
         {
-            Status = "Kein StorageProvider verfügbar (TopLevel nicht gesetzt).";
+            Status = "No storage provider available.";
             return;
         }
 
         var selected = Pages.Where(p => p.IsSelected).Select(p => p.ProcessedImage).ToList();
-        if (selected.Count == 0) return;
-
-        var file = await HostTopLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        if (selected.Count == 0)
         {
-            Title = "PDF speichern",
-            SuggestedFileName = MakeSafeFileName(DocumentName) + ".pdf",
-            FileTypeChoices =
-            [
-                new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }
-            ]
+            return;
+        }
+
+        var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save PDF",
+            SuggestedFileName = SafeBaseName() + ".pdf",
+            FileTypeChoices = [new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }],
         });
 
-        if (file is null) return;
+        if (file is null)
+        {
+            return;
+        }
 
         try
         {
-            Status = "PDF wird erzeugt...";
-
-            var exporter = new PdfExporter(_scanningContext); // :contentReference[oaicite:7]{index=7}
-
-            // Name + Tags als PDF-Metadaten: Title + Keywords :contentReference[oaicite:8]{index=8}
-            var metadata = new PdfMetadata
-            {
-                Title = (DocumentName ?? "").Trim(),
-                Keywords = NormalizeTags(TagsText),
-                Subject = "",
-                Author = "",
-                Creator = "ArcaPhylax (Avalonia + NAPS2)"
-            };
-
-            var exportParams = new PdfExportParams
-            {
-                Metadata = metadata,
-                Compat = PdfCompat.Default,
-                Encryption = new PdfEncryption()
-            };
-
-            var path = file.Path.LocalPath;
-            await exporter.Export(path, selected, exportParams);
-
-            Status = $"PDF gespeichert: {Path.GetFileName(path)}";
+            Status = "Creating PDF...";
+            var exporter = new PdfExporter(_scanningContext);
+            await exporter.Export(file.Path.LocalPath, selected, new PdfExportParams());
+            Status = $"PDF saved: {Path.GetFileName(file.Path.LocalPath)} ({selected.Count} page(s)).";
         }
         catch (Exception ex)
         {
-            Status = $"PDF-Export Fehler: {ex.Message}";
+            Status = $"PDF export failed: {ex.Message}";
         }
     }
 
-    private static string NormalizeTags(string? tags)
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsImages()
     {
-        if (string.IsNullOrWhiteSpace(tags)) return "";
-        var list = tags
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(t => !string.IsNullOrWhiteSpace(t))
-            .Distinct(StringComparer.OrdinalIgnoreCase);
-
-        return string.Join(", ", list);
-    }
-
-    private static string MakeSafeFileName(string? input)
-    {
-        var name = string.IsNullOrWhiteSpace(input) ? "Scan" : input.Trim();
-        foreach (var c in Path.GetInvalidFileNameChars())
-            name = name.Replace(c, '_');
-        return name;
-    }
-
-    private static Bitmap? ToAvaloniaBitmap(ProcessedImage processed, bool thumbnail)
-    {
-        IMemoryImage? image = null;
-
-        // Wenn ScanOptions.ThumbnailSize gesetzt ist, liegt oft ein Thumbnail in PostProcessingData :contentReference[oaicite:9]{index=9}
-        if (thumbnail)
+        if (HostTopLevel?.StorageProvider is not { } storage)
         {
-            image = processed.PostProcessingData?.Thumbnail;
+            Status = "No storage provider available.";
+            return;
         }
 
-        // Fallback: gerenderte Seite selbst speichern
-        if (image is null)
+        var selected = Pages.Where(p => p.IsSelected).ToList();
+        if (selected.Count == 0)
         {
-
-            // image ??= processed.RenderToMemoryImage(); wenn verfügbar; falls nicht, unten Fallback über Save(IRenderableImage,..)
-            throw new NotImplementedException();
+            return;
         }
+
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Choose a folder for the images",
+            AllowMultiple = false,
+        });
+
+        if (folders.FirstOrDefault() is not { } folder)
+        {
+            return;
+        }
+
         try
         {
-            using var ms = new MemoryStream();
+            Status = "Saving images...";
+            var directory = folder.Path.LocalPath;
+            var baseName = SafeBaseName();
 
-            if (image != null)
+            var index = 1;
+            foreach (var page in selected)
             {
-                image.Save(ms, ImageFileFormat.Png); // :contentReference[oaicite:10]{index=10}
-            }
-            else
-            {
-                // Fallback: ProcessedImage ist IRenderableImage und kann per Extension Save(...) gespeichert werden :contentReference[oaicite:11]{index=11}
-                processed.Save(ms, ImageFileFormat.Png);
+                var path = Path.Combine(directory, $"{baseName}_{index}.png");
+                page.ProcessedImage.Save(path, ImageFileFormat.Png);
+                index++;
             }
 
-            ms.Position = 0;
-            return new Bitmap(ms);
+            Status = $"Saved {selected.Count} image(s) to {directory}.";
+        }
+        catch (Exception ex)
+        {
+            Status = $"Image export failed: {ex.Message}";
+        }
+    }
+
+    private void OnSettingsChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ScannerSettings.SelectedDevice):
+                OnPropertyChanged(nameof(DeviceDisplay));
+                ScanCommand.NotifyCanExecuteChanged();
+                break;
+            case nameof(ScannerSettings.SelectedProfile):
+                ScanCommand.NotifyCanExecuteChanged();
+                break;
+        }
+    }
+
+    private void OnPageChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ScanPageViewModel.IsSelected))
+        {
+            NotifySaveState();
+        }
+    }
+
+    private void NotifySaveState()
+    {
+        OnPropertyChanged(nameof(HasSelection));
+        SaveAsPdfCommand.NotifyCanExecuteChanged();
+        SaveAsImagesCommand.NotifyCanExecuteChanged();
+    }
+
+    private string SafeBaseName()
+    {
+        var name = string.IsNullOrWhiteSpace(FileName) ? "Scan" : FileName.Trim();
+        return Path.GetInvalidFileNameChars().Aggregate(name, (current, c) => current.Replace(c, '_'));
+    }
+
+    private static PageSize ToPageSize(ScanPageSize pageSize) => pageSize switch
+    {
+        ScanPageSize.A5 => PageSize.A5,
+        ScanPageSize.A3 => PageSize.A3,
+        ScanPageSize.Letter => PageSize.Letter,
+        ScanPageSize.Legal => PageSize.Legal,
+        _ => PageSize.A4,
+    };
+
+    private static Avalonia.Media.Imaging.Bitmap? ToBitmap(ProcessedImage processed)
+    {
+        try
+        {
+            using var stream = processed.SaveToMemoryStream(ImageFileFormat.Png);
+            stream.Position = 0;
+            return new Avalonia.Media.Imaging.Bitmap(stream);
         }
         catch
         {
             return null;
         }
-        finally
-        {
-            image?.Dispose();
-        }
     }
 
     public void Dispose()
     {
-        foreach (var p in Pages) p.Dispose();
+        Settings.PropertyChanged -= OnSettingsChanged;
+
+        foreach (var page in Pages)
+        {
+            page.PropertyChanged -= OnPageChanged;
+            page.Dispose();
+        }
+
         Pages.Clear();
 
         _scanCts?.Cancel();
         _scanCts?.Dispose();
-
-        _scanningContext?.Dispose();
+        _scanningContext.Dispose();
     }
 }

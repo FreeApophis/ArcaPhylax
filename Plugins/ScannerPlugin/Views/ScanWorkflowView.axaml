@@ -4,89 +4,72 @@
              x:Class="ArcaPhylax.Views.ScanWorkflowView"
              x:DataType="vm:ScanWorkflowViewModel">
 
-  <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="2*,3*"
-        Margin="12">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="12" RowSpacing="12">
 
-    <!-- Top: Scanner Auswahl + Scan -->
-    <Border Grid.Row="0" Grid.ColumnSpan="2" Padding="10" CornerRadius="10">
-      <StackPanel Spacing="8">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <Button Content="Scanner aktualisieren"
-                  Command="{Binding RefreshDevicesCommand}" />
-          <ComboBox Width="360"
-                    ItemsSource="{Binding Devices}"
-                    SelectedItem="{Binding SelectedDevice}"
-                    DisplayMemberBinding="{Binding Name}" />
-          <Button Content="Scannen"
-                  Command="{Binding ScanCommand}"
-                  IsEnabled="{Binding CanScan}" />
-          <Button Content="Scan abbrechen"
-                  Command="{Binding CancelScanCommand}"
-                  IsEnabled="{Binding IsScanning}" />
+    <!-- Top: profile selection + scan -->
+    <Border Grid.Row="0" Classes="card" Padding="14">
+      <StackPanel Spacing="10">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Profile" VerticalAlignment="Center"/>
+          <ComboBox Width="240"
+                    ItemsSource="{Binding Settings.Profiles}"
+                    SelectedItem="{Binding Settings.SelectedProfile}"
+                    DisplayMemberBinding="{Binding Name}"
+                    PlaceholderText="No profile selected"/>
+          <Button Content="Scan" Classes="accent" Command="{Binding ScanCommand}"/>
+          <Button Content="Cancel" Command="{Binding CancelScanCommand}"/>
         </StackPanel>
 
-        <TextBlock Text="{Binding Status}" Opacity="0.85"/>
+        <TextBlock Text="{Binding DeviceDisplay, StringFormat='Scanner: {0}'}"
+                   Classes="subtle" FontSize="12"/>
+        <TextBlock Text="{Binding Status}" Opacity="0.8" FontSize="12"/>
       </StackPanel>
     </Border>
 
-    <!-- Left: Seitenliste -->
-    <Border Grid.Row="2" Grid.Column="0" Padding="10" CornerRadius="10">
-      <DockPanel LastChildFill="True">
-        <StackPanel DockPanel.Dock="Top" Spacing="8">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Content="Alle auswählen" Command="{Binding SelectAllCommand}" />
-            <Button Content="Auswahl aufheben" Command="{Binding SelectNoneCommand}" />
-            <Button Content="Ausgewählte löschen" Command="{Binding DeleteSelectedPagesCommand}"
-                    IsEnabled="{Binding HasAnySelected}" />
-          </StackPanel>
-        </StackPanel>
-
-        <ListBox ItemsSource="{Binding Pages}"
-                 SelectedItem="{Binding ActivePage}"
-                 Margin="0,10,0,0">
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <Border Padding="6" CornerRadius="8">
-                <Grid ColumnDefinitions="Auto,Auto,*">
-                  <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center"/>
-                  <Image Width="64" Height="64" Source="{Binding Thumbnail}" Stretch="UniformToFill"/>
-                  <StackPanel Spacing="2">
-                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Info}" Opacity="0.75" FontSize="12"/>
-                  </StackPanel>
-                </Grid>
+    <!-- Middle: scanned pages -->
+    <Border Grid.Row="1" Classes="card" Padding="6">
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Pages}" Margin="6">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ScanPageViewModel">
+              <Border Width="190" Margin="6" Padding="8" CornerRadius="10"
+                      BorderThickness="1"
+                      BorderBrush="{DynamicResource CardBorderBrush}">
+                <StackPanel Spacing="6">
+                  <Border Height="220" CornerRadius="6" ClipToBounds="True"
+                          Background="{DynamicResource ThumbBackgroundBrush}">
+                    <Image Source="{Binding Thumbnail}" Stretch="Uniform"/>
+                  </Border>
+                  <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding DisplayName}"/>
+                </StackPanel>
               </Border>
             </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-      </DockPanel>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
     </Border>
 
-    <!-- Right: Preview + Export -->
-    <Border Grid.Row="2" Grid.Column="1" Padding="10" CornerRadius="10">
-      <Grid RowDefinitions="Auto,*,Auto">
-
-        <StackPanel Grid.Row="0" Spacing="6">
-          <TextBlock Text="Dokumentdaten" FontWeight="SemiBold"/>
-          <TextBox PlaceholderText="Name (PDF Titel)"
-                   Text="{Binding DocumentName}" />
-          <TextBox PlaceholderText="Tags (Komma-separiert)"
-                   Text="{Binding TagsText}" />
+    <!-- Bottom: naming + saving -->
+    <Border Grid.Row="2" Classes="card" Padding="14">
+      <StackPanel Spacing="10">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="Select all" Command="{Binding SelectAllCommand}"/>
+          <Button Content="Select none" Command="{Binding SelectNoneCommand}"/>
+          <Button Content="Delete selected" Command="{Binding DeleteSelectedCommand}"/>
         </StackPanel>
 
-        <Border Grid.Row="1" Padding="8" CornerRadius="10">
-          <ScrollViewer>
-            <Image Source="{Binding ActivePagePreview}" Stretch="Uniform"/>
-          </ScrollViewer>
-        </Border>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-          <Button Content="PDF exportieren"
-                  Command="{Binding ExportPdfCommand}"
-                  IsEnabled="{Binding CanExport}" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="File name" VerticalAlignment="Center"/>
+          <TextBox Width="260" Text="{Binding FileName}"/>
+          <Button Content="Save as PDF" Classes="accent" Command="{Binding SaveAsPdfCommand}"/>
+          <Button Content="Save as images" Command="{Binding SaveAsImagesCommand}"/>
         </StackPanel>
-
-      </Grid>
+      </StackPanel>
     </Border>
 
   </Grid>
