@@ -6,6 +6,8 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using ComputeSharp;
+using FractalPlugin.Shaders;
 
 namespace FractalPlugin.Controls;
 
@@ -55,6 +57,7 @@ public sealed class MandelbrotView : Control
     // ---- Rendering state ----
 
     private WriteableBitmap? _bmp;
+    private string? _error;
     private CancellationTokenSource? _cts;
     private readonly DispatcherTimer _debounce;
 
@@ -113,14 +116,13 @@ public sealed class MandelbrotView : Control
         }
         else
         {
-            // Simple placeholder text (optional)
             var ft = new FormattedText(
-                "Rendering…",
+                _error ?? "Rendering…",
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 Typeface.Default,
                 14,
-                Brushes.White);
+                _error is null ? Brushes.White : Brushes.OrangeRed);
 
             context.DrawText(ft, new Point(10, 10));
         }
@@ -165,21 +167,21 @@ public sealed class MandelbrotView : Control
         var scale = Scale;
         var maxIt = Math.Max(1, MaxIterations);
 
-        // Allocate bitmap on UI thread (safe)
+        // ComputeSharp's Rgba32 stores bytes in R,G,B,A order, so use a matching bitmap format
+        // and the readback becomes a straight row-by-row copy.
         WriteableBitmap bmp = new(
             new PixelSize(w, h),
             new Vector(96, 96),
-            PixelFormat.Bgra8888,
+            PixelFormat.Rgba8888,
             AlphaFormat.Unpremul);
-
-        _bmp = bmp;
-        InvalidateVisual();
 
         try
         {
             await Task.Run(() => RenderMandelbrot(bmp, cx, cy, scale, maxIt, token), token);
             if (!token.IsCancellationRequested)
             {
+                _bmp = bmp;
+                _error = null;
                 // Ask Avalonia to redraw with the finished bitmap
                 await Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
             }
@@ -188,9 +190,19 @@ public sealed class MandelbrotView : Control
         {
             // ignored
         }
+        catch (Exception ex)
+        {
+            _bmp = null;
+            _error = $"GPU render failed: {ex.Message}";
+            await Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
+        }
     }
 
-    private unsafe void RenderMandelbrot(
+    /// <summary>
+    /// Dispatches the Mandelbrot compute shader on the default GPU, then copies the resulting
+    /// texture back into the bitmap's framebuffer.
+    /// </summary>
+    private static unsafe void RenderMandelbrot(
         WriteableBitmap bmp,
         double centerX,
         double centerY,
@@ -198,81 +210,42 @@ public sealed class MandelbrotView : Control
         int maxIterations,
         CancellationToken token)
     {
-        using var fb = bmp.Lock();
+        int w = bmp.PixelSize.Width;
+        int h = bmp.PixelSize.Height;
 
-        int w = fb.Size.Width;
-        int h = fb.Size.Height;
-        int stride = fb.RowBytes;
+        GraphicsDevice device = GraphicsDevice.GetDefault();
 
+        using ReadWriteTexture2D<Rgba32, float4> texture =
+            device.AllocateReadWriteTexture2D<Rgba32, float4>(w, h);
+
+        device.For(w, h, new MandelbrotShader(
+            texture,
+            (float)centerX,
+            (float)centerY,
+            (float)scale,
+            maxIterations));
+
+        token.ThrowIfCancellationRequested();
+
+        Rgba32[] pixels = new Rgba32[w * h];
+        texture.CopyTo(pixels);
+
+        token.ThrowIfCancellationRequested();
+
+        using ILockedFramebuffer fb = bmp.Lock();
         byte* basePtr = (byte*)fb.Address;
+        int stride = fb.RowBytes;
+        int rowBytes = w * 4;
 
-        // Map pixel (x,y) -> complex plane:
-        // re = centerX + (x - w/2)*scale
-        // im = centerY + (y - h/2)*scale
-        double halfW = w * 0.5;
-        double halfH = h * 0.5;
-
-        // Simple coloring: smooth-ish gradient using normalized iteration count.
-        for (int y = 0; y < h; y++)
+        fixed (Rgba32* src = pixels)
         {
-            token.ThrowIfCancellationRequested();
-            byte* row = basePtr + y * stride;
-
-            double ci = centerY + (y - halfH) * scale;
-
-            for (int x = 0; x < w; x++)
+            byte* srcBytes = (byte*)src;
+            for (int y = 0; y < h; y++)
             {
-                double cr = centerX + (x - halfW) * scale;
-
-                // Mandelbrot iteration: z_{n+1} = z_n^2 + c
-                double zr = 0.0, zi = 0.0;
-                double zr2 = 0.0, zi2 = 0.0;
-
-                int it = 0;
-                while (it < maxIterations && (zr2 + zi2) <= 4.0)
-                {
-                    zi = 2.0 * zr * zi + ci;
-                    zr = zr2 - zi2 + cr;
-
-                    zr2 = zr * zr;
-                    zi2 = zi * zi;
-                    it++;
-                }
-
-                // Write BGRA
-                int idx = x * 4;
-
-                if (it >= maxIterations)
-                {
-                    // inside set: black
-                    row[idx + 0] = 0;   // B
-                    row[idx + 1] = 0;   // G
-                    row[idx + 2] = 0;   // R
-                    row[idx + 3] = 255; // A
-                }
-                else
-                {
-                    // Color based on iterations (simple, fast palette)
-                    // t in [0,1)
-                    double t = it / (double)maxIterations;
-
-                    // A quick gradient without allocating palettes:
-                    // Use a few sine-ish curves approximated by polynomials for speed.
-                    // (You can replace with your own palette.)
-                    byte r = (byte)(255.0 * Clamp01(1.0 - Math.Pow(1.0 - t, 3)));
-                    byte g = (byte)(255.0 * Clamp01(1.0 - Math.Pow(1.0 - t, 2)));
-                    byte b = (byte)(255.0 * Clamp01(Math.Sqrt(t)));
-
-                    row[idx + 0] = b;
-                    row[idx + 1] = g;
-                    row[idx + 2] = r;
-                    row[idx + 3] = 255;
-                }
+                Buffer.MemoryCopy(srcBytes + y * rowBytes, basePtr + y * stride, rowBytes, rowBytes);
             }
         }
     }
-
-    private static double Clamp01(double v) => v < 0 ? 0 : (v > 1 ? 1 : v);
 
     // ---- Interaction ----
 

@@ -5,11 +5,15 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- ComputeSharp is DirectX 12 / Windows-only; this plugin only renders on Windows.
+		     Suppress CA1416 platform-compatibility warnings for its GPU APIs. -->
+		<NoWarn>$(NoWarn);CA1416</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Autofac" />
 		<PackageReference Include="Funcky" />
+		<PackageReference Include="ComputeSharp" />
 	</ItemGroup>
 
 	<ItemGroup>

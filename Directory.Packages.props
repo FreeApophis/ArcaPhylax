@@ -19,6 +19,7 @@
 		<PackageVersion Include="Dapper" Version="2.1.72" />
 		<PackageVersion Include="Serilog" Version="4.3.1" />
 		<PackageVersion Include="Funcky" Version="3.6.0" />
+		<PackageVersion Include="ComputeSharp" Version="3.2.0" />
 		<PackageVersion Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.2.26159.112" />
 		<PackageVersion Include="Npgsql" Version="10.0.1" />
 
