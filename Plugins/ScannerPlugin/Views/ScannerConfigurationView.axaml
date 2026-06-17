@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ArcaPhylax.ViewModels"
+             x:Class="ArcaPhylax.Views.ScannerConfigurationView"
+             x:DataType="vm:ScannerConfigurationViewModel">
+
+  <StackPanel Spacing="14">
+
+    <!-- Scanner device -->
+    <StackPanel Spacing="6">
+      <TextBlock Text="Scanner" FontWeight="SemiBold"/>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <ComboBox Width="320"
+                  ItemsSource="{Binding Devices}"
+                  SelectedItem="{Binding Settings.SelectedDevice}"
+                  DisplayMemberBinding="{Binding Name}"
+                  PlaceholderText="No scanner selected"/>
+        <Button Content="Refresh" Command="{Binding RefreshDevicesCommand}"/>
+      </StackPanel>
+      <TextBlock Text="{Binding Status}" Opacity="0.7" FontSize="12"/>
+    </StackPanel>
+
+    <!-- Profile selection -->
+    <StackPanel Spacing="6">
+      <TextBlock Text="Profile" FontWeight="SemiBold"/>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <ComboBox Width="320"
+                  ItemsSource="{Binding Settings.Profiles}"
+                  SelectedItem="{Binding Settings.SelectedProfile}"
+                  DisplayMemberBinding="{Binding Name}"
+                  PlaceholderText="No profile selected"/>
+        <Button Content="Add" Command="{Binding AddProfileCommand}"/>
+        <Button Content="Delete" Command="{Binding RemoveProfileCommand}"/>
+      </StackPanel>
+    </StackPanel>
+
+    <!-- Selected profile settings -->
+    <Border IsVisible="{Binding HasSelectedProfile}"
+            BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"
+            CornerRadius="8" Padding="14">
+      <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" >
+        <Grid.Styles>
+          <Style Selector="TextBlock.label">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,6,0,6"/>
+          </Style>
+        </Grid.Styles>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Name"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Margin="0,4"
+                 Text="{Binding Settings.SelectedProfile.Name}"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Resolution (DPI)"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" Margin="0,4" Width="160" HorizontalAlignment="Left"
+                  ItemsSource="{Binding DpiOptions}"
+                  SelectedItem="{Binding Settings.SelectedProfile.Dpi}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="Page size"/>
+        <ComboBox Grid.Row="2" Grid.Column="1" Margin="0,4" Width="160" HorizontalAlignment="Left"
+                  ItemsSource="{Binding PageSizes}"
+                  SelectedItem="{Binding Settings.SelectedProfile.PageSize}"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Classes="label" Text="Paper source"/>
+        <ComboBox Grid.Row="3" Grid.Column="1" Margin="0,4" Width="160" HorizontalAlignment="Left"
+                  ItemsSource="{Binding PaperSources}"
+                  SelectedItem="{Binding Settings.SelectedProfile.PaperSource}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Classes="label" Text="Color"/>
+        <ComboBox Grid.Row="4" Grid.Column="1" Margin="0,4" Width="160" HorizontalAlignment="Left"
+                  ItemsSource="{Binding BitDepths}"
+                  SelectedItem="{Binding Settings.SelectedProfile.BitDepth}"/>
+      </Grid>
+    </Border>
+
+  </StackPanel>
+</UserControl>

@@ -31,6 +31,25 @@
         </StackPanel>
       </Border>
 
+      <!-- Configuration sections contributed by the host and plugins. -->
+      <ItemsControl ItemsSource="{Binding Sections}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Spacing="20"/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ConfigurationCard">
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="sectionTitle" Text="{Binding Title}"/>
+                <ContentControl Content="{Binding View}"/>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
     </StackPanel>
   </ScrollViewer>
 </UserControl>

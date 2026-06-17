@@ -19,18 +19,25 @@ public sealed class PluginManager
 
     public IEnumerable<ITabContentViewModel> AllTabs => FindAllTab();
 
-    private IEnumerable<ITabContentViewModel> FindAllTab()
+    public IEnumerable<IConfigurationSection> AllConfigurationSections => FindAll<IConfigurationSection>();
+
+    private IEnumerable<ITabContentViewModel> FindAllTab() => FindAll<ITabContentViewModel>();
+
+    // Yields every contribution of <typeparamref name="T"/> from the host scope plus each plugin
+    // scope. Plugin scopes are children of the host scope, so they also see host registrations;
+    // the "Host" metadata marks those so they are not yielded twice.
+    private IEnumerable<T> FindAll<T>() where T : notnull
     {
-        foreach (var tab in _hostLifeTimeScope.Resolve<IEnumerable<ITabContentViewModel>>())
+        foreach (var contribution in _hostLifeTimeScope.Resolve<IEnumerable<T>>())
         {
-            yield return tab;
+            yield return contribution;
         }
 
         foreach (var loadedPlugin in _loadedPlugins)
         {
-            foreach (var meta in loadedPlugin.Scope.Resolve<IEnumerable<Meta<ITabContentViewModel>>>())
+            foreach (var meta in loadedPlugin.Scope.Resolve<IEnumerable<Meta<T>>>())
             {
-                if (!meta.Metadata.TryGetValue("Source", out var x) || x is not "Host")
+                if (!meta.Metadata.TryGetValue("Source", out var source) || source is not "Host")
                 {
                     yield return meta.Value;
                 }

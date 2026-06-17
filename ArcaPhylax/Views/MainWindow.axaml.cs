@@ -15,7 +15,9 @@ public partial class MainWindow : Window
         // The accent pill is a single Border that slides to overlay the selected nav item,
         // wherever it lives. Selection changes and layout passes (initial container realisation,
         // window resizing) both require repositioning it.
-        foreach (var list in new[] { NavList, NavListBottom })
+        ListBox[] lists = [NavList, NavListBottom];
+
+        foreach (var list in lists)
         {
             list.SelectionChanged += (_, _) => MoveHighlight();
             list.LayoutUpdated += (_, _) => MoveHighlight();
