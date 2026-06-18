@@ -1,8 +1,8 @@
+using System.Collections.ObjectModel;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Data;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.Collections.ObjectModel;
 
 namespace ArcaPhylax.ViewModels;
 
@@ -10,17 +10,6 @@ public sealed partial class DocumentsViewModel : ViewModelBase, ITabContentViewM
 {
     private readonly IDroppedItemsRepository _droppedRepo;
     private readonly IIndexingQueue _queue;
-
-    public ObservableCollection<DroppedItemRowVm> Recent { get; } = new();
-
-    [ObservableProperty]
-    public partial string? Status { get; set; }
-
-    public string Title => "Documents";
-    public string Icon => NavigationIcons.Documents;
-
-    public int NavigationWeight => 20;
-
 
     public DocumentsViewModel(IDroppedItemsRepository droppedRepo, IIndexingQueue queue)
     {
@@ -30,6 +19,17 @@ public sealed partial class DocumentsViewModel : ViewModelBase, ITabContentViewM
         RefreshRecent();
         Status = "Ready";
     }
+
+    public ObservableCollection<DroppedItemRowVm> Recent { get; } = new();
+
+    [ObservableProperty]
+    public partial string? Status { get; set; }
+
+    public string Title => "Documents";
+
+    public string Icon => NavigationIcons.Documents;
+
+    public int NavigationWeight => 20;
 
     public async Task OnDroppedAsync(IReadOnlyList<IStorageFile> files, IReadOnlyList<IStorageFolder> folders)
     {

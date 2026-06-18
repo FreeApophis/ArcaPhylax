@@ -1,5 +1,5 @@
-using ArcaPhylax.Abstractions;
 using System.Reflection;
+using ArcaPhylax.Abstractions;
 
 namespace ArcaPhylax.ViewModels;
 

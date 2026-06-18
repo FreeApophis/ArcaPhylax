@@ -25,8 +25,6 @@ public partial class DocumentsView : UserControl
     {
         dragtEvent.DragEffects = DragDropEffects.None;
 
-
-
         if (dragtEvent.DataTransfer.TryGetFiles() is { })
         {
             dragtEvent.DragEffects = DragDropEffects.Copy;

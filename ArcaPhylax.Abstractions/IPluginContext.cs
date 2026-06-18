@@ -1,3 +1,5 @@
 namespace ArcaPhylax.Abstractions;
 
-public interface IPluginContext { }
+public interface IPluginContext
+{
+}

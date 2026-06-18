@@ -8,12 +8,12 @@ public sealed class SqliteConnectionFactory(string dataSource) : ISqliteConnecti
     {
         DataSource = dataSource,
         Mode = SqliteOpenMode.ReadWriteCreate,
-        Cache = SqliteCacheMode.Shared
+        Cache = SqliteCacheMode.Shared,
     }.ToString();
 
-    public SqliteConnectionFactory() : this("app.db")
+    public SqliteConnectionFactory()
+        : this("app.db")
     {
-        
     }
 
     public SqliteConnection Create()

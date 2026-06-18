@@ -1,14 +1,11 @@
+using System.Collections.Immutable;
 using ArcaPhylax.Extensions;
 using Dapper;
-using System.Collections.Immutable;
 
 namespace ArcaPhylax.Data;
 
-public sealed class DroppedItemsRepository : IDroppedItemsRepository
+public sealed class DroppedItemsRepository(ISqliteConnectionFactory db) : IDroppedItemsRepository
 {
-    private readonly ISqliteConnectionFactory _db;
-
-
     private const string DroppedItemQuery = """
         SELECT Id, Kind, Name, OriginalPath, StoredPath, CreatedUtc
         FROM DroppedItems
@@ -28,7 +25,7 @@ public sealed class DroppedItemsRepository : IDroppedItemsRepository
         LIMIT @limit;
         """;
 
-    public DroppedItemsRepository(ISqliteConnectionFactory db) => _db = db;
+    private readonly ISqliteConnectionFactory _db = db;
 
     public void Add(string kind, string name, string? originalPath, string? storedPath)
     {
@@ -53,7 +50,6 @@ public sealed class DroppedItemsRepository : IDroppedItemsRepository
 
         return connection.Query<DroppedItem>(DroppedItemQuery, parameters);
     }
-
 
     public IEnumerable<long> SearchIds(string query, int limit)
     {

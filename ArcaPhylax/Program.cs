@@ -2,11 +2,7 @@ using ArcaPhylax.Composition;
 using ArcaPhylax.PluginSystem;
 using Autofac;
 using Avalonia;
-using Funcky;
-using Funcky.Extensions;
 using Funcky.Monads;
-using SkiaSharp;
-using static Funcky.Functional;
 
 namespace ArcaPhylax;
 
@@ -20,14 +16,11 @@ internal static class Program
 
     public static async Task MainAsync(string[] args)
     {
-        var container = CompositionRoot.BuildContainer();
+        using var container = CompositionRoot.BuildContainer();
 
         var pluginManager = container.Resolve<PluginManager>();
 
         await pluginManager.LoadAllPluginsAsync();
-
-        //bool unloaded = await PluginManager.UnloadAsync(plugin);
-        //Console.WriteLine($"Unloaded: {unloaded}");
 
         AppBuilder.Configure(container.Resolve<Func<App.App>>())
             .UsePlatformDetect()

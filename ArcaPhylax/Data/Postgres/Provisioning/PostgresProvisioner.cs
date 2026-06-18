@@ -1,4 +1,3 @@
-
 namespace ArcaPhylax.Data.Postgres.Provisioning;
 
 public sealed class PostgresProvisioner(

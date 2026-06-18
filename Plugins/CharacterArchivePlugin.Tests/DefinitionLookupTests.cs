@@ -33,10 +33,10 @@ public sealed class DefinitionLookupTests
     }
 
     [Theory]
-    [InlineData("unknown:1")]   // source not in the whitelist
-    [InlineData("nocolon")]     // no separator
-    [InlineData(":1")]          // empty source
-    [InlineData("chub:")]       // empty primary key
+    [InlineData("unknown:1")] // source not in the whitelist
+    [InlineData("nocolon")] // no separator
+    [InlineData(":1")] // empty source
+    [InlineData("chub:")] // empty primary key
     public void ForKey_GivenMalformedOrUnknownKey_ReturnsNone(string key)
     {
         // Act

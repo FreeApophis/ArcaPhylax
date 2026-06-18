@@ -1,6 +1,6 @@
 namespace ArcaPhylax.Abstractions.Content;
 
 public record Tag(
-    long   Id,
+    long Id,
     string Name,
-    long?  GroupId);
+    long? GroupId);

@@ -1,6 +1,6 @@
+using System.Collections.ObjectModel;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Data;
-using System.Collections.ObjectModel;
 
 namespace ArcaPhylax.ViewModels;
 

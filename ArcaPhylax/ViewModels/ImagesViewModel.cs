@@ -5,6 +5,8 @@ namespace ArcaPhylax.ViewModels;
 public sealed class ImagesViewModel : ViewModelBase, ITabContentViewModel
 {
     public string Title => "Images";
+
     public string Icon => NavigationIcons.Images;
+
     public int NavigationWeight => 30;
 }

@@ -1,8 +1,8 @@
+using System.Collections.Immutable;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Abstractions.Content;
 using ArcaPhylax.Extensions;
 using Dapper;
-using System.Collections.Immutable;
 
 namespace ArcaPhylax.Data.Content;
 

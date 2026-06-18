@@ -15,7 +15,6 @@ public sealed partial class CharacterArchiveSettings : ObservableObject
     [ObservableProperty]
     public partial string ImageRoot { get; set; } = @"C:\_Software\character-archive\hashed-data";
 
-
     [ObservableProperty]
     public partial string DatabaseHost { get; set; } = "localhost";
 

@@ -1,35 +1,29 @@
 ﻿using ArcaPhylax.Abstractions;
 using Autofac;
-using System.Runtime.Loader;
 
-namespace ArcaPhylax.PluginSystem
+namespace ArcaPhylax.PluginSystem;
+
+public sealed class LoadedPlugin(string name, PluginLoadContext loadContext, ILifetimeScope scope, IPlugin instance) : IAsyncDisposable
 {
-    public sealed class LoadedPlugin : IAsyncDisposable
+    public string Name { get; } = name;
+
+    public PluginLoadContext LoadContext { get; } = loadContext;
+
+    public WeakReference LoadContextWeakReference { get; } = new WeakReference(loadContext);
+
+    public ILifetimeScope Scope { get; } = scope;
+
+    public IPlugin Instance { get; } = instance;
+
+    public async ValueTask DisposeAsync()
     {
-        public string Name { get; }
-        public PluginLoadContext LoadContext { get; }
-        public WeakReference LoadContextWeakReference { get; }
-        public ILifetimeScope Scope { get; }
-        public IPlugin Instance { get; }
+        await Instance.StopAsync(CancellationToken.None);
 
-        public LoadedPlugin(
-            string name,
-            PluginLoadContext loadContext,
-            ILifetimeScope scope,
-            IPlugin instance)
-        {
-            Name = name;
-            LoadContext = loadContext;
-            LoadContextWeakReference = new WeakReference(loadContext);
-            Scope = scope;
-            Instance = instance;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await Instance.StopAsync(CancellationToken.None);
-            Scope.Dispose();
-            LoadContext.Unload();
-        }
+        // The scope is created by PluginManager.LoadAsync purely to back this plugin; ownership is
+        // transferred here, so disposing it is correct despite IDISP007 seeing it as injected.
+#pragma warning disable IDISP007 // Don't dispose injected
+        Scope.Dispose();
+#pragma warning restore IDISP007 // Don't dispose injected
+        LoadContext.Unload();
     }
 }

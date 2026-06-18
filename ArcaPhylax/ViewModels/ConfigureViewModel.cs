@@ -1,23 +1,16 @@
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Composition;
 using ArcaPhylax.PluginSystem;
 using ArcaPhylax.Services;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Styling;
 
 namespace ArcaPhylax.ViewModels;
 
-/// <summary>A configuration section contributed by the host or a plugin, paired with its view.</summary>
-public sealed record ConfigurationCard(string Title, Control View);
-
 /// <summary>The Configure page: theme plus configuration sections contributed by host/plugins.</summary>
 public partial class ConfigureViewModel : ViewModelBase, ITabContentViewModel
 {
-
     public ConfigureViewModel(AppSettings settings, PluginManager pluginManager, IViewFactory views)
     {
         Settings = settings;

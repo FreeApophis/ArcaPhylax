@@ -16,9 +16,6 @@ namespace CharacterArchivePlugin.Tests;
 /// </summary>
 public sealed class HolodeckCardExportTests
 {
-    private static byte[] ReferenceCard() =>
-        File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Holodeck.png"));
-
     [Fact]
     public void ReadCharacterJson_GivenRealReferenceCard_ExtractsTheV2Definition()
     {
@@ -103,6 +100,9 @@ public sealed class HolodeckCardExportTests
         // Assert — card tools append chara after IDAT; some editors only scan there.
         Assert.True(types.IndexOf("tEXt") > types.LastIndexOf("IDAT"), "chara tEXt must follow IDAT");
     }
+
+    private static byte[] ReferenceCard() =>
+        File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Holodeck.png"));
 
     private static List<string> ChunkTypes(byte[] png) =>
         Chunks(png).Select(chunk => chunk.Type).ToList();

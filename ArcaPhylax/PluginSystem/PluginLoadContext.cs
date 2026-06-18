@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.Loader;
-using System.Xml.Linq;
 
 namespace ArcaPhylax.PluginSystem;
 
@@ -38,7 +37,6 @@ public sealed class PluginLoadContext : AssemblyLoadContext
 
         return null;
     }
-
 
     protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
     {

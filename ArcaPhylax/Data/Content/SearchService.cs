@@ -1,7 +1,7 @@
+using System.Collections.Immutable;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.Extensions;
 using Dapper;
-using System.Collections.Immutable;
 
 namespace ArcaPhylax.Data.Content;
 
@@ -72,7 +72,9 @@ public sealed class SearchService(ISqliteConnectionFactory db) : ISearchService
 
         var row = connection.QuerySingleOrDefault<FtsRow>(SqlBuildFtsRow, queryP);
         if (row is null)
+        {
             return;
+        }
 
         var tombstoneP = ImmutableDictionary<string, object?>.Empty
             .Add("rowid", itemId)

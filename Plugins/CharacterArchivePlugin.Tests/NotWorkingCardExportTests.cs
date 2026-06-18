@@ -1,7 +1,6 @@
 using System.Text.Json;
 using CharacterArchivePlugin.Data;
 using CharacterArchivePlugin.Services;
-using Funcky.Monads;
 using Xunit;
 
 namespace CharacterArchivePlugin.Tests;
@@ -13,13 +12,6 @@ namespace CharacterArchivePlugin.Tests;
 /// </summary>
 public sealed class NotWorkingCardExportTests
 {
-    private static byte[] RejectedCard() =>
-        File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "NotWorking.png"));
-
-    private static string CharaOf(byte[] card) =>
-        CharacterCardWriter.ReadCharacterJson(card)
-            .GetOrElse(() => throw new Xunit.Sdk.XunitException("card had no chara chunk"));
-
     [Fact]
     public void TheRejectedCard_CarriesANullCharacterBook()
     {
@@ -58,4 +50,11 @@ public sealed class NotWorkingCardExportTests
         using var image = SixLabors.ImageSharp.Image.Load(exported);
         Assert.True(image.Width > 0 && image.Height > 0);
     }
+
+    private static byte[] RejectedCard() =>
+    File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "NotWorking.png"));
+
+    private static string CharaOf(byte[] card) =>
+        CharacterCardWriter.ReadCharacterJson(card)
+            .GetOrElse(() => throw new Xunit.Sdk.XunitException("card had no chara chunk"));
 }

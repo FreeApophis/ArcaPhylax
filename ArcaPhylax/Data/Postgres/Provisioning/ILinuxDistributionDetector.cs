@@ -1,5 +1,3 @@
-using System.Runtime.Versioning;
-
 namespace ArcaPhylax.Data.Postgres.Provisioning;
 
 public interface ILinuxDistributionDetector

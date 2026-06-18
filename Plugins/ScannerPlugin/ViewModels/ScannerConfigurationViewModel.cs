@@ -1,8 +1,5 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using ArcaPhylax.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -43,14 +40,23 @@ public sealed partial class ScannerConfigurationViewModel : ObservableObject, IC
     public ObservableCollection<ScanDevice> Devices { get; } = new();
 
     public int[] DpiOptions { get; } = [100, 150, 200, 300, 400, 600];
+
     public ScanPageSize[] PageSizes { get; } = Enum.GetValues<ScanPageSize>();
+
     public PaperSource[] PaperSources { get; } = Enum.GetValues<PaperSource>();
+
     public BitDepth[] BitDepths { get; } = Enum.GetValues<BitDepth>();
 
     [ObservableProperty]
     public partial string Status { get; set; } = "Click Refresh to list connected scanners.";
 
     public bool HasSelectedProfile => Settings.SelectedProfile is not null;
+
+    public void Dispose()
+    {
+        Settings.PropertyChanged -= OnSettingsChanged;
+        _scanningContext.Dispose();
+    }
 
     [RelayCommand]
     private async Task RefreshDevices()
@@ -103,11 +109,5 @@ public sealed partial class ScannerConfigurationViewModel : ObservableObject, IC
             OnPropertyChanged(nameof(HasSelectedProfile));
             RemoveProfileCommand.NotifyCanExecuteChanged();
         }
-    }
-
-    public void Dispose()
-    {
-        Settings.PropertyChanged -= OnSettingsChanged;
-        _scanningContext.Dispose();
     }
 }

@@ -1,5 +1,4 @@
 using ArcaPhylax.PluginSystem;
-using Autofac;
 using Avalonia.Controls;
 
 namespace ArcaPhylax.Composition;

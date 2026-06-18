@@ -29,15 +29,15 @@ internal readonly partial struct MandelbrotShader(
         float halfW = DispatchSize.X * 0.5f;
         float halfH = DispatchSize.Y * 0.5f;
 
-        float cr = centerX + (x - halfW) * scale;
-        float ci = centerY + (y - halfH) * scale;
+        float cr = centerX + ((x - halfW) * scale);
+        float ci = centerY + ((y - halfH) * scale);
 
         float zr = 0f, zi = 0f, zr2 = 0f, zi2 = 0f;
 
         int it = 0;
         while (it < maxIterations && (zr2 + zi2) <= 4f)
         {
-            zi = 2f * zr * zi + ci;
+            zi = (2f * zr * zi) + ci;
             zr = zr2 - zi2 + cr;
 
             zr2 = zr * zr;

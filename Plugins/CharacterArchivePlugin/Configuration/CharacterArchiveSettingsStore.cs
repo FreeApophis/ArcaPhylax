@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text.Json;
 
 namespace CharacterArchivePlugin.Configuration;
@@ -9,14 +8,6 @@ namespace CharacterArchivePlugin.Configuration;
 /// </summary>
 public sealed class CharacterArchiveSettingsStore
 {
-    private sealed record Persisted(
-        string DatabaseHost,
-        int DatabasePort,
-        string DatabaseName,
-        string DatabaseUsername,
-        string DatabasePassword,
-        string ImageRoot);
-
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     private readonly string _path =
@@ -50,4 +41,12 @@ public sealed class CharacterArchiveSettingsStore
         File.WriteAllText(
             _path,
             JsonSerializer.Serialize(new Persisted(settings.DatabaseHost, settings.DatabasePort, settings.DatabaseName, settings.DatabaseUsername, settings.DatabasePassword, settings.ImageRoot), JsonOptions));
+
+    private sealed record Persisted(
+        string DatabaseHost,
+        int DatabasePort,
+        string DatabaseName,
+        string DatabaseUsername,
+        string DatabasePassword,
+        string ImageRoot);
 }

@@ -1,5 +1,3 @@
-
-
 namespace ArcaPhylax.Data.Postgres.Provisioning;
 
 public sealed class PostgresDetector(
@@ -8,9 +6,9 @@ public sealed class PostgresDetector(
 {
     public async Task<PostgresInstallationStatus> DetectAsync(CancellationToken cancellationToken = default)
     {
-        var candidateCommands = operatingSystemInfo.IsWindows
-            ? new[] { ("where", "psql"), ("where", "postgres") }
-            : new[] { ("which", "psql"), ("which", "postgres") };
+        (string, string)[] candidateCommands = operatingSystemInfo.IsWindows
+            ? [("where", "psql"), ("where", "postgres")]
+            : [("which", "psql"), ("which", "postgres")];
 
         foreach (var (probe, executable) in candidateCommands)
         {
@@ -39,21 +37,6 @@ public sealed class PostgresDetector(
         return new PostgresInstallationStatus(false, null, "Neither psql nor postgres was found on PATH.");
     }
 
-    private async Task<PostgresInstallationStatus?> TryReadVersionAsync(
-        string executable,
-        CancellationToken cancellationToken)
-    {
-        var result = await runner.RunAsync(executable, "--version", cancellationToken).ConfigureAwait(false);
-        if (!result.Succeeded)
-        {
-            return null;
-        }
-
-        var output = string.IsNullOrWhiteSpace(result.StdOut) ? result.StdErr : result.StdOut;
-        var version = ParseVersion(output);
-        return new PostgresInstallationStatus(true, version, output.Trim());
-    }
-
     internal static string? ParseVersion(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -71,5 +54,20 @@ public sealed class PostgresDetector(
         }
 
         return null;
+    }
+
+    private async Task<PostgresInstallationStatus?> TryReadVersionAsync(
+        string executable,
+        CancellationToken cancellationToken)
+    {
+        var result = await runner.RunAsync(executable, "--version", cancellationToken).ConfigureAwait(false);
+        if (!result.Succeeded)
+        {
+            return null;
+        }
+
+        var output = string.IsNullOrWhiteSpace(result.StdOut) ? result.StdErr : result.StdOut;
+        var version = ParseVersion(output);
+        return new PostgresInstallationStatus(true, version, output.Trim());
     }
 }

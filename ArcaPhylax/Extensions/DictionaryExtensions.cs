@@ -1,14 +1,13 @@
-﻿using Dapper;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
+using Dapper;
 
-namespace ArcaPhylax.Extensions
+namespace ArcaPhylax.Extensions;
+
+public static class DictionaryExtensions
 {
-    public static class DictionaryExtensions
+    extension(ImmutableDictionary<string, object?> dictionary)
     {
-        extension(ImmutableDictionary<string, object?> dictionary)
-        {
-            public DynamicParameters ToDynamicParameters()
-                => new(dictionary);
-        }
+        public DynamicParameters ToDynamicParameters()
+            => new(dictionary);
     }
 }

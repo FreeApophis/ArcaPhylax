@@ -1,14 +1,11 @@
-using Dapper;
 using System.Collections.Immutable;
 using ArcaPhylax.Extensions;
+using Dapper;
 
 namespace ArcaPhylax.Data;
 
-public sealed class DocumentRepository : IDocumentRepository
+public sealed class DocumentRepository(ISqliteConnectionFactory db) : IDocumentRepository
 {
-    private readonly ISqliteConnectionFactory _db;
-
-
     private const string DocumentQuery = """
         SELECT Id, Title, Kind, Subtitle
         FROM Documents
@@ -17,7 +14,7 @@ public sealed class DocumentRepository : IDocumentRepository
         LIMIT @limit OFFSET @offset;
         """;
 
-    public DocumentRepository(ISqliteConnectionFactory db) => _db = db;
+    private readonly ISqliteConnectionFactory _db = db;
 
     public IEnumerable<Document> QueryTiles(string? search, int limit, int offset)
     {

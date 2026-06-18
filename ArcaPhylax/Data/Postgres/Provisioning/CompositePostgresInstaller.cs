@@ -28,6 +28,12 @@ public sealed class CompositePostgresInstaller(
         throw new PlatformNotSupportedException("Unsupported OS for PostgreSQL installation.");
     }
 
+    internal static string CombineWindowsPath(string baseDirectory, string? version)
+        => string.IsNullOrWhiteSpace(version) ? baseDirectory : Path.Combine(baseDirectory, version);
+
+    internal static string EscapeWindowsArgument(string value)
+        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
     private async Task InstallOnLinuxAsync(PostgresProvisioningOptions options, CancellationToken cancellationToken)
     {
         var distribution = await linuxDistributionDetector.DetectAsync(cancellationToken).ConfigureAwait(false)
@@ -152,25 +158,12 @@ public sealed class CompositePostgresInstaller(
             $"--serviceaccount \"{EscapeWindowsArgument(options.Windows.SuperuserName)}\"",
             $"--serverport {options.Windows.Port}",
             $"--prefix \"{EscapeWindowsArgument(installDir)}\"",
-            $"--datadir \"{EscapeWindowsArgument(dataDir)}\""
+            $"--datadir \"{EscapeWindowsArgument(dataDir)}\"",
         });
 
         await runner.RunAsync(installerPath, arguments, cancellationToken, throwOnNonZeroExit: true)
             .ConfigureAwait(false);
     }
-
-    internal static string CombineWindowsPath(string baseDirectory, string? version)
-    {
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            return baseDirectory;
-        }
-
-        return Path.Combine(baseDirectory, version);
-    }
-
-    internal static string EscapeWindowsArgument(string value)
-        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
     private Task RunShellAsync(string command, CancellationToken cancellationToken) =>
         runner.RunAsync(

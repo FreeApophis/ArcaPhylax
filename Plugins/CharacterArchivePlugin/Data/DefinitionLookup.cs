@@ -12,16 +12,17 @@ internal sealed record DefinitionLookup(string Table, string KeyColumn, string K
 {
     // source prefix -> (def table, primary-key column). Mirrors the UNION in Data/character_search.sql.
     private static readonly ImmutableDictionary<string, (string Table, string KeyColumn)> Sources =
-        ImmutableDictionary.CreateRange(StringComparer.Ordinal,
-        [
-            Source("booru", "booru_character_def", "id"),
-            Source("char_tavern", "char_tavern_character_def", "increment"),
-            Source("chub", "chub_character_def", "increment"),
-            Source("generic", "generic_character_def", "card_data_hash"),
-            Source("nyaime", "nyaime_character_def", "increment"),
-            Source("risuai", "risuai_character_def", "increment"),
-            Source("webring", "webring_character_def", "card_data_hash"),
-        ]);
+        ImmutableDictionary.CreateRange(
+            StringComparer.Ordinal,
+            [
+                Source("booru", "booru_character_def", "id"),
+                Source("char_tavern", "char_tavern_character_def", "increment"),
+                Source("chub", "chub_character_def", "increment"),
+                Source("generic", "generic_character_def", "card_data_hash"),
+                Source("nyaime", "nyaime_character_def", "increment"),
+                Source("risuai", "risuai_character_def", "increment"),
+                Source("webring", "webring_character_def", "card_data_hash"),
+            ]);
 
     public static Option<DefinitionLookup> ForKey(string? key)
     {
@@ -37,6 +38,6 @@ internal sealed record DefinitionLookup(string Table, string KeyColumn, string K
             : Option<DefinitionLookup>.None;
     }
 
-    private static KeyValuePair<string, (string, string)> Source(string source, string table, string keyColumn) =>
+    private static KeyValuePair<string, (string Table, string KeyColumn)> Source(string source, string table, string keyColumn) =>
         new(source, (table, keyColumn));
 }

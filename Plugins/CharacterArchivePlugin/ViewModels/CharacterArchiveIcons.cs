@@ -8,6 +8,6 @@ public static class CharacterArchiveIcons
 {
     /// <summary>A simple portrait bust — head over shoulders.</summary>
     public const string Character =
-        "M12,12 A5,5 0 1 0 12,2 A5,5 0 0 0 12,12 Z " +   // head
-        "M3,22 C3,16.5 7,14 12,14 C17,14 21,16.5 21,22 Z"; // shoulders
+        "M12,12 A5,5 0 1 0 12,2 A5,5 0 0 0 12,12 Z " +
+        "M3,22 C3,16.5 7,14 12,14 C17,14 21,16.5 21,22 Z";
 }

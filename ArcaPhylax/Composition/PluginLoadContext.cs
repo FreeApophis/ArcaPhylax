@@ -3,14 +3,9 @@ using System.Runtime.Loader;
 
 namespace ArcaPhylax.Composition;
 
-class PluginLoadContext : AssemblyLoadContext
+internal class PluginLoadContext(string pluginPath) : AssemblyLoadContext
 {
-    private AssemblyDependencyResolver _resolver;
-
-    public PluginLoadContext(string pluginPath)
-    {
-        _resolver = new AssemblyDependencyResolver(pluginPath);
-    }
+    private readonly AssemblyDependencyResolver _resolver = new(pluginPath);
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {

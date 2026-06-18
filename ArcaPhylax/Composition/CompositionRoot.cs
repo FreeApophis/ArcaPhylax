@@ -7,7 +7,6 @@ using ArcaPhylax.Services;
 using ArcaPhylax.ViewModels;
 using ArcaPhylax.Views;
 using Autofac;
-using System.Reflection;
 
 namespace ArcaPhylax.Composition;
 

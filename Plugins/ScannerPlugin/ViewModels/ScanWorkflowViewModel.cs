@@ -1,10 +1,5 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using ArcaPhylax.Abstractions;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
@@ -43,7 +38,9 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
     }
 
     public string Title => "Scan";
+
     public string Icon => ScannerIcons.Scan;
+
     public int NavigationWeight => 80;
 
     /// <summary>Set by the view so the file pickers have a parent window.</summary>
@@ -65,8 +62,27 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
     public string DeviceDisplay => Settings.SelectedDevice?.Name ?? "No scanner configured (see Configuration)";
 
     public bool CanScan => Settings.SelectedDevice is not null && Settings.SelectedProfile is not null && !IsScanning;
+
     public bool HasSelection => Pages.Any(p => p.IsSelected);
+
     public bool CanSave => HasSelection && !IsScanning;
+
+    public void Dispose()
+    {
+        Settings.PropertyChanged -= OnSettingsChanged;
+
+        foreach (var page in Pages)
+        {
+            page.PropertyChanged -= OnPageChanged;
+            page.Dispose();
+        }
+
+        Pages.Clear();
+
+        _scanCts?.Cancel();
+        _scanCts?.Dispose();
+        _scanningContext.Dispose();
+    }
 
     partial void OnIsScanningChanged(bool value)
     {
@@ -180,7 +196,7 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
             return;
         }
 
-        var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        using var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Save PDF",
             SuggestedFileName = SafeBaseName() + ".pdf",
@@ -309,22 +325,5 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
         {
             return null;
         }
-    }
-
-    public void Dispose()
-    {
-        Settings.PropertyChanged -= OnSettingsChanged;
-
-        foreach (var page in Pages)
-        {
-            page.PropertyChanged -= OnPageChanged;
-            page.Dispose();
-        }
-
-        Pages.Clear();
-
-        _scanCts?.Cancel();
-        _scanCts?.Dispose();
-        _scanningContext.Dispose();
     }
 }

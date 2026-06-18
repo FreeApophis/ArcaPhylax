@@ -17,7 +17,7 @@ public sealed class ProcessCommandRunner() : ICommandRunner
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
 
         using var process = new Process { StartInfo = psi };

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using NAPS2.Images;
 using NAPS2.Scan;
@@ -14,14 +13,6 @@ namespace ScannerPlugin.Services;
 /// </summary>
 public sealed partial class ScannerSettings : ObservableObject
 {
-    public ObservableCollection<ScannerProfile> Profiles { get; } = new();
-
-    [ObservableProperty]
-    public partial ScanDevice? SelectedDevice { get; set; }
-
-    [ObservableProperty]
-    public partial ScannerProfile? SelectedProfile { get; set; }
-
     public ScannerSettings()
     {
         Profiles.Add(new ScannerProfile
@@ -43,4 +34,12 @@ public sealed partial class ScannerSettings : ObservableObject
 
         SelectedProfile = Profiles.FirstOrDefault();
     }
+
+    public ObservableCollection<ScannerProfile> Profiles { get; } = [];
+
+    [ObservableProperty]
+    public partial ScanDevice? SelectedDevice { get; set; }
+
+    [ObservableProperty]
+    public partial ScannerProfile? SelectedProfile { get; set; }
 }

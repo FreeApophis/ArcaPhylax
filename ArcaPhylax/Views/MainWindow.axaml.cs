@@ -1,8 +1,8 @@
+using ArcaPhylax.ViewModels;
+using Autofac;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Autofac;
-using ArcaPhylax.ViewModels;
 
 namespace ArcaPhylax.Views;
 
@@ -24,7 +24,8 @@ public partial class MainWindow : Window
         }
     }
 
-    public MainWindow(IComponentContext ctx) : this()
+    public MainWindow(IComponentContext ctx)
+        : this()
         => DataContext = ctx.Resolve<MainWindowViewModel>();
 
     private void MoveHighlight()
@@ -49,9 +50,20 @@ public partial class MainWindow : Window
         var transform = (TranslateTransform)NavHighlight.RenderTransform!;
 
         // Guard each assignment so LayoutUpdated does not thrash layout in a loop.
-        if (NavHighlight.Height != container.Bounds.Height) NavHighlight.Height = container.Bounds.Height;
-        if (transform.Y != top.Y) transform.Y = top.Y;
-        if (!NavHighlight.IsVisible) NavHighlight.IsVisible = true;
+        if (NavHighlight.Height != container.Bounds.Height)
+        {
+            NavHighlight.Height = container.Bounds.Height;
+        }
+
+        if (transform.Y != top.Y)
+        {
+            transform.Y = top.Y;
+        }
+
+        if (!NavHighlight.IsVisible)
+        {
+            NavHighlight.IsVisible = true;
+        }
     }
 
     private Control? SelectedContainer()

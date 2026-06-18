@@ -12,7 +12,7 @@ public sealed class CharacterArchiveViewModelTagFilterTests
     {
         // Arrange
         var repository = new FakeCharacterRepository();
-        var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
+        using var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
 
         // Act
         await viewModel.AddTagCommand.ExecuteAsync("fantasy");
@@ -26,7 +26,7 @@ public sealed class CharacterArchiveViewModelTagFilterTests
     {
         // Arrange
         var repository = new FakeCharacterRepository();
-        var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
+        using var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
         await viewModel.AddTagCommand.ExecuteAsync("fantasy");
 
         // Act
@@ -41,7 +41,7 @@ public sealed class CharacterArchiveViewModelTagFilterTests
     {
         // Arrange
         var repository = new FakeCharacterRepository();
-        var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
+        using var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
         await viewModel.AddTagCommand.ExecuteAsync("fantasy");
         await viewModel.AddTagCommand.ExecuteAsync("female");
 
@@ -59,7 +59,7 @@ public sealed class CharacterArchiveViewModelTagFilterTests
         var repository = new FakeCharacterRepository();
         repository.Tags.Add(new TagOption("fantasy", 10));
         repository.Tags.Add(new TagOption("female", 8));
-        var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
+        using var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
         await viewModel.InitializeAsync();
 
         // Act
@@ -74,7 +74,7 @@ public sealed class CharacterArchiveViewModelTagFilterTests
     {
         // Arrange
         var repository = new FakeCharacterRepository();
-        var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
+        using var viewModel = new CharacterArchiveViewModel(repository, new FakeImageStore());
         await viewModel.AddTagCommand.ExecuteAsync("fantasy");
 
         // Act

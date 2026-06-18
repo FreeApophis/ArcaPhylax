@@ -20,39 +20,35 @@ namespace CharacterArchivePlugin.ViewModels;
 // must resolve to the plugin's own CommunityToolkit.Mvvm copy. Inheriting ViewModelBase (in the
 // shared Abstractions assembly) binds the base to the host's copy instead, causing a cross-context
 // MethodAccessException when a generated setter runs.
-public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabContentViewModel
+public sealed partial class CharacterArchiveViewModel(ICharacterRepository repository, IImageStore images) : ObservableObject, ITabContentViewModel, IDisposable
 {
     private const int ResultLimit = 2000;
     private const int ThumbnailWidth = 160;
     private const int TagPickerLimit = 20;
     private static readonly TimeSpan DebounceDelay = TimeSpan.FromMilliseconds(300);
 
-    private readonly ICharacterRepository _repository;
-    private readonly IImageStore _images;
+    private readonly ICharacterRepository _repository = repository;
+    private readonly IImageStore _images = images;
 
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _tagFilterCts;
 
-    public CharacterArchiveViewModel(ICharacterRepository repository, IImageStore images)
-    {
-        _repository = repository;
-        _images = images;
-    }
-
     public string Title => "Character Archive";
+
     public string Icon => CharacterArchiveIcons.Character;
+
     public int NavigationWeight => 25;
 
     /// <summary>Set by the view so the download save picker has a parent window.</summary>
     public TopLevel? HostTopLevel { get; set; }
 
-    public ObservableCollection<CharacterTileVm> Results { get; } = new();
+    public ObservableCollection<CharacterTileVm> Results { get; } = [];
 
     /// <summary>Active tag filters; results must carry every one (AND).</summary>
-    public ObservableCollection<string> SelectedTags { get; } = new();
+    public ObservableCollection<string> SelectedTags { get; } = [];
 
     /// <summary>Pickable tags (popular, or matching <see cref="TagFilter"/>), excluding selected ones.</summary>
-    public ObservableCollection<TagOption> AvailableTags { get; } = new();
+    public ObservableCollection<TagOption> AvailableTags { get; } = [];
 
     [ObservableProperty]
     public partial string SearchText { get; set; } = string.Empty;
@@ -80,7 +76,22 @@ public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabCo
 
     /// <summary>Drives the V1/V2 ribbon overlay on the selected card's image.</summary>
     public bool IsSelectedV1 => SelectedSpec == CardSpec.V1;
+
     public bool IsSelectedV2 => SelectedSpec == CardSpec.V2;
+
+    /// <summary>Loads the initial tag picker the first time the tab is shown.</summary>
+    public Task InitializeAsync()
+        => AvailableTags.Count == 0
+            ? LoadAvailableTagsAsync(CancellationToken.None)
+            : Task.CompletedTask;
+
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _tagFilterCts?.Cancel();
+        _tagFilterCts?.Dispose();
+    }
 
     partial void OnSearchTextChanged(string value) => _ = DebouncedSearchAsync();
 
@@ -95,10 +106,6 @@ public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabCo
     }
 
     partial void OnTagFilterChanged(string value) => _ = DebouncedTagReloadAsync();
-
-    /// <summary>Loads the initial tag picker the first time the tab is shown.</summary>
-    public Task InitializeAsync() =>
-        AvailableTags.Count == 0 ? LoadAvailableTagsAsync(CancellationToken.None) : Task.CompletedTask;
 
     [RelayCommand]
     private async Task AddTag(string? tag)
@@ -138,6 +145,7 @@ public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabCo
     private async Task DebouncedTagReloadAsync()
     {
         _tagFilterCts?.Cancel();
+        _tagFilterCts?.Dispose();
         var cts = new CancellationTokenSource();
         _tagFilterCts = cts;
 
@@ -180,6 +188,7 @@ public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabCo
     private async Task DebouncedSearchAsync()
     {
         _searchCts?.Cancel();
+        _searchCts?.Dispose();
         var cts = new CancellationTokenSource();
         _searchCts = cts;
 
@@ -276,7 +285,7 @@ public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabCo
             return;
         }
 
-        var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        using var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Download Character Card",
             SuggestedFileName = $"{SafeFileName(detail.Name)}.png",

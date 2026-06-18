@@ -1,39 +1,43 @@
 <Project>
-	<PropertyGroup>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	</PropertyGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
 
-	<ItemGroup Label="Avalonia">
-		<PackageVersion Include="Avalonia" Version="12.0.0" />
-		<PackageVersion Include="Avalonia.Desktop" Version="12.0.0" />
-		<!-- Fix a vulnerable dependency -->
-		<PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
-		<PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.0" />
-		<PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
-		<PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
-		<PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-	</ItemGroup>
+  <ItemGroup Label="Analyzers">
+    <PackageVersion Include="Polyadic.CodeStyle" Version="1.1.0" />
+  </ItemGroup>
 
-	<ItemGroup Label="Runtime">
-		<PackageVersion Include="Autofac" Version="9.1.0" />
-		<PackageVersion Include="Dapper" Version="2.1.72" />
-		<PackageVersion Include="Serilog" Version="4.3.1" />
-		<PackageVersion Include="Funcky" Version="3.6.0" />
-		<PackageVersion Include="ComputeSharp" Version="3.2.0" />
-		<PackageVersion Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.2.26159.112" />
-		<PackageVersion Include="Npgsql" Version="10.0.1" />
+  <ItemGroup Label="Avalonia">
+    <PackageVersion Include="Avalonia" Version="12.0.0" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.0.0" />
+    <!-- Fix a vulnerable dependency -->
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.0" />
+    <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
 
-		<PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
+  <ItemGroup Label="Runtime">
+    <PackageVersion Include="Autofac" Version="9.1.0" />
+    <PackageVersion Include="Dapper" Version="2.1.72" />
+    <PackageVersion Include="Serilog" Version="4.3.1" />
+    <PackageVersion Include="Funcky" Version="3.6.0" />
+    <PackageVersion Include="ComputeSharp" Version="3.2.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.2.26159.112" />
+    <PackageVersion Include="Npgsql" Version="10.0.1" />
 
-		<PackageVersion Include="NAPS2.Sdk" Version="1.2.1" />
-		<PackageVersion Include="NAPS2.Sdk.Worker.Win32" Version="1.2.1" />
-		<PackageVersion Include="NAPS2.Images.ImageSharp" Version="1.2.1" />
-	</ItemGroup>
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
 
-	<ItemGroup Label="Testing">
-		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
-		<PackageVersion Include="xunit" Version="2.9.3" />
-		<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
-		<PackageVersion Include="FsCheck.Xunit" Version="3.3.0" />
-	</ItemGroup>
+    <PackageVersion Include="NAPS2.Sdk" Version="1.2.1" />
+    <PackageVersion Include="NAPS2.Sdk.Worker.Win32" Version="1.2.1" />
+    <PackageVersion Include="NAPS2.Images.ImageSharp" Version="1.2.1" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="FsCheck.Xunit" Version="3.3.0" />
+  </ItemGroup>
 </Project>

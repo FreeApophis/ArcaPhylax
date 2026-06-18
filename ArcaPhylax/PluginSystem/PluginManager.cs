@@ -1,11 +1,9 @@
-﻿using ArcaPhylax.Abstractions;
+﻿using System.Reflection;
+using ArcaPhylax.Abstractions;
 using Autofac;
-using Autofac.Core.Activators;
 using Autofac.Features.Metadata;
 using Funcky.Extensions;
 using Funcky.Monads;
-using HarfBuzzSharp;
-using System.Reflection;
 using static Funcky.Functional;
 
 namespace ArcaPhylax.PluginSystem;
@@ -14,36 +12,8 @@ public sealed class PluginManager
 {
     private readonly ILifetimeScope _hostLifeTimeScope;
     private readonly HashSet<string> _sharedAssemblyNames;
-    private readonly List<LoadedPlugin> _loadedPlugins = new();
+    private readonly List<LoadedPlugin> _loadedPlugins = [];
     private readonly Func<string, Option<string>> _toPluginDllComposition = Fn(ToPluginDllOrNone).Compose(Fn(PluginDllFromName)).Compose(Fn(PluginName));
-
-    public IEnumerable<ITabContentViewModel> AllTabs => FindAllTab();
-
-    public IEnumerable<IConfigurationSection> AllConfigurationSections => FindAll<IConfigurationSection>();
-
-    private IEnumerable<ITabContentViewModel> FindAllTab() => FindAll<ITabContentViewModel>();
-
-    // Yields every contribution of <typeparamref name="T"/> from the host scope plus each plugin
-    // scope. Plugin scopes are children of the host scope, so they also see host registrations;
-    // the "Host" metadata marks those so they are not yielded twice.
-    private IEnumerable<T> FindAll<T>() where T : notnull
-    {
-        foreach (var contribution in _hostLifeTimeScope.Resolve<IEnumerable<T>>())
-        {
-            yield return contribution;
-        }
-
-        foreach (var loadedPlugin in _loadedPlugins)
-        {
-            foreach (var meta in loadedPlugin.Scope.Resolve<IEnumerable<Meta<T>>>())
-            {
-                if (!meta.Metadata.TryGetValue("Source", out var source) || source is not "Host")
-                {
-                    yield return meta.Value;
-                }
-            }
-        }
-    }
 
     public PluginManager(ILifetimeScope hostLifetimeScope)
     {
@@ -52,9 +22,13 @@ public sealed class PluginManager
         _sharedAssemblyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             typeof(IPlugin).Assembly.GetName().Name!,          // Shared Abstractions
-            typeof(ContainerBuilder).Assembly.GetName().Name! // Autofac
+            typeof(ContainerBuilder).Assembly.GetName().Name!, // Autofac
         };
     }
+
+    public IEnumerable<ITabContentViewModel> AllTabs => FindAllTab();
+
+    public IEnumerable<IConfigurationSection> AllConfigurationSections => FindAll<IConfigurationSection>();
 
     public async Task<LoadedPlugin> LoadAsync(string pluginMainAssemblyPath, CancellationToken cancellationToken = default)
     {
@@ -85,7 +59,11 @@ public sealed class PluginManager
     {
         WeakReference weakRef = plugin.LoadContextWeakReference;
 
+        // Unloading a plugin is exactly this method's job, so disposing the passed-in plugin is the
+        // intended contract rather than an accidental dispose of an injected dependency.
+#pragma warning disable IDISP007 // Don't dispose injected
         await plugin.DisposeAsync();
+#pragma warning restore IDISP007 // Don't dispose injected
 
         for (int i = 0; weakRef.IsAlive && i < 10; i++)
         {
@@ -105,7 +83,6 @@ public sealed class PluginManager
             return hostInstance;
         }
 
-
         foreach (var loadedPlugin in _loadedPlugins)
         {
             if (loadedPlugin.Scope.TryResolve(serviceType, out var pluginInstance))
@@ -120,6 +97,31 @@ public sealed class PluginManager
     internal async Task LoadAllPluginsAsync()
     {
         _loadedPlugins.AddRange(await Task.WhenAll(LoadPlugins()));
+    }
+
+    private IEnumerable<ITabContentViewModel> FindAllTab() => FindAll<ITabContentViewModel>();
+
+    // Yields every contribution of <typeparamref name="T"/> from the host scope plus each plugin
+    // scope. Plugin scopes are children of the host scope, so they also see host registrations;
+    // the "Host" metadata marks those so they are not yielded twice.
+    private IEnumerable<T> FindAll<T>()
+        where T : notnull
+    {
+        foreach (var contribution in _hostLifeTimeScope.Resolve<IEnumerable<T>>())
+        {
+            yield return contribution;
+        }
+
+        foreach (var loadedPlugin in _loadedPlugins)
+        {
+            foreach (var meta in loadedPlugin.Scope.Resolve<IEnumerable<Meta<T>>>())
+            {
+                if (!meta.Metadata.TryGetValue("Source", out var source) || source is not "Host")
+                {
+                    yield return meta.Value;
+                }
+            }
+        }
     }
 
     private IEnumerable<Task<LoadedPlugin>> LoadPlugins()
@@ -138,5 +140,4 @@ public sealed class PluginManager
 
     private static string PluginName(string dir)
         => new DirectoryInfo(dir).Name;
-
 }

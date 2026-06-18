@@ -10,9 +10,11 @@ namespace CharacterArchivePlugin.Tests.Fakes;
 internal sealed class FakeCharacterRepository : ICharacterRepository
 {
     public string? LastSearchQuery { get; private set; }
+
     public IReadOnlyCollection<string>? LastSearchTags { get; private set; }
 
     public List<CharacterTile> Tiles { get; } = [];
+
     public List<TagOption> Tags { get; } = [];
 
     public IEnumerable<CharacterTile> Search(string? query, IReadOnlyCollection<string> tags, int limit)

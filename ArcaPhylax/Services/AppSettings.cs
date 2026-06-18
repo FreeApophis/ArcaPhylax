@@ -1,15 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ArcaPhylax.Services
-{
+namespace ArcaPhylax.Services;
 
-    /// <summary>
-    /// Session-wide settings shared between pages. A single instance is created by the shell and
-    /// handed to every page view-model, so a change made on Configure is seen instantly on Index/Search.
-    /// </summary>
-    public partial class AppSettings : ObservableObject
-    {
-        [ObservableProperty]
-        public partial AppTheme Theme { get; set; } = AppTheme.System;
-    }
+/// <summary>
+/// Session-wide settings shared between pages. A single instance is created by the shell and
+/// handed to every page view-model, so a change made on Configure is seen instantly on Index/Search.
+/// </summary>
+public partial class AppSettings : ObservableObject
+{
+    [ObservableProperty]
+    public partial AppTheme Theme { get; set; } = AppTheme.System;
 }

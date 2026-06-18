@@ -3,11 +3,6 @@ using Dapper;
 
 namespace ArcaPhylax.Data;
 
-public interface IDbInitializer
-{
-    void EnsureCreatedAndSeed();
-}
-
 public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
 {
     private const string Schema = """
@@ -166,7 +161,6 @@ public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
         END;
         """;
 
-
     public void EnsureCreatedAndSeed()
     {
         // Postgres provisioning is background, best-effort infrastructure (it handles its own
@@ -175,7 +169,7 @@ public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
         EnusureSqLite();
     }
 
-    private async Task EnsurePostgresAsync()
+    private static async Task EnsurePostgresAsync()
     {
         var os = new RuntimeOperatingSystemInfo();
         var runner = new ProcessCommandRunner();
@@ -188,14 +182,10 @@ public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
             PreferredVersion = "16",
             UseSudo = true,
             UseDefaultLinuxPackage = true,
-            Windows = new WindowsInstallerOptions
-            {
-                SuperuserPassword = "ArcaPhylax",
-            }
+            Windows = new WindowsInstallerOptions { SuperuserPassword = "ArcaPhylax" },
         };
 
         var provisioner = new PostgresProvisioner(detector, installer, options);
-
 
         try
         {
@@ -231,9 +221,15 @@ public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
         insert.Transaction = tx;
         insert.CommandText = "INSERT INTO Documents (Title, Kind, Subtitle) VALUES ($t,$k,$s);";
 
-        var pT = insert.CreateParameter(); pT.ParameterName = "$t"; insert.Parameters.Add(pT);
-        var pK = insert.CreateParameter(); pK.ParameterName = "$k"; insert.Parameters.Add(pK);
-        var pS = insert.CreateParameter(); pS.ParameterName = "$s"; insert.Parameters.Add(pS);
+        var pT = insert.CreateParameter();
+        pT.ParameterName = "$t";
+        insert.Parameters.Add(pT);
+        var pK = insert.CreateParameter();
+        pK.ParameterName = "$k";
+        insert.Parameters.Add(pK);
+        var pS = insert.CreateParameter();
+        pS.ParameterName = "$s";
+        insert.Parameters.Add(pS);
 
         // Seed 10k mixed tiles (fast enough for demo)
         string[] kinds = ["Image", "Document", "Video"];
@@ -248,7 +244,7 @@ public sealed class DbInitializer(ISqliteConnectionFactory db) : IDbInitializer
             {
                 "Image" => $"{rnd.Next(800, 6000)}×{rnd.Next(600, 4000)} • PNG",
                 "Video" => $"{rnd.Next(1, 180)} min • H.264",
-                _ => $"{rnd.Next(1, 420)} pages • PDF"
+                _ => $"{rnd.Next(1, 420)} pages • PDF",
             };
             insert.ExecuteNonQuery();
         }

@@ -31,6 +31,7 @@ public sealed partial class CharacterArchiveConfigurationViewModel : ObservableO
     }
 
     public string Title => "Character Archive";
+
     public int Order => 90;
 
     public CharacterArchiveSettings Settings { get; }

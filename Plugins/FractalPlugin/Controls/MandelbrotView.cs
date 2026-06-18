@@ -11,10 +11,9 @@ using FractalPlugin.Shaders;
 
 namespace FractalPlugin.Controls;
 
-public sealed class MandelbrotView : Control
+public sealed class MandelbrotView : Control, IDisposable
 {
     // ---- Public (bindable) properties ----
-
     public static readonly StyledProperty<double> CenterXProperty =
         AvaloniaProperty.Register<MandelbrotView, double>(nameof(CenterX), -0.5);
 
@@ -29,6 +28,44 @@ public sealed class MandelbrotView : Control
 
     public static readonly StyledProperty<int> MaxIterationsProperty =
         AvaloniaProperty.Register<MandelbrotView, int>(nameof(MaxIterations), 500);
+
+    // ---- Rendering state ----
+    private readonly DispatcherTimer _debounce;
+    private WriteableBitmap? _bmp;
+    private string? _error;
+    private CancellationTokenSource? _cts;
+
+    // Interaction state
+    private bool _panning;
+    private Point _panStart;
+    private double _startCx;
+    private double _startCy;
+
+    public MandelbrotView()
+    {
+        ClipToBounds = true;
+
+        _debounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(60) };
+        _debounce.Tick += (_, _) =>
+        {
+            _debounce.Stop();
+            _ = RebuildBitmapAsync();
+        };
+
+        // Input
+        AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
+        AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
+        AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);
+        AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
+
+        RequestRebuild();
+    }
+
+    static MandelbrotView()
+    {
+        AffectsRender<MandelbrotView>(CenterXProperty, CenterYProperty, ScaleProperty, MaxIterationsProperty);
+        /* If you want *only* bitmap redraw (not immediate render invalidate), we will also hook changes below. */
+    }
 
     public double CenterX
     {
@@ -52,53 +89,6 @@ public sealed class MandelbrotView : Control
     {
         get => GetValue(MaxIterationsProperty);
         set => SetValue(MaxIterationsProperty, value);
-    }
-
-    // ---- Rendering state ----
-
-    private WriteableBitmap? _bmp;
-    private string? _error;
-    private CancellationTokenSource? _cts;
-    private readonly DispatcherTimer _debounce;
-
-    // Interaction state
-    private bool _panning;
-    private Point _panStart;
-    private double _startCx, _startCy;
-
-    static MandelbrotView()
-    {
-        AffectsRender<MandelbrotView>(CenterXProperty, CenterYProperty, ScaleProperty, MaxIterationsProperty);
-        // If you want *only* bitmap redraw (not immediate render invalidate), we will also hook changes below.
-    }
-
-    public MandelbrotView()
-    {
-        ClipToBounds = true;
-
-        _debounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(60) };
-        _debounce.Tick += (_, _) =>
-        {
-            _debounce.Stop();
-            _ = RebuildBitmapAsync();
-        };
-
-        // Re-render when size changes
-        //this.GetObservable(BoundsProperty).Subscribe(_ => RequestRebuild());
-
-        // Rebuild when fractal params change
-        //this.GetObservable(CenterXProperty).Subscribe(_ => RequestRebuild());
-        //this.GetObservable(CenterYProperty).Subscribe(_ => RequestRebuild());
-        //this.GetObservable(ScaleProperty).Subscribe(_ => RequestRebuild());
-        //this.GetObservable(MaxIterationsProperty).Subscribe(_ => RequestRebuild());
-
-        // Input
-        AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
-        AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
-        AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);
-        AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
-
-        RequestRebuild();
     }
 
     public override void Render(DrawingContext context)
@@ -128,6 +118,16 @@ public sealed class MandelbrotView : Control
         }
     }
 
+    public void Dispose()
+    {
+        _debounce.Stop();
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        _bmp?.Dispose();
+        _bmp = null;
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -142,6 +142,15 @@ public sealed class MandelbrotView : Control
         }
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+
+        // Avalonia never disposes controls, so release the native render resources on detach. A
+        // later re-attach re-triggers RequestRebuild, which recreates the timer/CTS/bitmap state.
+        Dispose();
+    }
+
     private void RequestRebuild()
     {
         // debounce rapid changes (wheel, drag, resize)
@@ -153,7 +162,10 @@ public sealed class MandelbrotView : Control
     {
         var w = (int)Math.Max(1, Math.Floor(Bounds.Width));
         var h = (int)Math.Max(1, Math.Floor(Bounds.Height));
-        if (w <= 1 || h <= 1) return;
+        if (w <= 1 || h <= 1)
+        {
+            return;
+        }
 
         // Cancel prior render
         _cts?.Cancel();
@@ -169,22 +181,27 @@ public sealed class MandelbrotView : Control
 
         // ComputeSharp's Rgba32 stores bytes in R,G,B,A order, so use a matching bitmap format
         // and the readback becomes a straight row-by-row copy.
-        WriteableBitmap bmp = new(
-            new PixelSize(w, h),
-            new Vector(96, 96),
-            PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
+        WriteableBitmap bmp = new(new PixelSize(w, h), new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Unpremul);
+        var adopted = false;
 
         try
         {
             await Task.Run(() => RenderMandelbrot(bmp, cx, cy, scale, maxIt, token), token);
-            if (!token.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
-                _bmp = bmp;
-                _error = null;
-                // Ask Avalonia to redraw with the finished bitmap
-                await Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
+                return;
             }
+
+            // Swap in the finished frame and release the one it replaces. We are back on the UI
+            // thread here, the same thread Render() draws on, so the old bitmap is no longer in use.
+            var previous = _bmp;
+            _bmp = bmp;
+            adopted = true;
+            _error = null;
+            previous?.Dispose();
+
+            // Ask Avalonia to redraw with the finished bitmap
+            await Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
         }
         catch (OperationCanceledException)
         {
@@ -192,9 +209,19 @@ public sealed class MandelbrotView : Control
         }
         catch (Exception ex)
         {
+            var previous = _bmp;
             _bmp = null;
+            previous?.Dispose();
             _error = $"GPU render failed: {ex.Message}";
             await Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
+        }
+        finally
+        {
+            // Any frame we did not hand off to _bmp (cancelled or failed) is ours to release.
+            if (!adopted)
+            {
+                bmp.Dispose();
+            }
         }
     }
 
@@ -242,13 +269,12 @@ public sealed class MandelbrotView : Control
             byte* srcBytes = (byte*)src;
             for (int y = 0; y < h; y++)
             {
-                Buffer.MemoryCopy(srcBytes + y * rowBytes, basePtr + y * stride, rowBytes, rowBytes);
+                Buffer.MemoryCopy(srcBytes + (y * rowBytes), basePtr + (y * stride), rowBytes, rowBytes);
             }
         }
     }
 
     // ---- Interaction ----
-
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -274,15 +300,18 @@ public sealed class MandelbrotView : Control
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (!_panning) return;
+        if (!_panning)
+        {
+            return;
+        }
 
         var p = e.GetPosition(this);
         var dx = p.X - _panStart.X;
         var dy = p.Y - _panStart.Y;
 
         // Dragging right should move view right (i.e. centerX decreases because pixels map to +re)
-        CenterX = _startCx - dx * Scale;
-        CenterY = _startCy - dy * Scale;
+        CenterX = _startCx - (dx * Scale);
+        CenterY = _startCy - (dy * Scale);
 
         RequestRebuild();
         e.Handled = true;
@@ -291,20 +320,26 @@ public sealed class MandelbrotView : Control
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         var delta = e.Delta.Y;
-        if (Math.Abs(delta) < 0.01) return;
+        if (Math.Abs(delta) < 0.01)
+        {
+            return;
+        }
 
         var pos = e.GetPosition(this);
 
         int w = (int)Math.Max(1, Math.Floor(Bounds.Width));
         int h = (int)Math.Max(1, Math.Floor(Bounds.Height));
-        if (w <= 1 || h <= 1) return;
+        if (w <= 1 || h <= 1)
+        {
+            return;
+        }
 
         // Complex coordinate under cursor before zoom
         double halfW = w * 0.5;
         double halfH = h * 0.5;
 
-        double beforeRe = CenterX + (pos.X - halfW) * Scale;
-        double beforeIm = CenterY + (pos.Y - halfH) * Scale;
+        double beforeRe = CenterX + ((pos.X - halfW) * Scale);
+        double beforeIm = CenterY + ((pos.Y - halfH) * Scale);
 
         // Zoom factor
         // wheel up -> zoom in -> scale smaller
@@ -317,8 +352,8 @@ public sealed class MandelbrotView : Control
         Scale = newScale;
 
         // Complex coordinate under cursor after zoom, adjust center to keep same point under cursor
-        double afterRe = CenterX + (pos.X - halfW) * Scale;
-        double afterIm = CenterY + (pos.Y - halfH) * Scale;
+        double afterRe = CenterX + ((pos.X - halfW) * Scale);
+        double afterIm = CenterY + ((pos.Y - halfH) * Scale);
 
         CenterX += (beforeRe - afterRe);
         CenterY += (beforeIm - afterIm);

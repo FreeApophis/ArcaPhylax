@@ -50,10 +50,6 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
     private const string DefinitionSqlTemplate =
         """SELECT definition::text FROM public.{0} WHERE {1}::text = @pk LIMIT 1;""";
 
-    private sealed record CharacterRow(
-        string Key, string Source, string Name, string Author, string Summary, string Description,
-        string ImageHash, string TagsText);
-
     public IEnumerable<CharacterTile> Search(string? query, IReadOnlyCollection<string> tags, int limit)
     {
         using var connection = db.Create();
@@ -103,6 +99,15 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
     }
 
     private static Character ToCharacter(CharacterRow row) =>
-        new(row.Key, row.Source, row.Name, row.Author, row.Summary, row.Description, row.ImageHash,
-            row.TagsText.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+        new(row.Key, row.Source, row.Name, row.Author, row.Summary, row.Description, row.ImageHash, row.TagsText.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+
+    private sealed record CharacterRow(
+        string Key,
+        string Source,
+        string Name,
+        string Author,
+        string Summary,
+        string Description,
+        string ImageHash,
+        string TagsText);
 }

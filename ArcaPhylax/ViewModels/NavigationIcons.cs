@@ -9,7 +9,7 @@ namespace ArcaPhylax.ViewModels;
 public static class NavigationIcons
 {
     /// <summary>
-    /// Two rectangles side by side — the dashboard. The left one is slightly narrower to create
+    /// Two rectangles side by side — the dashboard. The left one is slightly narrower to create.
     /// </summary>
     public const string Dashboard =
         "M3,5 H10 V19 H3 Z M12,5 H21 V19 H12 Z";

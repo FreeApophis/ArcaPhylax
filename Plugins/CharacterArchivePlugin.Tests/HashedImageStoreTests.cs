@@ -50,10 +50,10 @@ public sealed class HashedImageStoreTests
     }
 
     [Theory]
-    [InlineData("")]                                    // empty
-    [InlineData("0123456789abcdef0123456789abcde")]     // 31 chars
-    [InlineData("0123456789abcdef0123456789abcdef0")]   // 33 chars
-    [InlineData("0123456789abcdef0123456789abcdeg")]    // non-hex 'g'
+    [InlineData("")] // empty
+    [InlineData("0123456789abcdef0123456789abcde")] // 31 chars
+    [InlineData("0123456789abcdef0123456789abcdef0")] // 33 chars
+    [InlineData("0123456789abcdef0123456789abcdeg")] // non-hex 'g'
     public void RelativePathForHash_GivenMalformedHash_ReturnsNone(string hash)
     {
         // Act
