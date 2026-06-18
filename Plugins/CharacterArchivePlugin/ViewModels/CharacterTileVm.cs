@@ -13,7 +13,7 @@ public sealed partial class CharacterTileVm : ObservableObject
     private readonly IImageStore _images;
 
     [ObservableProperty]
-    private Bitmap? _thumbnail;
+    public partial Bitmap? Thumbnail { get; set; }
 
     public CharacterTileVm(CharacterTile tile, IImageStore images)
     {

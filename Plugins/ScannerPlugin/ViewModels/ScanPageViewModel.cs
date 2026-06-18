@@ -16,12 +16,11 @@ public partial class ScanPageViewModel : ObservableObject, IDisposable
 
     public ProcessedImage ProcessedImage { get; }
 
-    [ObservableProperty] 
-    private bool isSelected;
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
 
-    [ObservableProperty] 
-    private Bitmap? thumbnail;
-
+    [ObservableProperty]
+    public partial Bitmap? Thumbnail { get; set; }
     public string DisplayName { get; }
     public string Info { get; }
 

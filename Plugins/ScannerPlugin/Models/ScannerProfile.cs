@@ -21,19 +21,19 @@ public enum ScanPageSize
 public sealed partial class ScannerProfile : ObservableObject
 {
     [ObservableProperty]
-    private string _name = "New profile";
+    public partial string Name { get; set; } = "New profile";
 
     [ObservableProperty]
-    private int _dpi = 300;
+    public partial int Dpi { get; set; } = 300;
 
     [ObservableProperty]
-    private ScanPageSize _pageSize = ScanPageSize.A4;
+    public partial ScanPageSize PageSize { get; set; } = ScanPageSize.A4;
 
     [ObservableProperty]
-    private PaperSource _paperSource = PaperSource.Flatbed;
+    public partial PaperSource PaperSource { get; set; } = PaperSource.Flatbed;
 
     [ObservableProperty]
-    private BitDepth _bitDepth = BitDepth.Color;
+    public partial BitDepth BitDepth { get; set; } = BitDepth.Color;
 
     public override string ToString() => Name;
 }

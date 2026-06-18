@@ -54,13 +54,13 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
     public ObservableCollection<ScanPageViewModel> Pages { get; }
 
     [ObservableProperty]
-    private string _fileName = "Scan";
+    public partial string FileName { get; set; } = "Scan";
 
     [ObservableProperty]
-    private string _status = "Pick a profile and press Scan.";
+    public partial string Status { get; set; } = "Pick a profile and press Scan.";
 
     [ObservableProperty]
-    private bool _isScanning;
+    public partial bool IsScanning { get; set; }
 
     public string DeviceDisplay => Settings.SelectedDevice?.Name ?? "No scanner configured (see Configuration)";
 

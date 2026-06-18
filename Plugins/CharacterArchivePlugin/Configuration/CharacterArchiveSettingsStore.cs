@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text.Json;
 
 namespace CharacterArchivePlugin.Configuration;
@@ -8,7 +9,13 @@ namespace CharacterArchivePlugin.Configuration;
 /// </summary>
 public sealed class CharacterArchiveSettingsStore
 {
-    private sealed record Persisted(string ConnectionString, string ImageRoot);
+    private sealed record Persisted(
+        string DatabaseHost,
+        int DatabasePort,
+        string DatabaseName,
+        string DatabaseUsername,
+        string DatabasePassword,
+        string ImageRoot);
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
@@ -28,7 +35,11 @@ public sealed class CharacterArchiveSettingsStore
             return;
         }
 
-        settings.ConnectionString = persisted.ConnectionString;
+        settings.DatabaseHost = persisted.DatabaseHost;
+        settings.DatabasePort = persisted.DatabasePort;
+        settings.DatabaseName = persisted.DatabaseName;
+        settings.DatabaseUsername = persisted.DatabaseUsername;
+        settings.DatabasePassword = persisted.DatabasePassword;
         if (!string.IsNullOrWhiteSpace(persisted.ImageRoot))
         {
             settings.ImageRoot = persisted.ImageRoot;
@@ -38,5 +49,5 @@ public sealed class CharacterArchiveSettingsStore
     public void Save(CharacterArchiveSettings settings) =>
         File.WriteAllText(
             _path,
-            JsonSerializer.Serialize(new Persisted(settings.ConnectionString, settings.ImageRoot), JsonOptions));
+            JsonSerializer.Serialize(new Persisted(settings.DatabaseHost, settings.DatabasePort, settings.DatabaseName, settings.DatabaseUsername, settings.DatabasePassword, settings.ImageRoot), JsonOptions));
 }

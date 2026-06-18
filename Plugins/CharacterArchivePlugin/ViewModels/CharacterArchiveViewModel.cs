@@ -55,26 +55,26 @@ public sealed partial class CharacterArchiveViewModel : ObservableObject, ITabCo
     public ObservableCollection<TagOption> AvailableTags { get; } = new();
 
     [ObservableProperty]
-    private string _searchText = string.Empty;
+    public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _tagFilter = string.Empty;
+    public partial string TagFilter { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string? _status;
+    public partial string? Status { get; set; }
 
     [ObservableProperty]
-    private CharacterTileVm? _selectedTile;
+    public partial CharacterTileVm? SelectedTile { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand))]
-    private Character? _selectedDetail;
+    public partial Character? SelectedDetail { get; set; }
 
     [ObservableProperty]
-    private Bitmap? _selectedImage;
+    public partial Bitmap? SelectedImage { get; set; }
 
     [ObservableProperty]
-    private CardSpec? _selectedSpec;
+    public partial CardSpec? SelectedSpec { get; set; }
 
     public bool HasSelection => SelectedDetail is not null;
 

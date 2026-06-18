@@ -36,7 +36,7 @@ public sealed partial class CharacterArchiveConfigurationViewModel : ObservableO
     public CharacterArchiveSettings Settings { get; }
 
     [ObservableProperty]
-    private string _status = "Enter a connection string and test it.";
+    public partial string Status { get; set; } = "Enter a connection string and test it.";
 
     [RelayCommand]
     private void Save()

@@ -7,9 +7,28 @@
   <StackPanel Spacing="10">
 
     <StackPanel Spacing="6">
-      <TextBlock Text="PostgreSQL connection string" FontWeight="SemiBold"/>
-      <TextBox Text="{Binding Settings.ConnectionString}"
-               PlaceholderText="Host=localhost;Port=5432;Database=char_archive;Username=postgres;Password=…"/>
+      <TextBlock Text="PostgreSQL host" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.DatabaseHost}" PlaceholderText="localhost"/>
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="PostgreSQL port" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.DatabasePort}"               PlaceholderText="5432"/>
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="PostgreSQL database name" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.DatabaseName}" PlaceholderText="char_archive"/>
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="PostgreSQL username" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.DatabaseUsername}" PlaceholderText="username"/>
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="PostgreSQL password" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.DatabasePassword}" PlaceholderText="password"/>
     </StackPanel>
 
     <StackPanel Spacing="6">

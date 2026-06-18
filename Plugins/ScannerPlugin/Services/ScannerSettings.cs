@@ -17,10 +17,10 @@ public sealed partial class ScannerSettings : ObservableObject
     public ObservableCollection<ScannerProfile> Profiles { get; } = new();
 
     [ObservableProperty]
-    private ScanDevice? _selectedDevice;
+    public partial ScanDevice? SelectedDevice { get; set; }
 
     [ObservableProperty]
-    private ScannerProfile? _selectedProfile;
+    public partial ScannerProfile? SelectedProfile { get; set; }
 
     public ScannerSettings()
     {

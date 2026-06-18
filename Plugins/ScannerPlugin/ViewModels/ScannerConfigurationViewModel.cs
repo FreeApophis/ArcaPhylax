@@ -48,7 +48,7 @@ public sealed partial class ScannerConfigurationViewModel : ObservableObject, IC
     public BitDepth[] BitDepths { get; } = Enum.GetValues<BitDepth>();
 
     [ObservableProperty]
-    private string _status = "Click Refresh to list connected scanners.";
+    public partial string Status { get; set; } = "Click Refresh to list connected scanners.";
 
     public bool HasSelectedProfile => Settings.SelectedProfile is not null;
 
