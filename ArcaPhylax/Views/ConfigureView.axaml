@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ArcaPhylax.ViewModels"
+             xmlns:abs="using:ArcaPhylax.Abstractions"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="560"
@@ -39,11 +40,11 @@
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:ConfigurationCard">
+          <DataTemplate x:DataType="abs:IConfigurationSection">
             <Border Classes="card">
               <StackPanel Spacing="12">
                 <TextBlock Classes="sectionTitle" Text="{Binding Title}"/>
-                <ContentControl Content="{Binding View}"/>
+                <ContentControl Content="{Binding}"/>
               </StackPanel>
             </Border>
           </DataTemplate>

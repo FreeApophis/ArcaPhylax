@@ -1,3 +1,4 @@
+using ArcaPhylax.Composition;
 using ArcaPhylax.Data;
 using ArcaPhylax.Views;
 using Avalonia;
@@ -11,6 +12,7 @@ public partial class App : Application
     private readonly IDbInitializer _dbInitializer = null!;
     private readonly IIndexingWorker _indexingWorker = null!;
     private readonly Func<MainWindow> _mainWindowFactory = null!;
+    private readonly ViewLocator _viewLocator = null!;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     /// <summary>Used by the runtime XAML loader and the designer; the app proper is resolved
@@ -22,11 +24,13 @@ public partial class App : Application
     public App(
         IDbInitializer dbInitializer,
         IIndexingWorker indexingWorker,
-        Func<MainWindow> mainWindowFactory)
+        Func<MainWindow> mainWindowFactory,
+        ViewLocator viewLocator)
     {
         _dbInitializer = dbInitializer;
         _indexingWorker = indexingWorker;
         _mainWindowFactory = mainWindowFactory;
+        _viewLocator = viewLocator;
     }
 
     public override void Initialize()
@@ -36,6 +40,9 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Resolve view-model -> view for content presented by data (e.g. configuration sections).
+            DataTemplates.Add(_viewLocator);
+
             // Ensure schema exists FIRST
             _dbInitializer.EnsureCreatedAndSeed();
 

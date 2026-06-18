@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using ArcaPhylax.Abstractions;
-using ArcaPhylax.Composition;
 using ArcaPhylax.PluginSystem;
 using ArcaPhylax.Services;
 using Avalonia;
@@ -11,13 +10,12 @@ namespace ArcaPhylax.ViewModels;
 /// <summary>The Configure page: theme plus configuration sections contributed by host/plugins.</summary>
 public partial class ConfigureViewModel : ViewModelBase, ITabContentViewModel
 {
-    public ConfigureViewModel(AppSettings settings, PluginManager pluginManager, IViewFactory views)
+    public ConfigureViewModel(AppSettings settings, PluginManager pluginManager)
     {
         Settings = settings;
 
         Sections = pluginManager.AllConfigurationSections
             .OrderBy(section => section.Order)
-            .Select(section => new ConfigurationCard(section.Title, views.Create(section)))
             .ToList();
 
         // Apply the chosen theme immediately and whenever it changes.
@@ -27,8 +25,11 @@ public partial class ConfigureViewModel : ViewModelBase, ITabContentViewModel
 
     public AppSettings Settings { get; }
 
-    /// <summary>Configuration sections rendered below the built-in Appearance card.</summary>
-    public IReadOnlyList<ConfigurationCard> Sections { get; }
+    /// <summary>
+    /// Configuration sections rendered below the built-in Appearance card. Each is a view model;
+    /// the Configure page's data template (the app <see cref="Composition.ViewLocator"/>) renders it.
+    /// </summary>
+    public IReadOnlyList<IConfigurationSection> Sections { get; }
 
     public AppTheme[] Themes { get; } = Enum.GetValues<AppTheme>();
 

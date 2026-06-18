@@ -24,6 +24,9 @@ public static class CompositionRoot
         // View factory: VM -> View (resolved via Autofac)
         builder.RegisterType<ViewFactory>().As<IViewFactory>().SingleInstance();
 
+        // Data template that renders configuration-section view models as their views.
+        builder.RegisterType<ViewLocator>().AsSelf().SingleInstance();
+
         // SQLite + repositories
         builder.RegisterType<SqliteConnectionFactory>().As<ISqliteConnectionFactory>().SingleInstance();
         builder.RegisterType<DbInitializer>().As<IDbInitializer>().SingleInstance();
