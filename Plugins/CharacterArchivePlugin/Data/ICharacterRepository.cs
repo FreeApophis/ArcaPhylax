@@ -5,12 +5,25 @@ namespace CharacterArchivePlugin.Data;
 public interface ICharacterRepository
 {
     /// <summary>
-    /// Up to <paramref name="limit"/> characters whose name matches <paramref name="query"/>
-    /// (case-insensitive) across every source. A null/blank query returns the first
-    /// <paramref name="limit"/> by name.
+    /// Up to <paramref name="limit"/> characters whose full-text matches <paramref name="query"/>
+    /// (a null/blank query matches everything) and that carry <em>all</em> of <paramref name="tags"/>
+    /// (an empty collection applies no tag filter), ordered by name.
     /// </summary>
-    IEnumerable<CharacterTile> Search(string? query, int limit);
+    IEnumerable<CharacterTile> Search(string? query, IReadOnlyCollection<string> tags, int limit);
+
+    /// <summary>
+    /// The most-used tags across every source, most frequent first, limited to
+    /// <paramref name="limit"/>. <paramref name="filter"/> (when non-blank) keeps only tags whose
+    /// name contains it (case-insensitive).
+    /// </summary>
+    IEnumerable<TagOption> PopularTags(string? filter, int limit);
 
     /// <summary>Full detail for a single character by its <c>source:primaryKey</c> key, or None.</summary>
     Option<Character> ById(string key);
+
+    /// <summary>
+    /// The original, unprojected card <c>definition</c> JSON for a <c>source:primaryKey</c> key, or
+    /// None. This is the payload embedded into a downloaded TavernCard PNG.
+    /// </summary>
+    Option<string> DefinitionByKey(string key);
 }

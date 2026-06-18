@@ -1,15 +1,36 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:CharacterArchivePlugin.ViewModels"
+             xmlns:data="clr-namespace:CharacterArchivePlugin.Data"
              xmlns:conv="using:Avalonia.Data.Converters"
              xmlns:sys="using:System"
              x:Class="CharacterArchivePlugin.Views.CharacterArchiveView"
              x:DataType="vm:CharacterArchiveViewModel">
 
+  <UserControl.Styles>
+    <!-- Diagonal corner banner over a card image; the parent Border clips it into a ribbon. -->
+    <Style Selector="Border.ribbon">
+      <Setter Property="Width" Value="150"/>
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="VerticalAlignment" Value="Top"/>
+      <Setter Property="Margin" Value="0,24,-44,0"/>
+      <Setter Property="RenderTransform" Value="rotate(45deg)"/>
+      <Setter Property="BoxShadow" Value="0 1 4 0 #66000000"/>
+    </Style>
+    <Style Selector="Border.ribbon > TextBlock">
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+  </UserControl.Styles>
+
   <Grid ColumnDefinitions="*,8,420" Margin="12">
 
-    <!-- Left: search + result grid -->
-    <Grid Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
+    <!-- Left: search + tag filter + result grid -->
+    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*" RowSpacing="10">
       <StackPanel Grid.Row="0" Spacing="6">
         <StackPanel Orientation="Horizontal" Spacing="8">
           <TextBox Width="360" PlaceholderText="Search characters…" Text="{Binding SearchText}">
@@ -22,7 +43,55 @@
         <TextBlock Text="{Binding Status}" Opacity="0.7" FontSize="12"/>
       </StackPanel>
 
-      <Border Grid.Row="1" Classes="card" Padding="6">
+      <!-- Tag filter: active tags (AND) + a picker of popular/matching tags -->
+      <Border Grid.Row="1" Classes="card" Padding="8">
+        <StackPanel Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox Width="220" PlaceholderText="Filter tags…" FontSize="12" Text="{Binding TagFilter}"/>
+            <Button Content="Clear tags" Command="{Binding ClearTagsCommand}"/>
+          </StackPanel>
+
+          <ItemsControl ItemsSource="{Binding SelectedTags}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="sys:String">
+                <Button Margin="0,0,6,6" Padding="8,3" Classes="accent"
+                        Command="{Binding $parent[UserControl].((vm:CharacterArchiveViewModel)DataContext).RemoveTagCommand}"
+                        CommandParameter="{Binding}">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="{Binding}" FontSize="11"/>
+                    <TextBlock Text="✕" FontSize="11" Opacity="0.8"/>
+                  </StackPanel>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding AvailableTags}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="data:TagOption">
+                  <Button Margin="0,0,6,6" Padding="8,3"
+                          Command="{Binding $parent[UserControl].((vm:CharacterArchiveViewModel)DataContext).AddTagCommand}"
+                          CommandParameter="{Binding Tag}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <TextBlock Text="{Binding Tag}" FontSize="11"/>
+                      <TextBlock Text="{Binding CountLabel}" FontSize="11" Opacity="0.55"/>
+                    </StackPanel>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="2" Classes="card" Padding="6">
         <ListBox ItemsSource="{Binding Results}"
                  SelectedItem="{Binding SelectedTile}"
                  Background="Transparent"
@@ -60,11 +129,26 @@
         <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
           <Border Grid.Row="0" Height="280" CornerRadius="8" ClipToBounds="True"
                   Background="{DynamicResource ThumbBackgroundBrush}">
-            <Image Source="{Binding SelectedImage}" Stretch="Uniform"/>
+            <Panel>
+              <Image Source="{Binding SelectedImage}" Stretch="Uniform"/>
+
+              <!-- Card spec ribbon: amber V1, green V2. -->
+              <Border Classes="ribbon" Background="#D17B00" IsVisible="{Binding IsSelectedV1}">
+                <TextBlock Text="V1"/>
+              </Border>
+              <Border Classes="ribbon" Background="#2E7D32" IsVisible="{Binding IsSelectedV2}">
+                <TextBlock Text="V2"/>
+              </Border>
+            </Panel>
           </Border>
 
-          <TextBlock Grid.Row="1" Text="{Binding SelectedDetail.Name}"
-                     FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+          <DockPanel Grid.Row="1">
+            <Button DockPanel.Dock="Right" Content="Download" Classes="accent"
+                    VerticalAlignment="Top" Margin="8,0,0,0"
+                    Command="{Binding DownloadCommand}"/>
+            <TextBlock Text="{Binding SelectedDetail.Name}"
+                       FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+          </DockPanel>
 
           <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
             <TextBlock Text="{Binding SelectedDetail.Source}" Opacity="0.6" FontSize="12"/>
@@ -81,10 +165,12 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="sys:String">
-                <Border Margin="0,0,6,6" Padding="8,3" CornerRadius="10"
-                        Background="{DynamicResource ThumbBackgroundBrush}">
+                <Button Margin="0,0,6,6" Padding="8,3"
+                        ToolTip.Tip="Add as tag filter"
+                        Command="{Binding $parent[UserControl].((vm:CharacterArchiveViewModel)DataContext).AddTagCommand}"
+                        CommandParameter="{Binding}">
                   <TextBlock Text="{Binding}" FontSize="11"/>
-                </Border>
+                </Button>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>

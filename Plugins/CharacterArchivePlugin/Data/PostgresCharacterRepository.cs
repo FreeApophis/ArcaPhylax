@@ -12,12 +12,25 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
 {
     // Column order matches the CharacterTile(Key, Source, Name, ImageHash) constructor — Dapper binds
     // positional records by constructor order. Full-text match over name + author + tags + summary +
-    // description; a blank query lists the first rows by name.
+    // description; a blank query lists the first rows by name. The selected tags arrive newline-joined
+    // (the repo's established tag delimiter) and are re-split in SQL — passing them as one text param
+    // avoids Dapper's IEnumerable "IN (...)" expansion, which would mangle the text[] containment.
     private const string SearchSql = """
         SELECT key AS "Key", source AS "Source", name AS "Name", image_hash AS "ImageHash"
         FROM character_search
         WHERE (@query::text IS NULL OR search @@ websearch_to_tsquery('english', @query::text))
+          AND (@tags::text IS NULL OR tags @> string_to_array(@tags, E'\n'))
         ORDER BY name
+        LIMIT @limit;
+        """;
+
+    // Lateral unnest of the tag arrays, grouped into per-tag frequencies. Count(*) is bigint -> long.
+    private const string PopularTagsSql = """
+        SELECT tag AS "Tag", count(*) AS "Count"
+        FROM character_search, unnest(tags) AS tag
+        WHERE (@filter::text IS NULL OR tag ILIKE '%' || @filter || '%')
+        GROUP BY tag
+        ORDER BY count(*) DESC, tag
         LIMIT @limit;
         """;
 
@@ -32,19 +45,36 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
         WHERE key = @key;
         """;
 
+    // Table and column come from DefinitionLookup's whitelist, so interpolating them is injection-safe.
+    // The primary key is compared as text to sidestep the heterogeneous key types across sources.
+    private const string DefinitionSqlTemplate =
+        """SELECT definition::text FROM public.{0} WHERE {1}::text = @pk LIMIT 1;""";
+
     private sealed record CharacterRow(
         string Key, string Source, string Name, string Author, string Summary, string Description,
         string ImageHash, string TagsText);
 
-    public IEnumerable<CharacterTile> Search(string? query, int limit)
+    public IEnumerable<CharacterTile> Search(string? query, IReadOnlyCollection<string> tags, int limit)
     {
         using var connection = db.Create();
         var parameters = ImmutableDictionary<string, object?>.Empty
             .Add("query", string.IsNullOrWhiteSpace(query) ? null : query)
+            .Add("tags", tags.Count == 0 ? null : string.Join('\n', tags))
             .Add("limit", limit)
             .ToDynamicParameters();
 
         return connection.Query<CharacterTile>(SearchSql, parameters).ToList();
+    }
+
+    public IEnumerable<TagOption> PopularTags(string? filter, int limit)
+    {
+        using var connection = db.Create();
+        var parameters = ImmutableDictionary<string, object?>.Empty
+            .Add("filter", string.IsNullOrWhiteSpace(filter) ? null : filter.Trim())
+            .Add("limit", limit)
+            .ToDynamicParameters();
+
+        return connection.Query<TagOption>(PopularTagsSql, parameters).ToList();
     }
 
     public Option<Character> ById(string key)
@@ -56,6 +86,20 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
 
         return Option.FromNullable(connection.QuerySingleOrDefault<CharacterRow>(ByKeySql, parameters))
             .Select(ToCharacter);
+    }
+
+    public Option<string> DefinitionByKey(string key) =>
+        DefinitionLookup.ForKey(key).AndThen(QueryDefinition);
+
+    private Option<string> QueryDefinition(DefinitionLookup lookup)
+    {
+        using var connection = db.Create();
+        var sql = string.Format(DefinitionSqlTemplate, lookup.Table, lookup.KeyColumn);
+        var parameters = ImmutableDictionary<string, object?>.Empty
+            .Add("pk", lookup.Key)
+            .ToDynamicParameters();
+
+        return Option.FromNullable(connection.QueryFirstOrDefault<string?>(sql, parameters));
     }
 
     private static Character ToCharacter(CharacterRow row) =>

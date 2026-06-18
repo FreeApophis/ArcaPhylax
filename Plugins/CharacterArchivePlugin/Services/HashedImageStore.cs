@@ -21,6 +21,24 @@ public sealed class HashedImageStore(CharacterArchiveSettings settings) : IImage
     public Task<Bitmap?> LoadFullAsync(string hash, CancellationToken cancellationToken = default) =>
         DecodeAsync(hash, stream => new Bitmap(stream), cancellationToken);
 
+    public Task<byte[]?> ReadBytesAsync(string hash, CancellationToken cancellationToken = default) =>
+        PathForHash(hash).Match(
+            none: () => Task.FromResult<byte[]?>(null),
+            some: path => ReadAllBytesOrNull(path, cancellationToken));
+
+    private static async Task<byte[]?> ReadAllBytesOrNull(string path, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await File.ReadAllBytesAsync(path, cancellationToken);
+        }
+        catch
+        {
+            // Unreadable file (e.g. removed between the existence check and the read).
+            return null;
+        }
+    }
+
     private Task<Bitmap?> DecodeAsync(string hash, Func<Stream, Bitmap> decode, CancellationToken cancellationToken) =>
         PathForHash(hash).Match(
             none: () => Task.FromResult<Bitmap?>(null),

@@ -16,4 +16,7 @@ public interface IImageStore
 
     /// <summary>Decodes the full-resolution image. Null if missing or undecodable.</summary>
     Task<Bitmap?> LoadFullAsync(string hash, CancellationToken cancellationToken = default);
+
+    /// <summary>Reads the raw, undecoded image bytes for <paramref name="hash"/>. Null if missing or unreadable.</summary>
+    Task<byte[]?> ReadBytesAsync(string hash, CancellationToken cancellationToken = default);
 }

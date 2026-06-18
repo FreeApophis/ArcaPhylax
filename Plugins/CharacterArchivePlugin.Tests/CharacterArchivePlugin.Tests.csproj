@@ -16,4 +16,10 @@
 		<ProjectReference Include="..\CharacterArchivePlugin\CharacterArchivePlugin.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<!-- Reference cards for the end-to-end export tests: one valid, one a strict editor rejects. -->
+		<None Include="Holodeck.png" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="NotWorking.png" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 </Project>
