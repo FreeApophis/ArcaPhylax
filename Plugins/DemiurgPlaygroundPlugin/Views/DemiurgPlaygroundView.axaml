@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DemiurgPlaygroundPlugin.ViewModels"
+             x:Class="DemiurgPlaygroundPlugin.Views.DemiurgPlaygroundView"
+             x:DataType="vm:DemiurgPlaygroundViewModel">
+
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <!-- Typical chat colors: blueish for the human user, greenish for the AI. Each variant is tuned
+           so text stays legible against the bubble in both light and dark themes. -->
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="DemiurgUserBubble" Color="#D3E5FF"/>
+          <SolidColorBrush x:Key="DemiurgComputerBubble" Color="#CFEDD3"/>
+          <SolidColorBrush x:Key="DemiurgSimulationBubble" Color="#D6ECE6"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="DemiurgUserBubble" Color="#22405F"/>
+          <SolidColorBrush x:Key="DemiurgComputerBubble" Color="#1E3B2A"/>
+          <SolidColorBrush x:Key="DemiurgSimulationBubble" Color="#1C3A34"/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- The crew member's lines sit on the right in blue; the AI (computer + simulation) on the left
+         in green. Text uses the theme's default foreground so it contrasts in both themes. -->
+    <Style Selector="Border.user">
+      <Setter Property="Background" Value="{DynamicResource DemiurgUserBubble}"/>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="MaxWidth" Value="560"/>
+    </Style>
+    <Style Selector="Border.computer">
+      <Setter Property="Background" Value="{DynamicResource DemiurgComputerBubble}"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="MaxWidth" Value="640"/>
+    </Style>
+    <Style Selector="Border.simulation">
+      <Setter Property="Background" Value="{DynamicResource DemiurgSimulationBubble}"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="MaxWidth" Value="640"/>
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="*,Auto,Auto" Margin="12" RowSpacing="8">
+
+    <Border Grid.Row="0" Classes="card" Padding="6">
+      <ScrollViewer Name="Transcript" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Messages}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChatMessageVm">
+              <Border Classes.user="{Binding IsUser}"
+                      Classes.computer="{Binding IsComputer}"
+                      Classes.simulation="{Binding IsSimulation}"
+                      CornerRadius="8" Padding="10,8" Margin="6,4">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="{Binding Author}" FontWeight="SemiBold" FontSize="11" Opacity="0.75"/>
+                  <TextBlock Text="{Binding Text}" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+
+    <TextBlock Grid.Row="1" Text="{Binding Status}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+               IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+      <TextBox Grid.Column="0" Text="{Binding Input}"
+               AcceptsReturn="False"
+               PlaceholderText="Speak to the holodeck… (try: Computer, run program Sherlock Holmes)">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding SendCommand}"/>
+        </TextBox.KeyBindings>
+      </TextBox>
+      <Button Grid.Column="1" Content="Send" Classes="accent" Command="{Binding SendCommand}"/>
+      <Button Grid.Column="2" Content="New session" Command="{Binding NewSessionCommand}"/>
+    </Grid>
+  </Grid>
+</UserControl>

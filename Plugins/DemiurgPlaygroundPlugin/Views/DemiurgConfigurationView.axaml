@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DemiurgPlaygroundPlugin.ViewModels"
+             x:Class="DemiurgPlaygroundPlugin.Views.DemiurgConfigurationView"
+             x:DataType="vm:DemiurgConfigurationViewModel">
+
+  <StackPanel Spacing="10">
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="Model file (.gguf)" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.ModelPath}"
+               PlaceholderText="C:\models\your-model.Q4_K_M.gguf"/>
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="CUDA runtime folder (for GPU)" FontWeight="SemiBold"/>
+      <TextBox Text="{Binding Settings.CudaRuntimePath}"
+               PlaceholderText="Folder with cudart64_12.dll, cublas64_12.dll, cublasLt64_12.dll"/>
+      <TextBlock Text="Leave empty to run on CPU. Point at a CUDA 12 Toolkit bin, or another app's CUDA runtime."
+                 Opacity="0.6" FontSize="11" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="16">
+      <StackPanel Spacing="6">
+        <TextBlock Text="Context size" FontWeight="SemiBold"/>
+        <TextBox Width="120" Text="{Binding Settings.ContextSize}" PlaceholderText="4096"/>
+      </StackPanel>
+      <StackPanel Spacing="6">
+        <TextBlock Text="GPU layers" FontWeight="SemiBold"/>
+        <TextBox Width="120" Text="{Binding Settings.GpuLayerCount}" PlaceholderText="999"/>
+      </StackPanel>
+      <StackPanel Spacing="6">
+        <TextBlock Text="Temperature" FontWeight="SemiBold"/>
+        <TextBox Width="120" Text="{Binding Settings.Temperature}" PlaceholderText="0.7"/>
+      </StackPanel>
+      <StackPanel Spacing="6">
+        <TextBlock Text="Max tokens" FontWeight="SemiBold"/>
+        <TextBox Width="120" Text="{Binding Settings.MaxTokens}" PlaceholderText="512"/>
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="Load model" Classes="accent" Command="{Binding LoadModelCommand}"/>
+      <Button Content="Save" Command="{Binding SaveCommand}"/>
+    </StackPanel>
+
+    <TextBlock Text="GPU layers 999 offloads the whole model to the GPU (CUDA 12 backend). Lower it if you run out of VRAM."
+               Opacity="0.6" FontSize="11" TextWrapping="Wrap"/>
+
+    <TextBlock Text="{Binding Status}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+  </StackPanel>
+</UserControl>

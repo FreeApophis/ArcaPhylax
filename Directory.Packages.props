@@ -29,6 +29,9 @@
 
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
 
+    <PackageVersion Include="LLamaSharp" Version="0.27.0" />
+    <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.27.0" />
+
     <PackageVersion Include="NAPS2.Sdk" Version="1.2.1" />
     <PackageVersion Include="NAPS2.Sdk.Worker.Win32" Version="1.2.1" />
     <PackageVersion Include="NAPS2.Images.ImageSharp" Version="1.2.1" />

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Avalonia.Desktop" />
+		<!-- Pin transitive dependency away from the vulnerable 0.90.3 (matches host + other plugins). -->
+		<PackageReference Include="Tmds.DBus.Protocol" />
+		<PackageReference Include="Avalonia.Themes.Fluent" />
+		<PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+		<PackageReference Include="Autofac" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Funcky" />
+		<PackageReference Include="LLamaSharp" />
+		<PackageReference Include="LLamaSharp.Backend.Cuda12" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="DemiurgPlaygroundPlugin.Tests" />
+	</ItemGroup>
+
+</Project>
