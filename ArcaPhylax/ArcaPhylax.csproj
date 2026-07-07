@@ -18,15 +18,9 @@
 		<PackageReference Include="Avalonia.Controls.DataGrid" />
 		<PackageReference Include="Autofac" />
 		<PackageReference Include="CommunityToolkit.Mvvm" />
-		<PackageReference Include="Dapper" />
 		<PackageReference Include="Funcky" />
-		<PackageReference Include="Microsoft.Data.Sqlite" />
 
 		<PackageReference Include="SixLabors.ImageSharp" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="Migrations/**/*.sql" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,6 +29,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
+		<ProjectReference Include="..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" />
+		<ProjectReference Include="..\ArcaPhylax.Infrastructure\ArcaPhylax.Infrastructure.csproj" />
 	</ItemGroup>
 
 

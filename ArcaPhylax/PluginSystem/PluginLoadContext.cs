@@ -53,6 +53,12 @@ public sealed class PluginLoadContext : AssemblyLoadContext
         => assemblyName is not null
             && (_sharedAssemblyNames.Contains(assemblyName)
             || assemblyName == "ArcaPhylax.Abstractions"
+            || assemblyName == "ArcaPhylax.Plugin.Sdk"
+            // CommunityToolkit.Mvvm MUST be shared: its source-generated setters bind to whichever
+            // ObservableObject the plugin compiled against. If the plugin loaded its own copy, a
+            // ViewModelBase-derived VM using [ObservableProperty] would hit MethodAccessException
+            // across the ALC boundary. One shared copy gives a single ObservableObject identity.
+            || assemblyName == "CommunityToolkit.Mvvm"
             || assemblyName == "Autofac"
             || assemblyName.StartsWith("Avalonia", StringComparison.OrdinalIgnoreCase));
 }

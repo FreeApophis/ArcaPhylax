@@ -8,4 +8,4 @@
   <ItemGroup Label="Code Style">
     <PackageReference Include="Polyadic.CodeStyle" PrivateAssets="all" />
   </ItemGroup>
-</Project>
+</Project> 

@@ -22,7 +22,7 @@
 
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
+		<ProjectReference Include="..\..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" />
 	</ItemGroup>
 
 </Project>

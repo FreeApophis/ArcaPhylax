@@ -1,6 +1,2 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="Autofac" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
-  </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 </Project>

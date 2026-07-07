@@ -1,7 +1,5 @@
 using ArcaPhylax.Abstractions;
-using ArcaPhylax.Data;
-using ArcaPhylax.Data.Content;
-using ArcaPhylax.Data.Postgres.Provisioning;
+using ArcaPhylax.Infrastructure;
 using ArcaPhylax.PluginSystem;
 using ArcaPhylax.Services;
 using ArcaPhylax.ViewModels;
@@ -27,24 +25,8 @@ public static class CompositionRoot
         // Data template that renders configuration-section view models as their views.
         builder.RegisterType<ViewLocator>().AsSelf().SingleInstance();
 
-        // SQLite + repositories
-        builder.RegisterType<SqliteConnectionFactory>().As<ISqliteConnectionFactory>().SingleInstance();
-        builder.RegisterType<DbInitializer>().As<IDbInitializer>().SingleInstance();
-        builder.RegisterType<DocumentRepository>().As<IDocumentRepository>().SingleInstance();
-
-        builder.RegisterType<DroppedItemsRepository>().As<IDroppedItemsRepository>().SingleInstance();
-
-        // Content store
-        builder.RegisterType<ItemRepository>().As<IItemRepository>().SingleInstance();
-        builder.RegisterType<BlobRepository>().As<IBlobRepository>().SingleInstance();
-        builder.RegisterType<TagRepository>().As<ITagRepository>().SingleInstance();
-        builder.RegisterType<AttributeRepository>().As<IAttributeRepository>().SingleInstance();
-        builder.RegisterType<SetRepository>().As<ISetRepository>().SingleInstance();
-        builder.RegisterType<SearchService>().As<ISearchService>().SingleInstance();
-
-        builder.RegisterType<IndexingQueue>().AsSelf().SingleInstance();
-        builder.RegisterType<IndexingQueue>().As<IIndexingQueue>().SingleInstance();
-        builder.RegisterType<IndexingWorker>().As<IIndexingWorker>().SingleInstance();
+        // Persistence + provisioning live in ArcaPhylax.Infrastructure.
+        builder.RegisterModule<InfrastructureModule>();
 
         // ViewModels
         builder.RegisterType<MainWindowViewModel>().SingleInstance();
@@ -67,15 +49,6 @@ public static class CompositionRoot
         builder.RegisterType<ConfigureView>();
         builder.RegisterType<AboutView>();
         builder.RegisterType<DashboardView>();
-
-        // Postgres Provisioning
-        builder.RegisterType<PostgresProvisioningOptions>().AsSelf().SingleInstance();
-        builder.RegisterType<RuntimeOperatingSystemInfo>().As<IOperatingSystemInfo>().SingleInstance();
-        builder.RegisterType<ProcessCommandRunner>().As<ICommandRunner>().SingleInstance();
-        builder.RegisterType<LinuxDistributionDetector>().As<ILinuxDistributionDetector>().SingleInstance();
-        builder.RegisterType<PostgresDetector>().As<IPostgresDetector>().SingleInstance();
-        builder.RegisterType<CompositePostgresInstaller>().As<IPostgresInstaller>().SingleInstance();
-        builder.RegisterType<PostgresProvisioner>().As<IPostgresProvisioner>().SingleInstance();
 
         builder.RegisterType<AppSettings>().SingleInstance();
 
