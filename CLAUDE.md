@@ -8,15 +8,29 @@ storage, and an `AssemblyLoadContext`-based plugin system that loads isolated pl
 at runtime. PostgreSQL provisioning infrastructure exists for future use. Funcky 3.6.0 is the
 functional programming library in use throughout the codebase.
 
+The core is split into four layers so the host executable is only the UI shell and everything a
+plugin can depend on lives in a standalone DLL:
+
 Solution layout:
 
 ```
-ArcaPhylax/                  Main host application
-ArcaPhylax.Abstractions/     Shared contracts (IPlugin, ITabContentViewModel, NotifyBase)
+ArcaPhylax/                  Avalonia UI shell (App, shell + feature VMs/Views, CompositionRoot,
+                             plugin loader). References Abstractions + Plugin.Sdk + Infrastructure.
+ArcaPhylax.Abstractions/     Pure contracts + domain records (ITabContentViewModel, IConfigurationSection,
+                             IPluginContext, I*Repository, Content/* records). ZERO package dependencies.
+ArcaPhylax.Plugin.Sdk/       Plugin-authoring surface: IPlugin, ViewModelBase. Refs Abstractions +
+                             Autofac + CommunityToolkit.Mvvm. Plugins reference THIS (not Abstractions).
+ArcaPhylax.Infrastructure/   Persistence + provisioning: SQLite/Dapper repositories, DbInitializer,
+                             indexing queue/worker, Postgres provisioning, InfrastructureModule. No Avalonia.
 Plugins/CharacterPlugin/     Plugin example
 Plugins/FractalPlugin/       Plugin example (with tabs, FractalPluginModule)
 Plugins/ScannerPlugin/       Plugin example (NAPS2 scanner workflow)
 ```
+
+Dependency direction: Abstractions ← everyone; Infrastructure and Plugin.Sdk ← host. Plugins depend
+only on Plugin.Sdk (which brings Abstractions transitively) and never reference Infrastructure or the
+host — they consume repository *interfaces* from Abstractions and receive the Infrastructure
+implementations through the host's child Autofac scope.
 
 ---
 
@@ -232,12 +246,20 @@ five members.
 assemblies are always resolved from the host's default load context (shared):
 
 - `ArcaPhylax.Abstractions`
+- `ArcaPhylax.Plugin.Sdk`
+- `CommunityToolkit.Mvvm`
 - `Autofac`
 - Any assembly whose name starts with `Avalonia`
 
+`CommunityToolkit.Mvvm` is a deliberate exception to the "each plugin carries its own copy" rule:
+its source-generated `[ObservableProperty]`/`[RelayCommand]` setters bind to whichever
+`ObservableObject` the plugin compiled against, so a second copy in the plugin's own context gives a
+different type identity and throws `MethodAccessException` across the ALC boundary. Sharing one copy
+lets plugin VMs safely derive from `ViewModelBase` (in `ArcaPhylax.Plugin.Sdk`).
+
 Do not add Funcky or other runtime libraries to the shared list — each plugin carries its own copy.
 If a plugin needs a type to cross the plugin/host boundary, that type must live in
-`ArcaPhylax.Abstractions`.
+`ArcaPhylax.Abstractions` (contracts/records) or `ArcaPhylax.Plugin.Sdk` (authoring base types).
 
 ### Plugin Registration Pattern
 

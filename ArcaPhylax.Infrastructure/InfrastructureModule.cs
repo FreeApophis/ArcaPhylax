@@ -2,6 +2,7 @@ using ArcaPhylax.Abstractions;
 using ArcaPhylax.Data;
 using ArcaPhylax.Data.Content;
 using ArcaPhylax.Data.Postgres.Provisioning;
+using ArcaPhylax.Infrastructure.Migrations;
 using Autofac;
 
 namespace ArcaPhylax.Infrastructure;
@@ -17,6 +18,8 @@ public sealed class InfrastructureModule : Autofac.Module
     {
         // SQLite + repositories
         builder.RegisterType<SqliteConnectionFactory>().As<ISqliteConnectionFactory>().SingleInstance();
+        builder.RegisterType<DatabaseBackup>().As<IDatabaseBackup>().SingleInstance();
+        builder.RegisterType<MigrationRunner>().AsSelf().SingleInstance();
         builder.RegisterType<DbInitializer>().As<IDbInitializer>().SingleInstance();
         builder.RegisterType<DocumentRepository>().As<IDocumentRepository>().SingleInstance();
         builder.RegisterType<DroppedItemsRepository>().As<IDroppedItemsRepository>().SingleInstance();
