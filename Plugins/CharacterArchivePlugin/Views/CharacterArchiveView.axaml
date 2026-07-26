@@ -53,7 +53,9 @@
 
           <ItemsControl ItemsSource="{Binding SelectedTags}">
             <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal"/>
+              </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="sys:String">
@@ -72,7 +74,9 @@
           <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding AvailableTags}">
               <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="data:TagOption">
@@ -105,12 +109,36 @@
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:CharacterTileVm">
               <StackPanel Width="170" Margin="4" Spacing="6">
-                <Border Height="200" CornerRadius="6" ClipToBounds="True"
-                        Background="{DynamicResource ThumbBackgroundBrush}">
-                  <Image Source="{Binding Thumbnail}" Stretch="UniformToFill"/>
-                </Border>
-                <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxLines="2"
-                           TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                <Panel Height="200">
+                  <!-- Offset "cards behind" so a stack reads as more than one; only for stacks. -->
+                  <Border Height="200" CornerRadius="6" IsVisible="{Binding IsStack}"
+                          Background="{DynamicResource ThumbBackgroundBrush}"
+                          BorderBrush="#40000000" BorderThickness="1"
+                          RenderTransform="translate(6px, 6px)"/>
+                  <Border Height="200" CornerRadius="6" IsVisible="{Binding IsStack}"
+                          Background="{DynamicResource ThumbBackgroundBrush}"
+                          BorderBrush="#40000000" BorderThickness="1"
+                          RenderTransform="translate(3px, 3px)"/>
+                  <Border Height="200" CornerRadius="6" ClipToBounds="True"
+                          Background="{DynamicResource ThumbBackgroundBrush}">
+                    <Image Source="{Binding Thumbnail}" Stretch="UniformToFill"/>
+                  </Border>
+                  <!-- Variant count badge. -->
+                  <Border IsVisible="{Binding IsStack}"
+                          HorizontalAlignment="Right" VerticalAlignment="Top"
+                          Margin="0,6,6,0" Padding="7,2" CornerRadius="10" Background="#CC000000">
+                    <TextBlock Text="{Binding CountLabel}" Foreground="White"
+                               FontSize="12" FontWeight="Bold"/>
+                  </Border>
+                </Panel>
+                <!-- NoWrap (not Wrap) on purpose: Avalonia's text wrapper throws
+                     "Cannot split: requested length N consumes entire run" on some card names
+                     (emoji / unbreakable trailing clusters). The upstream fix (PR #21370 / issue
+                     #21252) is unmerged and not in 12.1.0, so we avoid the wrapping path here —
+                     ellipsis trimming uses the collapsing path, which sidesteps the bug. -->
+                <TextBlock Text="{Binding Name}" TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"
+                           MaxWidth="162"/>
               </StackPanel>
             </DataTemplate>
           </ListBox.ItemTemplate>
@@ -126,7 +154,7 @@
                    Opacity="0.6" TextWrapping="Wrap"
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
+        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
           <Border Grid.Row="0" Height="280" CornerRadius="8" ClipToBounds="True"
                   Background="{DynamicResource ThumbBackgroundBrush}">
             <Panel>
@@ -142,7 +170,29 @@
             </Panel>
           </Border>
 
-          <DockPanel Grid.Row="1">
+          <!-- Variant switcher: the characters sharing this image. Only shown for stacks. -->
+          <StackPanel Grid.Row="1" Spacing="4" IsVisible="{Binding HasVariants}">
+            <TextBlock Text="Variants sharing this image" Opacity="0.6" FontSize="12"/>
+            <ListBox ItemsSource="{Binding Variants}" SelectedItem="{Binding SelectedVariant}"
+                     Background="Transparent" BorderThickness="0" MaxHeight="96"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="data:CharacterTile">
+                  <StackPanel Orientation="Horizontal" Spacing="6" Margin="2">
+                    <TextBlock Text="{Binding Name}" FontSize="11"/>
+                    <TextBlock Text="{Binding Source}" FontSize="11" Opacity="0.55"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+
+          <DockPanel Grid.Row="2">
             <Button DockPanel.Dock="Right" Content="Download" Classes="accent"
                     VerticalAlignment="Top" Margin="8,0,0,0"
                     Command="{Binding DownloadCommand}"/>
@@ -150,14 +200,14 @@
                        FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
           </DockPanel>
 
-          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6">
             <TextBlock Text="{Binding SelectedDetail.Source}" Opacity="0.6" FontSize="12"/>
             <TextBlock Text="·" Opacity="0.6" FontSize="12"
                        IsVisible="{Binding SelectedDetail.Author, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
             <TextBlock Text="{Binding SelectedDetail.Author}" Opacity="0.6" FontSize="12"/>
           </StackPanel>
 
-          <ItemsControl Grid.Row="3" ItemsSource="{Binding SelectedDetail.Tags}">
+          <ItemsControl Grid.Row="4" ItemsSource="{Binding SelectedDetail.Tags}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel Orientation="Horizontal"/>
@@ -175,11 +225,11 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
 
-          <TextBlock Grid.Row="4" Text="{Binding SelectedDetail.Summary}"
+          <TextBlock Grid.Row="5" Text="{Binding SelectedDetail.Summary}"
                      FontStyle="Italic" Opacity="0.85" TextWrapping="Wrap"
                      IsVisible="{Binding SelectedDetail.Summary, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
 
-          <ScrollViewer Grid.Row="5" Margin="0,4,0,0">
+          <ScrollViewer Grid.Row="6" Margin="0,4,0,0">
             <TextBlock Text="{Binding SelectedDetail.Description}" TextWrapping="Wrap"/>
           </ScrollViewer>
         </Grid>

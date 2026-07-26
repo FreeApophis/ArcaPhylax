@@ -10,19 +10,13 @@ namespace CharacterArchivePlugin.Data;
 /// </summary>
 public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : ICharacterRepository
 {
-    // Column order matches the CharacterTile(Key, Source, Name, ImageHash) constructor — Dapper binds
-    // positional records by constructor order. Full-text match over name + author + tags + summary +
-    // description; a blank query lists the first rows by name. The selected tags arrive newline-joined
-    // (the repo's established tag delimiter) and are re-split in SQL — passing them as one text param
-    // avoids Dapper's IEnumerable "IN (...)" expansion, which would mangle the text[] containment.
-    private const string SearchSql = """
-        SELECT key AS "Key", source AS "Source", name AS "Name", image_hash AS "ImageHash"
-        FROM character_search
-        WHERE (@query::text IS NULL OR search @@ websearch_to_tsquery('english', @query::text))
-          AND (@tags::text IS NULL OR tags @> string_to_array(@tags, E'\n'))
-        ORDER BY name
-        LIMIT @limit;
-        """;
+    // How "complete" a variant is: longer prose and more tags win, so the fullest card represents the
+    // stack. length() over full descriptions would detoast every (up to 200k-char) row during the sort
+    // and time out; left(..., N) only decompresses the prefix (Postgres slices compressed TOAST), which
+    // is cheap and orders identically for any realistically long description. Kept in one place so the
+    // representative pick and the variant ordering agree.
+    private const string CompletenessSql =
+        "length(left(coalesce(description, ''), 4000)) + length(left(coalesce(summary, ''), 1000)) + coalesce(array_length(tags, 1), 0) * 50";
 
     // Lateral unnest of the tag arrays, grouped into per-tag frequencies. Count(*) is bigint -> long.
     private const string PopularTagsSql = """
@@ -50,7 +44,38 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
     private const string DefinitionSqlTemplate =
         """SELECT definition::text FROM public.{0} WHERE {1}::text = @pk LIMIT 1;""";
 
-    public IEnumerable<CharacterTile> Search(string? query, IReadOnlyCollection<string> tags, int limit)
+    // Column order matches the CharacterStack(Key, Source, Name, ImageHash, VariantCount) constructor —
+    // Dapper binds positional records by constructor order. Full-text match over name + author + tags +
+    // summary + description; a blank query lists the first rows by name. The selected tags arrive
+    // newline-joined (the repo's established tag delimiter) and are re-split in SQL — passing them as one
+    // text param avoids Dapper's IEnumerable "IN (...)" expansion, which would mangle text[] containment.
+    // Matching rows are grouped by image_hash: DISTINCT ON keeps the most-complete variant while a window
+    // count records the stack size, so @limit bounds stacks (grid tiles), not raw rows.
+    private static readonly string SearchSql = $"""
+        SELECT key AS "Key", source AS "Source", name AS "Name",
+               image_hash AS "ImageHash", variant_count AS "VariantCount"
+        FROM (
+            SELECT DISTINCT ON (image_hash)
+                   key, source, name, image_hash,
+                   count(*) OVER (PARTITION BY image_hash)::int AS variant_count
+            FROM character_search
+            WHERE (@query::text IS NULL OR search @@ websearch_to_tsquery('english', @query::text))
+              AND (@tags::text IS NULL OR tags @> string_to_array(@tags, E'\n'))
+            ORDER BY image_hash, {CompletenessSql} DESC, key
+        ) stacks
+        ORDER BY name
+        LIMIT @limit;
+        """;
+
+    // Every row sharing one image, most complete first. Column order matches CharacterTile.
+    private static readonly string VariantsSql = $"""
+        SELECT key AS "Key", source AS "Source", name AS "Name", image_hash AS "ImageHash"
+        FROM character_search
+        WHERE image_hash = @hash
+        ORDER BY {CompletenessSql} DESC, name, key;
+        """;
+
+    public IEnumerable<CharacterStack> Search(string? query, IReadOnlyCollection<string> tags, int limit)
     {
         using var connection = db.Create();
         var parameters = ImmutableDictionary<string, object?>.Empty
@@ -59,7 +84,17 @@ public sealed class PostgresCharacterRepository(INpgsqlConnectionFactory db) : I
             .Add("limit", limit)
             .ToDynamicParameters();
 
-        return connection.Query<CharacterTile>(SearchSql, parameters).ToList();
+        return connection.Query<CharacterStack>(SearchSql, parameters).ToList();
+    }
+
+    public IEnumerable<CharacterTile> VariantsByImageHash(string imageHash)
+    {
+        using var connection = db.Create();
+        var parameters = ImmutableDictionary<string, object?>.Empty
+            .Add("hash", imageHash)
+            .ToDynamicParameters();
+
+        return connection.Query<CharacterTile>(VariantsSql, parameters).ToList();
     }
 
     public IEnumerable<TagOption> PopularTags(string? filter, int limit)

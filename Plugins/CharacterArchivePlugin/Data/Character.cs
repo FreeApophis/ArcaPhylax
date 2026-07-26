@@ -14,8 +14,15 @@ public sealed record Character(
     string ImageHash,
     string[] Tags);
 
-/// <summary>Lightweight projection for the result grid (no description).</summary>
+/// <summary>Lightweight projection for a single character (no description). Used for the variant
+/// switcher listing every row that shares one image.</summary>
 public sealed record CharacterTile(string Key, string Source, string Name, string ImageHash);
+
+/// <summary>
+/// One result-grid entry: the most-complete representative of every row sharing <see cref="ImageHash"/>,
+/// plus how many rows the stack collapses (<see cref="VariantCount"/> is 1 for a lone character).
+/// </summary>
+public sealed record CharacterStack(string Key, string Source, string Name, string ImageHash, int VariantCount);
 
 /// <summary>A tag and how many characters carry it, for the tag-filter picker.</summary>
 public sealed record TagOption(string Tag, long Count)

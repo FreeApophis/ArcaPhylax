@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!Solution Items", "!Solution Items", "{CEF39825-24DC-4A0A-B4A2-F938B7FD4588}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		CLAUDE.md = CLAUDE.md
 		nuget.config = nuget.config
 		README.md = README.md
 	EndProjectSection

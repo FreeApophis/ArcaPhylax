@@ -33,6 +33,11 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _tagFilterCts;
 
+    // Guards the SelectedVariant change handler while the stack load picks the representative itself,
+    // so selecting a tile loads its detail exactly once.
+    private bool _suppressVariantLoad;
+    private Task _selection = Task.CompletedTask;
+
     public string Title => "Character Archive";
 
     public string Icon => CharacterArchiveIcons.Character;
@@ -43,6 +48,9 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     public TopLevel? HostTopLevel { get; set; }
 
     public ObservableCollection<CharacterTileVm> Results { get; } = [];
+
+    /// <summary>The characters sharing the selected tile's image; drives the detail-pane switcher.</summary>
+    public ObservableCollection<CharacterTile> Variants { get; } = [];
 
     /// <summary>Active tag filters; results must carry every one (AND).</summary>
     public ObservableCollection<string> SelectedTags { get; } = [];
@@ -62,6 +70,10 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     [ObservableProperty]
     public partial CharacterTileVm? SelectedTile { get; set; }
 
+    /// <summary>The variant whose detail is shown; one of <see cref="Variants"/>.</summary>
+    [ObservableProperty]
+    public partial CharacterTile? SelectedVariant { get; set; }
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand))]
     public partial Character? SelectedDetail { get; set; }
@@ -74,10 +86,16 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
 
     public bool HasSelection => SelectedDetail is not null;
 
+    /// <summary>True when the selected tile is a stack, so the variant switcher is shown.</summary>
+    public bool HasVariants => Variants.Count > 1;
+
     /// <summary>Drives the V1/V2 ribbon overlay on the selected card's image.</summary>
     public bool IsSelectedV1 => SelectedSpec == CardSpec.V1;
 
     public bool IsSelectedV2 => SelectedSpec == CardSpec.V2;
+
+    /// <summary>The in-flight tile/variant selection load; a test seam for awaiting it to settle.</summary>
+    internal Task Selection => _selection;
 
     /// <summary>Loads the initial tag picker the first time the tab is shown.</summary>
     public Task InitializeAsync()
@@ -95,7 +113,15 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
 
     partial void OnSearchTextChanged(string value) => _ = DebouncedSearchAsync();
 
-    partial void OnSelectedTileChanged(CharacterTileVm? value) => _ = LoadDetailAsync(value);
+    partial void OnSelectedTileChanged(CharacterTileVm? value) => _selection = LoadStackAsync(value);
+
+    partial void OnSelectedVariantChanged(CharacterTile? value)
+    {
+        if (!_suppressVariantLoad)
+        {
+            _selection = LoadDetailAsync(value);
+        }
+    }
 
     partial void OnSelectedDetailChanged(Character? value) => OnPropertyChanged(nameof(HasSelection));
 
@@ -213,13 +239,13 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
         try
         {
             var tags = SelectedTags.ToArray();
-            var tiles = await Task.Run(() => _repository.Search(SearchText, tags, ResultLimit).ToList(), cancellationToken);
+            var stacks = await Task.Run(() => _repository.Search(SearchText, tags, ResultLimit).ToList(), cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             Results.Clear();
-            foreach (var tile in tiles)
+            foreach (var stack in stacks)
             {
-                Results.Add(new CharacterTileVm(tile, _images));
+                Results.Add(new CharacterTileVm(stack, _images));
             }
 
             Status = Results.Count == 0 ? "No matches." : $"{Results.Count} result(s).";
@@ -249,21 +275,64 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
         }
     }
 
-    private async Task LoadDetailAsync(CharacterTileVm? tile)
+    private async Task LoadStackAsync(CharacterTileVm? tile)
     {
+        Variants.Clear();
+        OnPropertyChanged(nameof(HasVariants));
+
         if (tile is null)
         {
-            SelectedDetail = null;
             SelectedImage = null;
+            SetRepresentative(null);
+            await LoadDetailAsync(null);
+            return;
+        }
+
+        try
+        {
+            var variants = await Task.Run(() => _repository.VariantsByImageHash(tile.Hash).ToList());
+            foreach (var variant in variants)
+            {
+                Variants.Add(variant);
+            }
+
+            OnPropertyChanged(nameof(HasVariants));
+
+            // All variants share the image, so load it once here rather than per variant switch.
+            SelectedImage = await _images.LoadFullAsync(tile.Hash);
+
+            // Pick the representative (most complete, first row) to show; the repository orders
+            // variants by completeness, so the tile's own key is normally first. Load its detail
+            // directly rather than via the change handler so a tile click loads detail exactly once.
+            SetRepresentative(Variants.FirstOrDefault(variant => variant.Key == tile.Key) ?? Variants.FirstOrDefault());
+            await LoadDetailAsync(SelectedVariant);
+        }
+        catch (Exception ex)
+        {
+            Status = $"Failed to load character: {ex.Message}";
+        }
+    }
+
+    private void SetRepresentative(CharacterTile? variant)
+    {
+        _suppressVariantLoad = true;
+        SelectedVariant = variant;
+        _suppressVariantLoad = false;
+    }
+
+    private async Task LoadDetailAsync(CharacterTile? variant)
+    {
+        if (variant is null)
+        {
+            SelectedDetail = null;
             SelectedSpec = null;
             return;
         }
 
         try
         {
-            SelectedDetail = await Task.Run(() => _repository.ById(tile.Key).Match<Character?>(() => null, character => character));
-            SelectedSpec = await Task.Run(() => _repository.DefinitionByKey(tile.Key).Match(() => CardSpec.V1, CardSpecClassifier.Classify));
-            SelectedImage = await _images.LoadFullAsync(tile.Hash);
+            SelectedDetail = await Task.Run(() => _repository.ById(variant.Key).Match<Character?>(() => null, character => character));
+            SelectedSpec = await Task.Run(() => _repository.DefinitionByKey(variant.Key).Match(() => CardSpec.V1, CardSpecClassifier.Classify));
         }
         catch (Exception ex)
         {
@@ -274,7 +343,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task Download()
     {
-        if (SelectedTile is not { } tile || SelectedDetail is not { } detail)
+        if (SelectedVariant is not { } variant || SelectedDetail is not { } detail)
         {
             return;
         }
@@ -301,7 +370,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
         Status = "Building character card…";
         try
         {
-            var card = await BuildCardAsync(tile.Key, tile.Hash, CancellationToken.None);
+            var card = await BuildCardAsync(variant.Key, variant.ImageHash, CancellationToken.None);
             if (card.Match<byte[]?>(none: () => null, some: bytes => bytes) is not { } bytes)
             {
                 Status = "Character definition or image is unavailable.";
