@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Avalonia.Desktop" />
+		<!-- Pin transitive dependency away from the vulnerable 0.90.3 (matches host + other plugins). -->
+		<PackageReference Include="Tmds.DBus.Protocol" />
+		<PackageReference Include="Avalonia.Themes.Fluent" />
+		<PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+		<PackageReference Include="Autofac" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Dapper" />
+		<PackageReference Include="Funcky" />
+		<PackageReference Include="Microsoft.Data.Sqlite" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="NutritionPlugin.Tests" />
+	</ItemGroup>
+
+</Project>

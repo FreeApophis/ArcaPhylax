@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:NutritionPlugin.ViewModels"
+             xmlns:data="clr-namespace:NutritionPlugin.Data"
+             xmlns:controls="clr-namespace:NutritionPlugin.Controls"
+             x:Class="NutritionPlugin.Views.NutritionView"
+             x:DataType="vm:NutritionViewModel">
+
+  <Grid ColumnDefinitions="220,*" Margin="12" ColumnSpacing="12">
+
+    <!-- People -->
+    <Border Grid.Column="0" Classes="card" Padding="10">
+      <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+        <TextBlock Grid.Row="0" Text="People" FontWeight="SemiBold"/>
+
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding People}"
+                 SelectedItem="{Binding SelectedPerson}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="data:Person">
+              <TextBlock Text="{Binding Name}"/>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+          <TextBox Grid.Column="0" Text="{Binding NewPersonName}" PlaceholderText="New person…">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding AddPersonCommand}"/>
+            </TextBox.KeyBindings>
+          </TextBox>
+          <Button Grid.Column="1" Content="Add" Command="{Binding AddPersonCommand}"/>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <!-- Main -->
+    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="12">
+
+        <TextBlock Text="{Binding SelectedPerson.Name, FallbackValue='Select or add a person to begin'}"
+                   FontSize="18" FontWeight="SemiBold"/>
+
+        <!-- Entry forms -->
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
+          <Border Grid.Column="0" Classes="card" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Log food" FontWeight="SemiBold"/>
+              <TextBox Text="{Binding NewFoodDescription}" PlaceholderText="Description (e.g. Porridge)"/>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                <NumericUpDown Grid.Column="0" Value="{Binding NewFoodCalories}"
+                               Minimum="0" Increment="50" FormatString="0" PlaceholderText="kcal"/>
+                <DatePicker Grid.Column="1" SelectedDate="{Binding NewFoodDate}"/>
+              </Grid>
+              <Button Content="Add intake" Classes="accent" HorizontalAlignment="Right"
+                      Command="{Binding AddFoodCommand}"/>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="card" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Log weight" FontWeight="SemiBold"/>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                <NumericUpDown Grid.Column="0" Value="{Binding NewWeightKilograms}"
+                               Minimum="0" Increment="0.1" FormatString="0.0" PlaceholderText="kg"/>
+                <DatePicker Grid.Column="1" SelectedDate="{Binding NewWeightDate}"/>
+              </Grid>
+              <Button Content="Record weight" Classes="accent" HorizontalAlignment="Right"
+                      Command="{Binding AddWeightCommand}"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- Graphs -->
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+          <Border Grid.Column="0" Classes="card" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Calorie intake (per day)" FontWeight="SemiBold"/>
+              <controls:LineChart Series="{Binding CalorieSeries}" Stroke="#E67E22" Height="180"/>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Classes="card" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Weight" FontWeight="SemiBold"/>
+              <controls:LineChart Series="{Binding WeightSeries}" Stroke="#3498DB" Height="180"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- Entry lists -->
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+          <Border Grid.Column="0" Classes="card" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Food log" FontWeight="SemiBold"/>
+              <ItemsControl ItemsSource="{Binding FoodEntries}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="data:FoodEntry">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,2">
+                      <TextBlock Grid.Column="0" Text="{Binding LoggedOn}" Opacity="0.7" FontSize="12"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Description}" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Grid.Column="2" Text="{Binding Calories, StringFormat='{}{0} kcal'}"/>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="card" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Weight log" FontWeight="SemiBold"/>
+              <ItemsControl ItemsSource="{Binding WeightEntries}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="data:WeightEntry">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,2">
+                      <TextBlock Grid.Column="0" Text="{Binding MeasuredOn}" Opacity="0.7" FontSize="12"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Kilograms, StringFormat='{}{0:0.0} kg'}"/>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
