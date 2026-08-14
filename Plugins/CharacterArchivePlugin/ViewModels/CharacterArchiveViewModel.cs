@@ -103,13 +103,9 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
 
     public bool IsSelectedV2 => SelectedSpec == CardSpec.V2;
 
-    /// <summary>The card version shown as a tag beside the name; empty when no card is selected.</summary>
-    public string SelectedSpecLabel => SelectedSpec switch
-    {
-        CardSpec.V1 => "V1",
-        CardSpec.V2 => "V2",
-        _ => string.Empty,
-    };
+    /// <summary>The author-supplied <c>character_version</c>, shown as a tag beside the name; empty when absent.</summary>
+    [ObservableProperty]
+    public partial string? SelectedCharacterVersion { get; set; }
 
     /// <summary>The in-flight tile/variant selection load; a test seam for awaiting it to settle.</summary>
     internal Task Selection => _selection;
@@ -146,7 +142,6 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     {
         OnPropertyChanged(nameof(IsSelectedV1));
         OnPropertyChanged(nameof(IsSelectedV2));
-        OnPropertyChanged(nameof(SelectedSpecLabel));
     }
 
     partial void OnTagFilterChanged(string value) => _ = DebouncedTagReloadAsync();
@@ -347,6 +342,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
             SelectedPersonality = null;
             SelectedScenario = null;
             SelectedGreeting = null;
+            SelectedCharacterVersion = null;
             return;
         }
 
@@ -366,6 +362,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
             SelectedPersonality = fields.Personality;
             SelectedScenario = fields.Scenario;
             SelectedGreeting = fields.Greeting;
+            SelectedCharacterVersion = fields.CharacterVersion;
         }
         catch (Exception ex)
         {

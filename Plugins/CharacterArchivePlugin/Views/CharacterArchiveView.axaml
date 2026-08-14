@@ -34,12 +34,12 @@
     <Style Selector="Expander.section">
       <Setter Property="HorizontalAlignment" Value="Stretch"/>
     </Style>
-    <!-- Small pill beside the character name showing the card spec version (V1/V2). -->
+    <!-- Small pill beside the character name showing the author's character_version. -->
     <Style Selector="Border.version-tag">
       <Setter Property="Background" Value="#E0E0E0"/>
       <Setter Property="CornerRadius" Value="6"/>
       <Setter Property="Padding" Value="6,1"/>
-      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
     </Style>
     <Style Selector="Border.version-tag > TextBlock">
       <Setter Property="FontSize" Value="11"/>
@@ -221,8 +221,9 @@
               <TextBlock Text="{Binding SelectedDetail.Name}"
                          FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
               <Border Classes="version-tag"
-                      IsVisible="{Binding SelectedSpecLabel, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
-                <TextBlock Text="{Binding SelectedSpecLabel}"/>
+                      RenderTransform="translate(0px, -16px)"
+                      IsVisible="{Binding SelectedCharacterVersion, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding SelectedCharacterVersion}"/>
               </Border>
             </StackPanel>
           </DockPanel>
