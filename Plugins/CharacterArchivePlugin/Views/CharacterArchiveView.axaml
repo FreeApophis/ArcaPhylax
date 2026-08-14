@@ -25,9 +25,30 @@
       <Setter Property="FontWeight" Value="Bold"/>
       <Setter Property="FontSize" Value="12"/>
     </Style>
+    <!-- Header text on each collapsible detail section (Description, Personality, …). -->
+    <Style Selector="Expander.section > /template/ ToggleButton TextBlock">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Opacity" Value="0.8"/>
+    </Style>
+    <Style Selector="Expander.section">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+    <!-- Small pill beside the character name showing the card spec version (V1/V2). -->
+    <Style Selector="Border.version-tag">
+      <Setter Property="Background" Value="#E0E0E0"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Padding" Value="6,1"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Border.version-tag > TextBlock">
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#404040"/>
+    </Style>
   </UserControl.Styles>
 
-  <Grid ColumnDefinitions="*,8,420" Margin="12">
+  <Grid ColumnDefinitions="*,8,560" Margin="12">
 
     <!-- Left: search + tag filter + result grid -->
     <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*" RowSpacing="10">
@@ -149,12 +170,12 @@
     <!-- Right: detail pane -->
     <Border Grid.Column="2" Classes="card" Padding="14">
       <Panel>
-        <TextBlock Text="Select a character to see its description."
+        <TextBlock Text="Select a character to see its details."
                    IsVisible="{Binding !HasSelection}"
                    Opacity="0.6" TextWrapping="Wrap"
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
+        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
           <Border Grid.Row="0" Height="280" CornerRadius="8" ClipToBounds="True"
                   Background="{DynamicResource ThumbBackgroundBrush}">
             <Panel>
@@ -196,8 +217,14 @@
             <Button DockPanel.Dock="Right" Content="Download" Classes="accent"
                     VerticalAlignment="Top" Margin="8,0,0,0"
                     Command="{Binding DownloadCommand}"/>
-            <TextBlock Text="{Binding SelectedDetail.Name}"
-                       FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{Binding SelectedDetail.Name}"
+                         FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+              <Border Classes="version-tag"
+                      IsVisible="{Binding SelectedSpecLabel, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding SelectedSpecLabel}"/>
+              </Border>
+            </StackPanel>
           </DockPanel>
 
           <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6">
@@ -225,12 +252,32 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
 
-          <TextBlock Grid.Row="5" Text="{Binding SelectedDetail.Summary}"
-                     FontStyle="Italic" Opacity="0.85" TextWrapping="Wrap"
-                     IsVisible="{Binding SelectedDetail.Summary, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+          <ScrollViewer Grid.Row="5" Margin="0,4,0,0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+              <TextBlock Text="{Binding SelectedDetail.Summary}"
+                         FontStyle="Italic" Opacity="0.85" TextWrapping="Wrap"
+                         IsVisible="{Binding SelectedDetail.Summary, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
 
-          <ScrollViewer Grid.Row="6" Margin="0,4,0,0">
-            <TextBlock Text="{Binding SelectedDetail.Description}" TextWrapping="Wrap"/>
+              <Expander Classes="section" Header="Description" IsExpanded="True"
+                        IsVisible="{Binding SelectedDetail.Description, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding SelectedDetail.Description}" TextWrapping="Wrap"/>
+              </Expander>
+
+              <Expander Classes="section" Header="Personality"
+                        IsVisible="{Binding SelectedPersonality, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding SelectedPersonality}" TextWrapping="Wrap"/>
+              </Expander>
+
+              <Expander Classes="section" Header="Scenario"
+                        IsVisible="{Binding SelectedScenario, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding SelectedScenario}" TextWrapping="Wrap"/>
+              </Expander>
+
+              <Expander Classes="section" Header="Greeting"
+                        IsVisible="{Binding SelectedGreeting, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding SelectedGreeting}" TextWrapping="Wrap"/>
+              </Expander>
+            </StackPanel>
           </ScrollViewer>
         </Grid>
       </Panel>

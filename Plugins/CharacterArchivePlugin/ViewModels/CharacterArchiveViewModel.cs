@@ -22,7 +22,7 @@ namespace CharacterArchivePlugin.ViewModels;
 // MethodAccessException when a generated setter runs.
 public sealed partial class CharacterArchiveViewModel(ICharacterRepository repository, IImageStore images) : ObservableObject, ITabContentViewModel, IDisposable
 {
-    private const int ResultLimit = 2000;
+    private const int ResultLimit = 20000;
     private const int ThumbnailWidth = 160;
     private const int TagPickerLimit = 20;
     private static readonly TimeSpan DebounceDelay = TimeSpan.FromMilliseconds(300);
@@ -84,6 +84,15 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     [ObservableProperty]
     public partial CardSpec? SelectedSpec { get; set; }
 
+    [ObservableProperty]
+    public partial string? SelectedPersonality { get; set; }
+
+    [ObservableProperty]
+    public partial string? SelectedScenario { get; set; }
+
+    [ObservableProperty]
+    public partial string? SelectedGreeting { get; set; }
+
     public bool HasSelection => SelectedDetail is not null;
 
     /// <summary>True when the selected tile is a stack, so the variant switcher is shown.</summary>
@@ -93,6 +102,14 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     public bool IsSelectedV1 => SelectedSpec == CardSpec.V1;
 
     public bool IsSelectedV2 => SelectedSpec == CardSpec.V2;
+
+    /// <summary>The card version shown as a tag beside the name; empty when no card is selected.</summary>
+    public string SelectedSpecLabel => SelectedSpec switch
+    {
+        CardSpec.V1 => "V1",
+        CardSpec.V2 => "V2",
+        _ => string.Empty,
+    };
 
     /// <summary>The in-flight tile/variant selection load; a test seam for awaiting it to settle.</summary>
     internal Task Selection => _selection;
@@ -129,6 +146,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     {
         OnPropertyChanged(nameof(IsSelectedV1));
         OnPropertyChanged(nameof(IsSelectedV2));
+        OnPropertyChanged(nameof(SelectedSpecLabel));
     }
 
     partial void OnTagFilterChanged(string value) => _ = DebouncedTagReloadAsync();
@@ -326,13 +344,28 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
         {
             SelectedDetail = null;
             SelectedSpec = null;
+            SelectedPersonality = null;
+            SelectedScenario = null;
+            SelectedGreeting = null;
             return;
         }
 
         try
         {
             SelectedDetail = await Task.Run(() => _repository.ById(variant.Key).Match<Character?>(() => null, character => character));
-            SelectedSpec = await Task.Run(() => _repository.DefinitionByKey(variant.Key).Match(() => CardSpec.V1, CardSpecClassifier.Classify));
+
+            // One definition read feeds both the V1/V2 ribbon and the personality/scenario/greeting fields.
+            var (spec, fields) = await Task.Run(() =>
+            {
+                var definition = _repository.DefinitionByKey(variant.Key);
+                return (definition.Match(() => CardSpec.V1, CardSpecClassifier.Classify),
+                        definition.Match(() => CardFields.Empty, CardFieldExtractor.Extract));
+            });
+
+            SelectedSpec = spec;
+            SelectedPersonality = fields.Personality;
+            SelectedScenario = fields.Scenario;
+            SelectedGreeting = fields.Greeting;
         }
         catch (Exception ex)
         {
