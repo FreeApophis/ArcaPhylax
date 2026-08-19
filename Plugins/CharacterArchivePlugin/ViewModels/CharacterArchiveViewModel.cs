@@ -107,6 +107,10 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
     [ObservableProperty]
     public partial string? SelectedCharacterVersion { get; set; }
 
+    /// <summary>The author's <c>creator_notes</c>, shown in italics between the name and the tags.</summary>
+    [ObservableProperty]
+    public partial string? SelectedCreatorNotes { get; set; }
+
     /// <summary>The in-flight tile/variant selection load; a test seam for awaiting it to settle.</summary>
     internal Task Selection => _selection;
 
@@ -343,6 +347,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
             SelectedScenario = null;
             SelectedGreeting = null;
             SelectedCharacterVersion = null;
+            SelectedCreatorNotes = null;
             return;
         }
 
@@ -363,6 +368,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
             SelectedScenario = fields.Scenario;
             SelectedGreeting = fields.Greeting;
             SelectedCharacterVersion = fields.CharacterVersion;
+            SelectedCreatorNotes = fields.CreatorNotes;
         }
         catch (Exception ex)
         {
