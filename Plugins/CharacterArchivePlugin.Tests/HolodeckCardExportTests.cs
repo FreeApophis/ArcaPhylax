@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
-using CharacterArchivePlugin.Data;
-using CharacterArchivePlugin.Services;
+using ArcaPhylax.CharacterCards.Cards;
+using ArcaPhylax.CharacterCards.Png;
 using Funcky.Monads;
 using Xunit;
 
@@ -20,7 +20,7 @@ public sealed class HolodeckCardExportTests
     public void ReadCharacterJson_GivenRealReferenceCard_ExtractsTheV2Definition()
     {
         // Act
-        var json = CharacterCardWriter.ReadCharacterJson(ReferenceCard())
+        var json = CharacterCardPng.ReadCharacterJson(ReferenceCard())
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("reference card had no chara chunk"));
 
         // Assert
@@ -33,7 +33,7 @@ public sealed class HolodeckCardExportTests
     public void Classify_GivenTheRealReferenceCardDefinition_ReturnsV2()
     {
         // Arrange
-        var json = CharacterCardWriter.ReadCharacterJson(ReferenceCard())
+        var json = CharacterCardPng.ReadCharacterJson(ReferenceCard())
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("reference card had no chara chunk"));
 
         // Act
@@ -47,11 +47,11 @@ public sealed class HolodeckCardExportTests
     public void ExportedCard_IsReadableByAnIndependentTextChunkParser()
     {
         // Arrange — the JSON a real, openable card carries.
-        var expected = CharacterCardWriter.ReadCharacterJson(ReferenceCard())
+        var expected = CharacterCardPng.ReadCharacterJson(ReferenceCard())
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("reference card had no chara chunk"));
 
         // Act — re-export it through the writer the app uses, then read it back the way tooling does.
-        var exported = CharacterCardWriter.EmbedCharacterJson(ReferenceCard(), expected);
+        var exported = CharacterCardPng.EmbedCharacterJson(ReferenceCard(), expected);
         var roundTripped = CharaFromTextChunk(exported);
 
         // Assert
@@ -62,11 +62,11 @@ public sealed class HolodeckCardExportTests
     public void ExportedCard_StaysAValidPngImage()
     {
         // Arrange
-        var json = CharacterCardWriter.ReadCharacterJson(ReferenceCard())
+        var json = CharacterCardPng.ReadCharacterJson(ReferenceCard())
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("reference card had no chara chunk"));
 
         // Act
-        var exported = CharacterCardWriter.EmbedCharacterJson(ReferenceCard(), json);
+        var exported = CharacterCardPng.EmbedCharacterJson(ReferenceCard(), json);
 
         // Assert — decodes as an image (the picture half of the card is intact).
         using var image = SixLabors.ImageSharp.Image.Load(exported);
@@ -77,11 +77,11 @@ public sealed class HolodeckCardExportTests
     public void ExportedCard_LeavesEveryNonCharaChunkOfThePngSourceUntouched()
     {
         // Arrange
-        var json = CharacterCardWriter.ReadCharacterJson(ReferenceCard())
+        var json = CharacterCardPng.ReadCharacterJson(ReferenceCard())
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("reference card had no chara chunk"));
 
         // Act — re-exporting must not re-encode the image (which would drop sRGB, rewrite eXIf, etc.).
-        var exported = CharacterCardWriter.EmbedCharacterJson(ReferenceCard(), json);
+        var exported = CharacterCardPng.EmbedCharacterJson(ReferenceCard(), json);
 
         // Assert — every image/ancillary chunk survives byte-for-byte and in order.
         Assert.Equal(NonCharaChunks(ReferenceCard()), NonCharaChunks(exported));
@@ -91,11 +91,11 @@ public sealed class HolodeckCardExportTests
     public void ExportedCard_PlacesTheCharaChunkAfterTheImageData()
     {
         // Arrange
-        var json = CharacterCardWriter.ReadCharacterJson(ReferenceCard())
+        var json = CharacterCardPng.ReadCharacterJson(ReferenceCard())
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("reference card had no chara chunk"));
 
         // Act
-        var types = ChunkTypes(CharacterCardWriter.EmbedCharacterJson(ReferenceCard(), json));
+        var types = ChunkTypes(CharacterCardPng.EmbedCharacterJson(ReferenceCard(), json));
 
         // Assert — card tools append chara after IDAT; some editors only scan there.
         Assert.True(types.IndexOf("tEXt") > types.LastIndexOf("IDAT"), "chara tEXt must follow IDAT");

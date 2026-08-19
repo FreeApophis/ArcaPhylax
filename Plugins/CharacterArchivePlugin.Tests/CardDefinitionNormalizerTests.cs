@@ -1,5 +1,5 @@
 using System.Text.Json;
-using CharacterArchivePlugin.Data;
+using ArcaPhylax.CharacterCards.Cards;
 using Xunit;
 
 namespace CharacterArchivePlugin.Tests;

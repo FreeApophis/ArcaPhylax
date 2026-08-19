@@ -1,7 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Avalonia.Desktop" />
+		<!-- Pin transitive dependency away from the vulnerable 0.90.3 (matches host + other plugins). -->
+		<PackageReference Include="Tmds.DBus.Protocol" />
+		<PackageReference Include="Avalonia.Themes.Fluent" />
+		<PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+		<PackageReference Include="Autofac" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Funcky" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" />
+		<!-- Shared card-format logic (PNG chara chunk + V1/V2 read/write), bundled per-plugin. -->
+		<ProjectReference Include="..\..\ArcaPhylax.CharacterCards\ArcaPhylax.CharacterCards.csproj" />
 	</ItemGroup>
 
 </Project>

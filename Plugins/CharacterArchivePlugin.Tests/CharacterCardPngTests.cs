@@ -1,4 +1,4 @@
-using CharacterArchivePlugin.Services;
+using ArcaPhylax.CharacterCards.Png;
 using FsCheck;
 using FsCheck.Xunit;
 using Funcky.Monads;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace CharacterArchivePlugin.Tests;
 
-public sealed class CharacterCardWriterTests
+public sealed class CharacterCardPngTests
 {
     [Fact]
     public void EmbedCharacterJson_GivenJson_RoundTripsThroughTheCharaChunk()
@@ -18,8 +18,8 @@ public sealed class CharacterCardWriterTests
         var json = """{"name":"Ada","spec":"chara_card_v2"}""";
 
         // Act
-        var card = CharacterCardWriter.EmbedCharacterJson(image, json);
-        var read = CharacterCardWriter.ReadCharacterJson(card);
+        var card = CharacterCardPng.EmbedCharacterJson(image, json);
+        var read = CharacterCardPng.ReadCharacterJson(card);
 
         // Assert
         Assert.Equal(Option.Some(json), read);
@@ -29,13 +29,13 @@ public sealed class CharacterCardWriterTests
     public void EmbedCharacterJson_GivenImageThatAlreadyCarriesChara_ReplacesItWithTheNewJson()
     {
         // Arrange
-        var first = CharacterCardWriter.EmbedCharacterJson(SamplePng(), """{"version":1}""");
+        var first = CharacterCardPng.EmbedCharacterJson(SamplePng(), """{"version":1}""");
 
         // Act
-        var second = CharacterCardWriter.EmbedCharacterJson(first, """{"version":2}""");
+        var second = CharacterCardPng.EmbedCharacterJson(first, """{"version":2}""");
 
         // Assert
-        Assert.Equal(Option.Some("""{"version":2}"""), CharacterCardWriter.ReadCharacterJson(second));
+        Assert.Equal(Option.Some("""{"version":2}"""), CharacterCardPng.ReadCharacterJson(second));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class CharacterCardWriterTests
         var plain = SamplePng();
 
         // Act
-        var read = CharacterCardWriter.ReadCharacterJson(plain);
+        var read = CharacterCardPng.ReadCharacterJson(plain);
 
         // Assert
         Assert.Equal(Option<string>.None, read);
@@ -55,10 +55,10 @@ public sealed class CharacterCardWriterTests
     public void EmbedCharacterJson_GivenAnyNonEmptyJsonText_IsRecoverableFromTheCard(NonEmptyString json)
     {
         // Act
-        var card = CharacterCardWriter.EmbedCharacterJson(SamplePng(), json.Get);
+        var card = CharacterCardPng.EmbedCharacterJson(SamplePng(), json.Get);
 
         // Assert
-        Assert.Equal(Option.Some(json.Get), CharacterCardWriter.ReadCharacterJson(card));
+        Assert.Equal(Option.Some(json.Get), CharacterCardPng.ReadCharacterJson(card));
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class CharacterCardWriterTests
         var json = "{\"spec\":\"chara_card_v2\",\"data\":{\"description\":\"" + new string('x', 4000) + "\"}}";
 
         // Act
-        var card = CharacterCardWriter.EmbedCharacterJson(SamplePng(), json);
+        var card = CharacterCardPng.EmbedCharacterJson(SamplePng(), json);
         var chunks = PngChunkTypes(card);
 
         // Assert
@@ -84,7 +84,7 @@ public sealed class CharacterCardWriterTests
         var json = "{\"spec\":\"chara_card_v2\",\"data\":{\"name\":\"" + new string('y', 4000) + "\"}}";
 
         // Act
-        var card = CharacterCardWriter.EmbedCharacterJson(SamplePng(), json);
+        var card = CharacterCardPng.EmbedCharacterJson(SamplePng(), json);
         var (keyword, value) = TextChunk(card);
 
         // Assert

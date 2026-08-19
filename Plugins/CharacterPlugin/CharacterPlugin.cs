@@ -1,12 +1,13 @@
-﻿using ArcaPhylax.Abstractions;
+using ArcaPhylax.Abstractions;
 using Autofac;
 
 namespace CharacterPlugin;
 
-internal class CharacterPlugin : IPlugin
+internal sealed class CharacterPlugin : IPlugin
 {
     public void Configure(ContainerBuilder builder)
     {
+        builder.RegisterModule<CharacterPluginModule>();
     }
 
     public Task StartAsync(CancellationToken cancellationToken)

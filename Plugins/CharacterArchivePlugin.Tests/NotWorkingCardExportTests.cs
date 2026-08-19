@@ -1,6 +1,6 @@
 using System.Text.Json;
-using CharacterArchivePlugin.Data;
-using CharacterArchivePlugin.Services;
+using ArcaPhylax.CharacterCards.Cards;
+using ArcaPhylax.CharacterCards.Png;
 using Xunit;
 
 namespace CharacterArchivePlugin.Tests;
@@ -30,7 +30,7 @@ public sealed class NotWorkingCardExportTests
         var original = CharaOf(RejectedCard());
 
         // Act — the exact pipeline BuildCardAsync runs: normalise, then embed.
-        var exported = CharacterCardWriter.EmbedCharacterJson(RejectedCard(), CardDefinitionNormalizer.Normalize(original));
+        var exported = CharacterCardPng.EmbedCharacterJson(RejectedCard(), CardDefinitionNormalizer.Normalize(original));
         var data = JsonDocument.Parse(CharaOf(exported)).RootElement.GetProperty("data");
 
         // Assert — no null character_book, real content preserved.
@@ -43,7 +43,7 @@ public sealed class NotWorkingCardExportTests
     public void Exporting_KeepsTheCardAValidV2Png()
     {
         // Act
-        var exported = CharacterCardWriter.EmbedCharacterJson(RejectedCard(), CardDefinitionNormalizer.Normalize(CharaOf(RejectedCard())));
+        var exported = CharacterCardPng.EmbedCharacterJson(RejectedCard(), CardDefinitionNormalizer.Normalize(CharaOf(RejectedCard())));
 
         // Assert
         Assert.Equal("chara_card_v2", JsonDocument.Parse(CharaOf(exported)).RootElement.GetProperty("spec").GetString());
@@ -55,6 +55,6 @@ public sealed class NotWorkingCardExportTests
     File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "NotWorking.png"));
 
     private static string CharaOf(byte[] card) =>
-        CharacterCardWriter.ReadCharacterJson(card)
+        CharacterCardPng.ReadCharacterJson(card)
             .GetOrElse(() => throw new Xunit.Sdk.XunitException("card had no chara chunk"));
 }

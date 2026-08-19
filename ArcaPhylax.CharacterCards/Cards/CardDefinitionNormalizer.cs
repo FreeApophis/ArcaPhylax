@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace CharacterArchivePlugin.Data;
+namespace ArcaPhylax.CharacterCards.Cards;
 
 /// <summary>
 /// Makes a stored V2 card <c>definition</c> conform to the TavernCard V2 schema before export. Some

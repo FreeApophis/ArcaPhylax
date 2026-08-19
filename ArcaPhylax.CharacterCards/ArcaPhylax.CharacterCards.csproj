@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Card-format logic shared by CharacterArchivePlugin (reading/exporting) and CharacterPlugin
+	     (editing). Referenced by plugins as a plain library: each plugin bundles its own copy in its
+	     own AssemblyLoadContext, exactly like Funcky. No card type crosses the plugin/host boundary,
+	     so this must NOT be added to the host's shared-assemblies list. -->
+
+	<ItemGroup>
+		<PackageReference Include="Funcky" />
+		<!-- Only needed to transcode non-PNG source images before splicing the chara chunk. -->
+		<PackageReference Include="SixLabors.ImageSharp" />
+	</ItemGroup>
+
+</Project>

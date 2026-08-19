@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace CharacterArchivePlugin.Data;
+namespace ArcaPhylax.CharacterCards.Cards;
 
 /// <summary>
 /// Extracts the free-text roleplay fields — personality, scenario, greeting (<c>first_mes</c>),

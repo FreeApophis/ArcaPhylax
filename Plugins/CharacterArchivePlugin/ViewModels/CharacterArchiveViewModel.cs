@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using ArcaPhylax.Abstractions;
+using ArcaPhylax.CharacterCards.Cards;
+using ArcaPhylax.CharacterCards.Png;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
@@ -436,7 +438,7 @@ public sealed partial class CharacterArchiveViewModel(ICharacterRepository repos
         return await inputs.Match(
             none: () => Task.FromResult(Option<byte[]>.None),
             some: pair => Task.Run(
-                () => Option.Some(CharacterCardWriter.EmbedCharacterJson(pair.bytes, CardDefinitionNormalizer.Normalize(pair.json))),
+                () => Option.Some(CharacterCardPng.EmbedCharacterJson(pair.bytes, CardDefinitionNormalizer.Normalize(pair.json))),
                 cancellationToken));
     }
 

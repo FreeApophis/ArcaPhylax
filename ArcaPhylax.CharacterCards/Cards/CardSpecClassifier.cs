@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace CharacterArchivePlugin.Data;
+namespace ArcaPhylax.CharacterCards.Cards;
 
 /// <summary>
 /// Classifies a raw card <c>definition</c> as V1 (flat top-level fields) or V2 (a <c>chara_card_v2</c>

@@ -3,13 +3,14 @@ using System.Text;
 using Funcky.Monads;
 using SixLabors.ImageSharp;
 
-namespace CharacterArchivePlugin.Services;
+namespace ArcaPhylax.CharacterCards.Png;
 
 /// <summary>
-/// Writes and reads the TavernCard PNG encoding: the character <c>definition</c> JSON is base64
+/// Reads and writes the TavernCard PNG encoding: the character <c>definition</c> JSON is base64
 /// encoded and stored in a PNG <c>tEXt</c> chunk keyed <c>chara</c>. TavernCard V1 and V2 differ only
 /// in the shape of that JSON — the PNG embedding is identical — so the stored definition is embedded
 /// verbatim. Base64 keeps the chunk value within the Latin-1 alphabet a <c>tEXt</c> chunk requires.
+/// This type knows nothing about card fields; the card-shape logic lives in the <c>Cards</c> namespace.
 /// </summary>
 /// <remarks>
 /// When the source image is already a PNG the original bytes are left untouched and the <c>chara</c>
@@ -18,7 +19,7 @@ namespace CharacterArchivePlugin.Services;
 /// reordering chunks so <c>tEXt</c> lands before <c>IDAT</c>) produced cards that loaded in SillyTavern
 /// but not in stricter editors. Only non-PNG sources are transcoded, and then the same splice runs.
 /// </remarks>
-internal static class CharacterCardWriter
+public static class CharacterCardPng
 {
     private const string CharaKeyword = "chara";
 
