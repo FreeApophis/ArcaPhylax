@@ -22,12 +22,18 @@ namespace CharacterPlugin.ViewModels;
 // note on CharacterArchiveViewModel and CLAUDE.md's plugin-isolation section.
 public sealed partial class CharacterEditorViewModel(CharacterEditorSettings settings) : ObservableObject, ITabContentViewModel
 {
+    // Decoded well above the ~130px display box so tiles stay crisp on high-DPI displays.
+    private const int ThumbnailWidth = 300;
+
     private readonly CharacterEditorSettings _settings = settings;
 
     // Held for the selected card so a save preserves every field the editor does not surface.
     private string _originalJson = string.Empty;
     private byte[] _originalImage = [];
     private CardSpec _loadedSpec = CardSpec.V2;
+
+    // The version stored by the last save; the baseline that decides whether a save bumps the revision.
+    private string _savedVersion = string.Empty;
 
     public string Title => "Character Editor";
 
@@ -63,7 +69,13 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
     public partial string FirstMessage { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial string MessageExample { get; set; } = string.Empty;
+
+    [ObservableProperty]
     public partial string CharacterVersion { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string Creator { get; set; } = string.Empty;
 
     /// <summary>Comma-separated tag list, split on save.</summary>
     [ObservableProperty]
@@ -138,8 +150,16 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
             .ToList();
 
     private static Option<CardListItem> CardItemOrNone(string path) =>
-        CharacterCardPng.ReadCharacterJson(File.ReadAllBytes(path))
-            .Select(json => new CardListItem(path, Path.GetFileName(path), CharacterCardJson.Read(json).Name));
+        ItemFrom(path, File.ReadAllBytes(path));
+
+    // One read per file feeds both the chara-chunk name and the gallery thumbnail.
+    private static Option<CardListItem> ItemFrom(string path, byte[] bytes) =>
+        CharacterCardPng.ReadCharacterJson(bytes)
+            .Select(json => new CardListItem(
+                path,
+                Path.GetFileName(path),
+                CharacterCardJson.Read(json).Name,
+                DecodeThumbnail(bytes)));
 
     private async Task LoadCardAsync(CardListItem? item)
     {
@@ -170,7 +190,10 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
             Personality = card.Personality;
             Scenario = card.Scenario;
             FirstMessage = card.FirstMessage;
+            MessageExample = card.MessageExample;
             CharacterVersion = card.CharacterVersion;
+            _savedVersion = card.CharacterVersion;
+            Creator = card.Creator;
             TagsText = string.Join(", ", card.Tags);
             Image = image;
             Status = $"Loaded {item.FileName}.";
@@ -192,6 +215,10 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
         Status = "Saving…";
         try
         {
+            // Bump the version/revision before persisting, then reflect it back into the editor.
+            var nextVersion = CardVersion.Next(CharacterVersion, _savedVersion);
+            CharacterVersion = nextVersion;
+
             var edited = new CharacterCard(
                 _loadedSpec,
                 Name,
@@ -199,7 +226,9 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
                 Personality,
                 Scenario,
                 FirstMessage,
-                CharacterVersion,
+                MessageExample,
+                nextVersion,
+                Creator,
                 ParseTags(TagsText));
 
             var original = _originalJson;
@@ -215,6 +244,9 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
             // Adopt the saved bytes/definition as the new baseline so a further edit merges onto them.
             _originalImage = bytes;
             _originalJson = merged;
+            _savedVersion = nextVersion;
+            _loadedSpec = CardSpec.V2;
+            Spec = CardSpec.V2;
             item.Name = Name;
             Status = $"Saved {item.FileName}.";
         }
@@ -228,13 +260,16 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
     {
         _originalJson = string.Empty;
         _originalImage = [];
+        _savedVersion = string.Empty;
         Spec = null;
         Name = string.Empty;
         Description = string.Empty;
         Personality = string.Empty;
         Scenario = string.Empty;
         FirstMessage = string.Empty;
+        MessageExample = string.Empty;
         CharacterVersion = string.Empty;
+        Creator = string.Empty;
         TagsText = string.Empty;
         Image = null;
     }
@@ -247,5 +282,19 @@ public sealed partial class CharacterEditorViewModel(CharacterEditorSettings set
     {
         using var stream = new MemoryStream(bytes);
         return new Bitmap(stream);
+    }
+
+    private static Bitmap? DecodeThumbnail(byte[] bytes)
+    {
+        try
+        {
+            using var stream = new MemoryStream(bytes);
+            return Bitmap.DecodeToWidth(stream, ThumbnailWidth);
+        }
+        catch
+        {
+            // Undecodable image shows as a blank thumbnail rather than dropping the card.
+            return null;
+        }
     }
 }

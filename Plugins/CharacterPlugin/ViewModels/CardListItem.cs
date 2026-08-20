@@ -1,16 +1,19 @@
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CharacterPlugin.ViewModels;
 
 /// <summary>
-/// One entry in the editor's card list: a TavernCard PNG on disk. <see cref="Name"/> is observable so
-/// the list reflects a rename the moment an edit is saved.
+/// One entry in the editor's card gallery: a TavernCard PNG on disk with its thumbnail. <see cref="Name"/>
+/// is observable so the gallery reflects a rename the moment an edit is saved.
 /// </summary>
-public sealed partial class CardListItem(string path, string fileName, string name) : ObservableObject
+public sealed partial class CardListItem(string path, string fileName, string name, Bitmap? thumbnail) : ObservableObject
 {
     public string Path { get; } = path;
 
     public string FileName { get; } = fileName;
+
+    public Bitmap? Thumbnail { get; } = thumbnail;
 
     [ObservableProperty]
     public partial string Name { get; set; } = name;

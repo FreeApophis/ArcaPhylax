@@ -15,11 +15,15 @@ public sealed record CharacterCard(
     string Personality,
     string Scenario,
     string FirstMessage,
+    string MessageExample,
     string CharacterVersion,
+    string Creator,
     ImmutableArray<string> Tags)
 {
     public static readonly CharacterCard Empty = new(
         CardSpec.V2,
+        string.Empty,
+        string.Empty,
         string.Empty,
         string.Empty,
         string.Empty,

@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CharacterPlugin.Views.CharacterImageView"
+             x:Name="Root">
+
+  <UserControl.Styles>
+    <!-- Diagonal corner banner over the image; the parent Border clips it into a ribbon. -->
+    <Style Selector="Border.ribbon">
+      <Setter Property="Width" Value="150"/>
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="VerticalAlignment" Value="Top"/>
+      <Setter Property="Margin" Value="0,24,-44,0"/>
+      <Setter Property="RenderTransform" Value="rotate(45deg)"/>
+      <Setter Property="BoxShadow" Value="0 1 4 0 #66000000"/>
+    </Style>
+    <Style Selector="Border.ribbon > TextBlock">
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+  </UserControl.Styles>
+
+  <Panel VerticalAlignment="Top">
+
+    <!-- No image: a plain square placeholder where the image would sit. -->
+    <Border x:Name="Placeholder"
+            IsVisible="{Binding #Root.Source, Converter={x:Static ObjectConverters.IsNull}}"
+            Height="{Binding #Placeholder.Bounds.Width}"
+            CornerRadius="12"
+            Background="{DynamicResource ThumbBackgroundBrush}"
+            BorderBrush="#59000000" BorderThickness="1"
+            BoxShadow="0 6 18 0 #40000000">
+      <TextBlock Text="No card selected."
+                 Opacity="0.5" TextWrapping="Wrap"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <!-- The image as a 3D pill (dark border + soft shadow) with a name ribbon and a fading
+         mirror reflection beneath it. -->
+    <StackPanel IsVisible="{Binding #Root.Source, Converter={x:Static ObjectConverters.IsNotNull}}"
+                Spacing="0">
+      <Border CornerRadius="12" ClipToBounds="True"
+              Background="{DynamicResource ThumbBackgroundBrush}"
+              BorderBrush="#73000000" BorderThickness="5"
+              BoxShadow="0 8 22 0 #33000000">
+        <Panel>
+          <!-- Round the image itself to the border's inner curve so it doesn't poke into the
+               corners (outer radius 12 - border thickness 5). -->
+          <Border CornerRadius="7" ClipToBounds="True">
+            <Image x:Name="CardImage" Source="{Binding #Root.Source}" Stretch="Uniform"/>
+          </Border>
+
+          <!-- Translucent gray band carrying the character name, lifted one ribbon-height
+               off the bottom edge. -->
+          <Border VerticalAlignment="Bottom" Margin="0,0,0,20"
+                  Background="#B2333333" Padding="10,6">
+            <TextBlock Text="{Binding #Root.CharacterName}" Foreground="White"
+                       FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                       HorizontalAlignment="Center"/>
+          </Border>
+
+          <!-- Spec badge rides the top-right corner. -->
+          <Border Classes="ribbon" Background="#D17B00" IsVisible="{Binding #Root.IsV1}">
+            <TextBlock Text="V1"/>
+          </Border>
+          <Border Classes="ribbon" Background="#2E7D32" IsVisible="{Binding #Root.IsV2}">
+            <TextBlock Text="V2"/>
+          </Border>
+        </Panel>
+      </Border>
+
+      <!-- Reflection: the same image flipped and faded to near-transparent. Clipped with the
+           same rounded corners as the pill so its edges mirror the image instead of a raw box. -->
+      <Border CornerRadius="12" ClipToBounds="True"
+              Height="{Binding #CardImage.Bounds.Height}"
+              IsHitTestVisible="False">
+        <Image Source="{Binding #Root.Source}" Stretch="Uniform">
+          <Image.RenderTransform>
+            <ScaleTransform ScaleY="-1"/>
+          </Image.RenderTransform>
+          <Image.OpacityMask>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+              <GradientStop Offset="0" Color="#00000000"/>
+              <GradientStop Offset="0.6" Color="#00000000"/>
+              <GradientStop Offset="1" Color="#59000000"/>
+            </LinearGradientBrush>
+          </Image.OpacityMask>
+        </Image>
+      </Border>
+    </StackPanel>
+  </Panel>
+</UserControl>

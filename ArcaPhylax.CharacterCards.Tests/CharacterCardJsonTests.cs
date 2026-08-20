@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Text.Json;
 using ArcaPhylax.CharacterCards.Cards;
 using Xunit;
@@ -51,11 +50,27 @@ public sealed class CharacterCardJsonTests
     }
 
     [Fact]
+    public void Read_WhenV2Card_ReadsMessageExampleAndCreator()
+    {
+        // Arrange
+        var json = """
+            {"spec":"chara_card_v2","data":{"name":"Ada","mes_example":"<START>\nHi","creator":"Grace"}}
+            """;
+
+        // Act
+        var card = CharacterCardJson.Read(json);
+
+        // Assert
+        Assert.Equal("<START>\nHi", card.MessageExample);
+        Assert.Equal("Grace", card.Creator);
+    }
+
+    [Fact]
     public void Apply_WhenV2Card_WritesEditsIntoDataAndPreservesUnknownFields()
     {
         // Arrange
         var original = """
-            {"spec":"chara_card_v2","data":{"name":"Old","mes_example":"keep me","extensions":{"x":1}}}
+            {"spec":"chara_card_v2","data":{"name":"Old","post_history_instructions":"keep me","extensions":{"x":1}}}
             """;
         var edited = CharacterCard.Empty with { Spec = CardSpec.V2, Name = "New", Description = "Fresh" };
 
@@ -67,12 +82,29 @@ public sealed class CharacterCardJsonTests
         var data = document.RootElement.GetProperty("data");
         Assert.Equal("New", data.GetProperty("name").GetString());
         Assert.Equal("Fresh", data.GetProperty("description").GetString());
-        Assert.Equal("keep me", data.GetProperty("mes_example").GetString());
+        Assert.Equal("keep me", data.GetProperty("post_history_instructions").GetString());
         Assert.Equal(1, data.GetProperty("extensions").GetProperty("x").GetInt32());
     }
 
     [Fact]
-    public void Apply_WhenV1Card_WritesEditsAtTheRoot()
+    public void Apply_WhenV2Card_WritesMessageExampleAndCreatorIntoData()
+    {
+        // Arrange
+        var original = """{"spec":"chara_card_v2","data":{"name":"Old"}}""";
+        var edited = CharacterCard.Empty with { MessageExample = "<START>\nHi", Creator = "Grace" };
+
+        // Act
+        var result = CharacterCardJson.Apply(original, edited);
+
+        // Assert
+        using var document = JsonDocument.Parse(result);
+        var data = document.RootElement.GetProperty("data");
+        Assert.Equal("<START>\nHi", data.GetProperty("mes_example").GetString());
+        Assert.Equal("Grace", data.GetProperty("creator").GetString());
+    }
+
+    [Fact]
+    public void Apply_WhenV1Card_UpgradesToV2AndMovesFieldsIntoData()
     {
         // Arrange
         var original = """{"name":"Old","custom":"kept"}""";
@@ -83,8 +115,27 @@ public sealed class CharacterCardJsonTests
 
         // Assert
         using var document = JsonDocument.Parse(result);
-        Assert.Equal("New", document.RootElement.GetProperty("name").GetString());
-        Assert.Equal("kept", document.RootElement.GetProperty("custom").GetString());
+        Assert.Equal("chara_card_v2", document.RootElement.GetProperty("spec").GetString());
+        var data = document.RootElement.GetProperty("data");
+        Assert.Equal("New", data.GetProperty("name").GetString());
+        Assert.Equal("kept", data.GetProperty("custom").GetString());
+        Assert.False(document.RootElement.TryGetProperty("custom", out _));
+    }
+
+    [Fact]
+    public void Apply_WhenSourceIsEmpty_ProducesAValidV2Envelope()
+    {
+        // Arrange
+        var edited = CharacterCard.Empty with { Name = "Fresh" };
+
+        // Act
+        var result = CharacterCardJson.Apply(null, edited);
+
+        // Assert
+        using var document = JsonDocument.Parse(result);
+        Assert.Equal("chara_card_v2", document.RootElement.GetProperty("spec").GetString());
+        Assert.Equal("2.0", document.RootElement.GetProperty("spec_version").GetString());
+        Assert.Equal("Fresh", document.RootElement.GetProperty("data").GetProperty("name").GetString());
     }
 
     [Fact]
@@ -99,7 +150,9 @@ public sealed class CharacterCardJsonTests
             "curious",
             "a lab",
             "greeting",
+            "<START>\nexample",
             "1.2",
+            "Grace",
             ["alpha", "beta"]);
 
         // Act

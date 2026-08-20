@@ -1,136 +1,140 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:CharacterPlugin.ViewModels"
+             xmlns:views="clr-namespace:CharacterPlugin.Views"
              x:Class="CharacterPlugin.Views.CharacterEditorView"
              x:DataType="vm:CharacterEditorViewModel">
 
   <UserControl.Styles>
-    <!-- Diagonal corner banner over a card image; the parent Border clips it into a ribbon. -->
-    <Style Selector="Border.ribbon">
-      <Setter Property="Width" Value="150"/>
-      <Setter Property="Height" Value="24"/>
-      <Setter Property="HorizontalAlignment" Value="Right"/>
-      <Setter Property="VerticalAlignment" Value="Top"/>
-      <Setter Property="Margin" Value="0,24,-44,0"/>
-      <Setter Property="RenderTransform" Value="rotate(45deg)"/>
-      <Setter Property="BoxShadow" Value="0 1 4 0 #66000000"/>
-    </Style>
-    <Style Selector="Border.ribbon > TextBlock">
-      <Setter Property="HorizontalAlignment" Value="Center"/>
-      <Setter Property="VerticalAlignment" Value="Center"/>
-      <Setter Property="Foreground" Value="White"/>
-      <Setter Property="FontWeight" Value="Bold"/>
-      <Setter Property="FontSize" Value="12"/>
-    </Style>
     <!-- Field caption above each editable box. -->
     <Style Selector="TextBlock.field-label">
       <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="Opacity" Value="0.8"/>
     </Style>
+    <!-- Strip the Fluent ListBoxItem's wide default padding so two tiles fit per row. -->
+    <Style Selector="ListBox.gallery ListBoxItem">
+      <Setter Property="Padding" Value="3"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="MinWidth" Value="0"/>
+    </Style>
   </UserControl.Styles>
 
-  <Grid ColumnDefinitions="320,8,*" Margin="12">
+  <!-- Preview (left) | editor (middle) | thumbnail gallery, two wide (right). -->
+  <Grid ColumnDefinitions="240,10,*,10,336" Margin="12">
 
-    <!-- Left: card list -->
-    <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto" RowSpacing="10">
-      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-        <TextBlock Text="Cards" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
-        <Button Content="Reload" Command="{Binding ReloadCommand}"/>
+    <!-- Left: the character image up top, Save/Reload pinned to the bottom of the column. -->
+    <Grid Grid.Column="0" RowDefinitions="*,Auto">
+      <views:CharacterImageView Grid.Row="0" VerticalAlignment="Top" Margin="6,2,6,2"
+                                Source="{Binding Image}"
+                                CharacterName="{Binding Name}"
+                                Spec="{Binding Spec}"/>
+
+      <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12"
+                  HorizontalAlignment="Center" Margin="0,12,0,0">
+        <Button Content="Save" Classes="accent" Command="{Binding SaveCommand}"/>
+        <Button Content="Reload All" Command="{Binding ReloadCommand}"/>
       </StackPanel>
-
-      <Border Grid.Row="1" Classes="card" Padding="6">
-        <ListBox ItemsSource="{Binding Cards}"
-                 SelectedItem="{Binding SelectedCard}"
-                 Background="Transparent"
-                 BorderThickness="0">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:CardListItem">
-              <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"
-                         ToolTip.Tip="{Binding FileName}"/>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-      </Border>
-
-      <TextBlock Grid.Row="2" Text="{Binding Status}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
     </Grid>
 
-    <!-- Right: editor form -->
-    <Border Grid.Column="2" Classes="card" Padding="14">
-      <Panel>
+    <!-- Middle: editor form -->
+    <Grid Grid.Column="2" RowDefinitions="*,Auto" RowSpacing="10">
+      <Panel Grid.Row="0">
         <TextBlock Text="Select a card to edit it."
                    IsVisible="{Binding !HasSelection}"
                    Opacity="0.6" TextWrapping="Wrap"
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-        <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,*,Auto" RowSpacing="10">
-
-          <!-- Preview -->
-          <Border Grid.Row="0" Height="220" CornerRadius="8" ClipToBounds="True"
-                  Background="{DynamicResource ThumbBackgroundBrush}">
-            <Panel>
-              <Image Source="{Binding Image}" Stretch="Uniform"/>
-              <Border Classes="ribbon" Background="#D17B00" IsVisible="{Binding IsV1}">
-                <TextBlock Text="V1"/>
-              </Border>
-              <Border Classes="ribbon" Background="#2E7D32" IsVisible="{Binding IsV2}">
-                <TextBlock Text="V2"/>
-              </Border>
-            </Panel>
-          </Border>
-
-          <!-- Fields -->
-          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="10">
-              <Grid ColumnDefinitions="*,8,160">
-                <StackPanel Grid.Column="0" Spacing="4">
-                  <TextBlock Classes="field-label" Text="Name"/>
-                  <TextBox Text="{Binding Name}"/>
-                </StackPanel>
-                <StackPanel Grid.Column="2" Spacing="4">
-                  <TextBlock Classes="field-label" Text="Version"/>
-                  <TextBox Text="{Binding CharacterVersion}"/>
-                </StackPanel>
-              </Grid>
-
-              <StackPanel Spacing="4">
-                <TextBlock Classes="field-label" Text="Description"/>
-                <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap"
-                         MinHeight="120" MaxHeight="260"/>
+        <ScrollViewer IsVisible="{Binding HasSelection}" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="*,8,160">
+              <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Classes="field-label" Text="Name"/>
+                <TextBox Text="{Binding Name}"/>
               </StackPanel>
-
-              <StackPanel Spacing="4">
-                <TextBlock Classes="field-label" Text="Personality"/>
-                <TextBox Text="{Binding Personality}" AcceptsReturn="True" TextWrapping="Wrap"
-                         MinHeight="70" MaxHeight="200"/>
+              <StackPanel Grid.Column="2" Spacing="4">
+                <TextBlock Classes="field-label" Text="Version"/>
+                <TextBox Text="{Binding CharacterVersion}"/>
               </StackPanel>
+            </Grid>
 
-              <StackPanel Spacing="4">
-                <TextBlock Classes="field-label" Text="Scenario"/>
-                <TextBox Text="{Binding Scenario}" AcceptsReturn="True" TextWrapping="Wrap"
-                         MinHeight="70" MaxHeight="200"/>
-              </StackPanel>
-
-              <StackPanel Spacing="4">
-                <TextBlock Classes="field-label" Text="First message (greeting)"/>
-                <TextBox Text="{Binding FirstMessage}" AcceptsReturn="True" TextWrapping="Wrap"
-                         MinHeight="90" MaxHeight="240"/>
-              </StackPanel>
-
-              <StackPanel Spacing="4">
-                <TextBlock Classes="field-label" Text="Tags (comma separated)"/>
-                <TextBox Text="{Binding TagsText}"/>
-              </StackPanel>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="Creator"/>
+              <TextBox Text="{Binding Creator}"/>
             </StackPanel>
-          </ScrollViewer>
 
-          <!-- Actions -->
-          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
-            <Button Content="Save" Classes="accent" Command="{Binding SaveCommand}"/>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="Description"/>
+              <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap"
+                       MinHeight="120" MaxHeight="260"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="Personality"/>
+              <TextBox Text="{Binding Personality}" AcceptsReturn="True" TextWrapping="Wrap"
+                       MinHeight="70" MaxHeight="200"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="Scenario"/>
+              <TextBox Text="{Binding Scenario}" AcceptsReturn="True" TextWrapping="Wrap"
+                       MinHeight="70" MaxHeight="200"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="First message (greeting)"/>
+              <TextBox Text="{Binding FirstMessage}" AcceptsReturn="True" TextWrapping="Wrap"
+                       MinHeight="90" MaxHeight="240"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="Message examples"/>
+              <TextBox Text="{Binding MessageExample}" AcceptsReturn="True" TextWrapping="Wrap"
+                       MinHeight="90" MaxHeight="240"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="field-label" Text="Tags (comma separated)"/>
+              <TextBox Text="{Binding TagsText}"/>
+            </StackPanel>
           </StackPanel>
-        </Grid>
+        </ScrollViewer>
       </Panel>
+
+      <TextBlock Grid.Row="1" Text="{Binding Status}" Opacity="0.7" FontSize="12"
+                 VerticalAlignment="Center" TextWrapping="Wrap"/>
+    </Grid>
+
+    <!-- Right: thumbnail gallery, two per row -->
+    <Border Grid.Column="4" Classes="card" Padding="6">
+      <ListBox Classes="gallery"
+               ItemsSource="{Binding Cards}"
+               SelectedItem="{Binding SelectedCard}"
+               Background="Transparent"
+               BorderThickness="0"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal"/>
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:CardListItem">
+            <StackPanel Width="130" Spacing="4">
+              <!-- Square tile; UniformToFill crops portrait cards to centre, no distortion. -->
+              <Border Width="130" Height="130" CornerRadius="6" ClipToBounds="True"
+                      Background="{DynamicResource ThumbBackgroundBrush}">
+                <Image Source="{Binding Thumbnail}" Stretch="UniformToFill"/>
+              </Border>
+              <!-- NoWrap + ellipsis: Avalonia 12.1.0's text wrapper throws on some card names
+                   (emoji / unbreakable clusters); the trimming path sidesteps that bug. -->
+              <TextBlock Text="{Binding Display}" TextWrapping="NoWrap"
+                         TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"
+                         MaxWidth="128" FontSize="12"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
     </Border>
 
   </Grid>

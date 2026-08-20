@@ -33,7 +33,9 @@ public static class CharacterCardJson
                 StringField(source, "personality"),
                 StringField(source, "scenario"),
                 StringField(source, "first_mes"),
+                StringField(source, "mes_example"),
                 StringField(source, "character_version"),
+                StringField(source, "creator"),
                 StringArrayField(source, "tags"));
         }
         catch (JsonException)
@@ -43,22 +45,32 @@ public static class CharacterCardJson
     }
 
     /// <summary>
-    /// Returns <paramref name="originalJson"/> with the core fields of <paramref name="edited"/>
-    /// written into the correct container (root for V1, <c>data</c> for V2), preserving all other
-    /// fields. An empty or unparseable original yields a fresh minimal card matching the edit.
+    /// Returns <paramref name="originalJson"/> rewritten as a valid TavernCard V2 card, with the core
+    /// fields of <paramref name="edited"/> in its <c>data</c> object and every other field preserved.
+    /// A V1 (flat) source is upgraded — its fields move into <c>data</c> — and an empty or unparseable
+    /// source yields a fresh V2 card. The output is always <c>chara_card_v2</c>: strict importers such
+    /// as SillyTavern reject cards that keep fields at the root or omit the spec.
     /// </summary>
     public static string Apply(string? originalJson, CharacterCard edited)
     {
         var root = Parse(originalJson);
-        var container = FieldContainer(root);
+        var data = DataObject(root);
 
-        container["name"] = edited.Name;
-        container["description"] = edited.Description;
-        container["personality"] = edited.Personality;
-        container["scenario"] = edited.Scenario;
-        container["first_mes"] = edited.FirstMessage;
-        container["character_version"] = edited.CharacterVersion;
-        container["tags"] = TagsArray(edited.Tags);
+        // Canonical V2 envelope.
+        root["spec"] = "chara_card_v2";
+        root["spec_version"] = "2.0";
+        root["data"] = data;
+
+        // Core fields the editor owns; always strings/arrays, never null.
+        data["name"] = edited.Name;
+        data["description"] = edited.Description;
+        data["personality"] = edited.Personality;
+        data["scenario"] = edited.Scenario;
+        data["first_mes"] = edited.FirstMessage;
+        data["mes_example"] = edited.MessageExample;
+        data["character_version"] = edited.CharacterVersion;
+        data["creator"] = edited.Creator;
+        data["tags"] = TagsArray(edited.Tags);
 
         return root.ToJsonString();
     }
@@ -80,9 +92,33 @@ public static class CharacterCardJson
         }
     }
 
-    // The V2 nested `data` object when present; otherwise the root (V1 flat layout).
-    private static JsonObject FieldContainer(JsonObject root) =>
-        root["data"] is JsonObject data ? data : root;
+    // The existing V2 `data` object, or a fresh one carrying a flat V1 card's fields so nothing is lost.
+    private static JsonObject DataObject(JsonObject root)
+    {
+        if (root["data"] is JsonObject existing)
+        {
+            return existing;
+        }
+
+        var data = new JsonObject();
+        var promoted = root
+            .Select(pair => pair.Key)
+            .Where(key => key is not ("spec" or "spec_version" or "data"))
+            .ToList();
+
+        // Clone while still parented (safe), then detach from the root so nothing is duplicated.
+        foreach (var key in promoted)
+        {
+            data[key] = root[key]?.DeepClone();
+        }
+
+        foreach (var key in promoted)
+        {
+            root.Remove(key);
+        }
+
+        return data;
+    }
 
     private static JsonArray TagsArray(ImmutableArray<string> tags)
     {
