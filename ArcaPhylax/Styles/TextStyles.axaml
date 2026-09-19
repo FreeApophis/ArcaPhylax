@@ -1,21 +1,81 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Page heading. -->
+    <!-- Nocturne type. Inter throughout; headings at weight 500 — hierarchy
+         is size and space, never a heavier weight. -->
+
+    <!-- No bare `TextBlock` setter here on purpose: a global one also matches
+         the TextBlocks inside other controls' templates, so it would override
+         a Button's own font and the accent Foreground it hands its label. Body
+         font, size and colour are set once on Window/UserControl in
+         ControlStyles.axaml and reach ordinary text by inheritance. -->
+
+    <!-- The scale. -->
+    <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.h3, TextBlock.h4, TextBlock.h5,
+                     TextBlock.pageTitle, TextBlock.sectionTitle, TextBlock.cardTitle">
+        <Setter Property="FontFamily" Value="{DynamicResource FontHeading}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="{DynamicResource FontSizeH1}"/></Style>
+    <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="{DynamicResource FontSizeH2}"/></Style>
+    <Style Selector="TextBlock.h3"><Setter Property="FontSize" Value="{DynamicResource FontSizeH3}"/></Style>
+    <Style Selector="TextBlock.h4"><Setter Property="FontSize" Value="{DynamicResource FontSizeH4}"/></Style>
+    <Style Selector="TextBlock.h5"><Setter Property="FontSize" Value="{DynamicResource FontSizeH5}"/></Style>
+
+    <!-- Page heading — h3 on the scale. -->
     <Style Selector="TextBlock.pageTitle">
-        <Setter Property="FontSize" Value="24"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH3}"/>
     </Style>
     <Style Selector="TextBlock.pageSubtitle">
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
         <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
     </Style>
     <Style Selector="TextBlock.sectionTitle">
-        <Setter Property="FontSize" Value="15"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH5}"/>
     </Style>
+    <Style Selector="TextBlock.cardTitle">
+        <Setter Property="FontSize" Value="17"/>
+    </Style>
+
+    <!-- h6 / kicker — the tracked uppercase label. -->
+    <Style Selector="TextBlock.h6, TextBlock.kicker">
+        <Setter Property="FontFamily" Value="{DynamicResource FontHeading}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMicro}"/>
+        <Setter Property="LetterSpacing" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
+    </Style>
+    <!-- The kicker is the one place a small accent mark is welcome. -->
+    <Style Selector="TextBlock.kicker">
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <!-- Muted roles. -->
     <Style Selector="TextBlock.subtle">
         <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.faint">
+        <Setter Property="Foreground" Value="{DynamicResource FaintTextBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.small">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
+    </Style>
+    <Style Selector="TextBlock.micro">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMicro}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
+    </Style>
+    <!-- Paragraph-size accent text takes a deep ramp step: the accent itself
+         only clears 3:1 against the ground. -->
+    <Style Selector="TextBlock.accent">
+        <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+    </Style>
+
+    <!-- Rules fade to transparent at their ends — a Nocturne signature.
+         Freestanding rules fade; box outlines and in-control separators stay
+         solid. -->
+    <Style Selector="Border.hr">
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="0,11"/>
+        <Setter Property="Background" Value="{DynamicResource RuleBrush}"/>
     </Style>
 </Styles>

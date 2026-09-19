@@ -4,7 +4,7 @@ namespace DemiurgPlaygroundPlugin.Configuration;
 
 /// <summary>
 /// Loads and saves <see cref="DemiurgSettings"/> to a small JSON file next to the app. The host has
-/// no settings persistence yet, so the plugin owns its own (mirrors CharacterArchive).
+/// no settings persistence yet, so the plugin owns its own.
 /// </summary>
 public sealed class DemiurgSettingsStore
 {

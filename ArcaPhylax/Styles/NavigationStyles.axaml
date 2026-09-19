@@ -1,12 +1,17 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Kebab / menu toggle. -->
+    <!-- The navigation rail. Nocturne never floods an area with the accent,
+         so the selected item is an accent-tinted ground behind an accent line,
+         with the label and icon taking the accent — presence without a fill. -->
+
+    <!-- Kebab / brand toggle. -->
     <Style Selector="Button.kebab">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Width" Value="44"/>
         <Setter Property="Height" Value="44"/>
-        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -18,28 +23,52 @@
     </Style>
     <Style Selector="Button.kebab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource NavHoverBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.kebab:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource NavPressedBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
     </Style>
 
-    <!-- Navigation rail. -->
+    <!-- The sliding selection pill. -->
+    <Style Selector="Border.navPill">
+        <Setter Property="Background" Value="{DynamicResource AccentTintBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+    </Style>
+
+    <!-- The rail. -->
     <Style Selector="ListBox.nav">
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="8"/>
     </Style>
     <Style Selector="ListBox.nav ListBoxItem">
-        <Setter Property="Padding" Value="14,11"/>
-        <Setter Property="Margin" Value="0,3"/>
-        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="13,9"/>
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
     </Style>
     <Style Selector="ListBox.nav ListBoxItem TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeControl}"/>
     </Style>
     <Style Selector="ListBox.nav ListBoxItem PathIcon">
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
     </Style>
     <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource NavHoverBrush}"/>
     </Style>
-    <!-- Selected background is drawn by the sliding NavHighlight pill, so the item itself stays transparent. -->
+    <Style Selector="ListBox.nav ListBoxItem:pointerover TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:pointerover PathIcon">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <!-- Selected background is drawn by the sliding pill, so the item itself
+         stays transparent; only the label and icon take the accent. -->
     <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent"/>
     </Style>
@@ -47,9 +76,20 @@
         <Setter Property="Background" Value="Transparent"/>
     </Style>
     <Style Selector="ListBox.nav ListBoxItem:selected TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
     </Style>
     <Style Selector="ListBox.nav ListBoxItem:selected PathIcon">
-        <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <!-- The header bar pattern. -->
+    <Style Selector="Border.nav">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="11,8"/>
+    </Style>
+    <Style Selector="TextBlock.navBrand">
+        <Setter Property="FontFamily" Value="{DynamicResource FontHeading}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontSize" Value="18"/>
     </Style>
 </Styles>

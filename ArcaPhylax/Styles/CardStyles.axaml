@@ -1,11 +1,77 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Flat "card" container used across the pages. -->
-    <Style Selector="Border.card">
+    <!-- Nocturne surfaces. A card is a surface fill at the 8px radius; on a
+         dark ground elevation is a hairline edge plus ambient darkness, never
+         a stack of heavy shadows. -->
+
+    <!-- Both spellings resolve — the views use each. -->
+    <Style Selector="Border.card, Border.Card">
         <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="Padding" Value="20"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+        <Setter Property="Padding" Value="{DynamicResource PadCard}"/>
+    </Style>
+
+    <!-- A sunken well: the recessed ground inside a card (drop zones, code,
+         thumbnail beds). -->
+    <Style Selector="Border.well">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSunkenBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+        <Setter Property="Padding" Value="{DynamicResource PadCard}"/>
+    </Style>
+
+    <!-- A well accepting a drag: the accent arrives as an edge and a glow. -->
+    <Style Selector="Border.well.dropActive">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource AccentTintBrush}"/>
+    </Style>
+
+    <!-- Grid tile — a card that reacts to the pointer with an accent edge. -->
+    <Style Selector="Border.Tile, Border.tile">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSunkenBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.14"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.Tile:pointerover, Border.tile:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <!-- Elevation steps. -->
+    <Style Selector="Border.elev-sm">
+        <Setter Property="BoxShadow" Value="{DynamicResource ShadowSm}"/>
+    </Style>
+    <Style Selector="Border.elev-md">
+        <Setter Property="BoxShadow" Value="{DynamicResource ShadowMd}"/>
+    </Style>
+    <Style Selector="Border.elev-lg">
+        <Setter Property="BoxShadow" Value="{DynamicResource ShadowLg}"/>
+    </Style>
+
+    <!-- A modal at the top elevation, over its scrim. -->
+    <Style Selector="Border.dialog">
+        <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusLg}"/>
+        <Setter Property="Padding" Value="17"/>
+        <Setter Property="BoxShadow" Value="{DynamicResource ShadowLg}"/>
+    </Style>
+    <Style Selector="Border.scrim">
+        <Setter Property="Background" Value="{DynamicResource ScrimBrush}"/>
+    </Style>
+
+    <!-- The one saturated field: a full-bleed feature band. Saturation as
+         presence — never applied to ordinary interface chrome. -->
+    <Style Selector="Border.section">
+        <Setter Property="Background" Value="{DynamicResource SectionBrush}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+        <Setter Property="Padding" Value="22"/>
     </Style>
 </Styles>

@@ -13,6 +13,9 @@
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+    <!-- Nocturne. Order matters: later styles win, so the generic control
+         layer comes first and the specific component layers refine it. -->
+    <StyleInclude Source="avares://ArcaPhylax/Styles/ControlStyles.axaml"/>
     <StyleInclude Source="avares://ArcaPhylax/Styles/CardStyles.axaml"/>
     <StyleInclude Source="avares://ArcaPhylax/Styles/TextStyles.axaml"/>
     <StyleInclude Source="avares://ArcaPhylax/Styles/ButtonStyles.axaml"/>

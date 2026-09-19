@@ -20,8 +20,12 @@
 
     <SplitView.Pane>
       <Grid RowDefinitions="Auto,*">
-        <!-- Header: kebab toggle + brand (brand hides when collapsed). -->
-        <Grid Grid.Row="0" Margin="9,14,8,6" ColumnDefinitions="Auto,*">
+        <!-- Header: kebab toggle + brand (brand hides when collapsed).
+             Doubles as window chrome: dragging it moves the window. The kebab Button marks
+             PointerPressed as handled, so it still toggles instead of starting a drag. -->
+        <Grid Grid.Row="0" Margin="9,14,8,6" ColumnDefinitions="Auto,*"
+              Background="Transparent"
+              PointerPressed="OnChromePointerPressed">
           <Button Grid.Column="0" Classes="kebab"
                   Command="{Binding TogglePaneCommand}"
                   ToolTip.Tip="Toggle menu">
@@ -30,8 +34,7 @@
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
                       VerticalAlignment="Center" Margin="6,0,0,0"
                       IsVisible="{Binding IsPaneOpen}">
-            <TextBlock Text="ArcaPhylax" FontSize="17" FontWeight="SemiBold"
-                       Foreground="{DynamicResource PrimaryTextBrush}"
+            <TextBlock Text="ArcaPhylax" Classes="navBrand"
                        VerticalAlignment="Center"/>
           </StackPanel>
         </Grid>
@@ -49,9 +52,8 @@
             </DataTemplate>
           </Grid.Resources>
 
-          <Border x:Name="NavHighlight" Grid.RowSpan="2"
-                  Background="{DynamicResource AccentBrush}"
-                  CornerRadius="10" Margin="8,0"
+          <Border x:Name="NavHighlight" Grid.RowSpan="2" Classes="navPill"
+                  Margin="8,0"
                   HorizontalAlignment="Stretch" VerticalAlignment="Top"
                   IsVisible="False" IsHitTestVisible="False">
             <Border.RenderTransform>
@@ -79,9 +81,18 @@
       </Grid>
     </SplitView.Pane>
 
-    <!-- Page host. -->
-    <Border Padding="28" Background="Transparent">
-      <ContentControl Content="{Binding CurrentContent}"/>
-    </Border>
+    <!-- Page host, below a drag strip that stands in for the missing title bar and keeps
+         page content clear of the system caption buttons. The strip stops short of those
+         buttons so close/minimise/maximise stay clickable rather than starting a drag. -->
+    <Grid RowDefinitions="Auto,*">
+      <Border Grid.Row="0" Height="{DynamicResource TitleBarHeight}"
+              Margin="{DynamicResource CaptionButtonsReserve}"
+              Background="Transparent"
+              PointerPressed="OnChromePointerPressed"/>
+
+      <Border Grid.Row="1" Padding="{DynamicResource PadPageBelowChrome}" Background="Transparent">
+        <ContentControl Content="{Binding CurrentContent}"/>
+      </Border>
+    </Grid>
   </SplitView>
  </Window>

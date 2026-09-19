@@ -6,26 +6,27 @@
 
   <UserControl.Resources>
     <ResourceDictionary>
-      <!-- Typical chat colors: blueish for the human user, greenish for the AI. Each variant is tuned
-           so text stays legible against the bubble in both light and dark themes. -->
+      <!-- Nocturne keeps chroma low outside the accent, so the speakers are told apart by tonal
+           weight rather than hue: the crew member sits on an accent tint, the AI on the neutral
+           surface and its sunken step. Steps come from the shared ramps in ThemeBrushes.axaml. -->
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-          <SolidColorBrush x:Key="DemiurgUserBubble" Color="#D3E5FF"/>
-          <SolidColorBrush x:Key="DemiurgComputerBubble" Color="#CFEDD3"/>
-          <SolidColorBrush x:Key="DemiurgSimulationBubble" Color="#D6ECE6"/>
+          <SolidColorBrush x:Key="DemiurgUserBubble" Color="#E7E5FE"/>
+          <SolidColorBrush x:Key="DemiurgComputerBubble" Color="#E4E7F5"/>
+          <SolidColorBrush x:Key="DemiurgSimulationBubble" Color="#F3F5FE"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-          <SolidColorBrush x:Key="DemiurgUserBubble" Color="#22405F"/>
-          <SolidColorBrush x:Key="DemiurgComputerBubble" Color="#1E3B2A"/>
-          <SolidColorBrush x:Key="DemiurgSimulationBubble" Color="#1C3A34"/>
+          <SolidColorBrush x:Key="DemiurgUserBubble" Color="#2B2741"/>
+          <SolidColorBrush x:Key="DemiurgComputerBubble" Color="#232532"/>
+          <SolidColorBrush x:Key="DemiurgSimulationBubble" Color="#1B1D2A"/>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
 
   <UserControl.Styles>
-    <!-- The crew member's lines sit on the right in blue; the AI (computer + simulation) on the left
-         in green. Text uses the theme's default foreground so it contrasts in both themes. -->
+    <!-- The crew member's lines sit on the right on an accent tint; the AI (computer + simulation)
+         on the left on the neutral surface. Text uses the theme's default foreground. -->
     <Style Selector="Border.user">
       <Setter Property="Background" Value="{DynamicResource DemiurgUserBubble}"/>
       <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -55,7 +56,7 @@
                       Classes.simulation="{Binding IsSimulation}"
                       CornerRadius="8" Padding="10,8" Margin="6,4">
                 <StackPanel Spacing="3">
-                  <TextBlock Text="{Binding Author}" FontWeight="SemiBold" FontSize="11" Opacity="0.75"/>
+                  <TextBlock Text="{Binding Author}" FontWeight="Medium" FontSize="11" Opacity="0.75"/>
                   <TextBlock Text="{Binding Text}" TextWrapping="Wrap"/>
                 </StackPanel>
               </Border>

@@ -1,19 +1,164 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Accent (primary) button with the brand gradient. -->
-    <Style Selector="Button.accent">
-        <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Padding" Value="16,9"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+    <!-- Nocturne actions. Buttons are outlined — a 1px border on transparent —
+         never solid-filled. Hover and pressed are accent tints; keyboard focus
+         is the 2px accent ring from ControlStyles. -->
+
+    <!-- Base: every button in the app, before a variant class. -->
+    <Style Selector="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource FontHeading}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeControl}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+        <Setter Property="Padding" Value="{DynamicResource PadButton}"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
-    <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource AccentBrushHover}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource NavHoverBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
     </Style>
-    <Style Selector="Button.accent:disabled /template/ ContentPresenter">
+    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource NavPressedBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+    <Style Selector="Button:disabled">
         <Setter Property="Opacity" Value="0.45"/>
+    </Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <!-- Primary — the accent outline. `.accent` is the name the app already
+         uses; `.primary` reads the same. -->
+    <Style Selector="Button.accent, Button.primary">
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentTintBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="Button.accent:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentTintStrongBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentPressedBrush}"/>
+    </Style>
+    <Style Selector="Button.accent:disabled /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <!-- Secondary — the neutral outline (this is also the base look). -->
+    <Style Selector="Button.secondary">
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+    </Style>
+
+    <!-- Ghost — accent text, no border. -->
+    <Style Selector="Button.ghost">
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="6,4"/>
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentTintBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="Button.ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentTintStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentPressedBrush}"/>
+    </Style>
+
+    <!-- Icon-only, square. -->
+    <Style Selector="Button.icon">
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.icon PathIcon">
+        <Setter Property="Width" Value="18"/>
+        <Setter Property="Height" Value="18"/>
+    </Style>
+
+    <!-- Full-width action. -->
+    <Style Selector="Button.block">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Margin" Value="0,6,0,0"/>
+    </Style>
+
+    <!-- Danger keeps the outline language; only the hue moves. -->
+    <Style Selector="Button.danger">
+        <Setter Property="Foreground" Value="#E3899B"/>
+        <Setter Property="BorderBrush" Value="#E3899B"/>
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#1FE3899B"/>
+        <Setter Property="BorderBrush" Value="#E3899B"/>
+        <Setter Property="Foreground" Value="#E3899B"/>
+    </Style>
+
+    <!-- A standalone toggle follows the same outline language, checked state on
+         the accent tint. Opt-in by class so Expander headers and other
+         template-owned toggles keep their own theme. -->
+    <Style Selector="ToggleButton.toggle">
+        <Setter Property="FontFamily" Value="{DynamicResource FontHeading}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeControl}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+        <Setter Property="Padding" Value="{DynamicResource PadButton}"/>
+    </Style>
+    <Style Selector="ToggleButton.toggle:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentTintBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="ToggleButton.toggle:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentTintStrongBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <!-- Small labels tinted from the ramps. -->
+    <Style Selector="Border.tag">
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="10,3"/>
+        <Setter Property="Background" Value="{DynamicResource Neutral800}"/>
+    </Style>
+    <Style Selector="Border.tag > TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMicro}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Neutral100}"/>
+    </Style>
+    <Style Selector="Border.tag.accent">
+        <Setter Property="Background" Value="{DynamicResource Accent800}"/>
+    </Style>
+    <Style Selector="Border.tag.accent > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Accent100}"/>
+    </Style>
+    <Style Selector="Border.tag.outline">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Border.tag.outline > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
     </Style>
 </Styles>

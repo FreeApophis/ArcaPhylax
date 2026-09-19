@@ -54,11 +54,7 @@ public partial class DocumentsView : UserControl
         }
     }
 
+    // The drop-active look is a style class, so its colours stay on the tokens.
     private void SetHighlight(bool on)
-    {
-        DropZone.BorderBrush = on ? Avalonia.Media.Brushes.DodgerBlue : Avalonia.Media.Brushes.Gray;
-        DropZone.Background = on
-            ? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E2430"))
-            : new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#121416"));
-    }
+        => DropZone.Classes.Set("dropActive", on);
 }

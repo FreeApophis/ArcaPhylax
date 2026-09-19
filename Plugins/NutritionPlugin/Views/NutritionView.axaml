@@ -11,7 +11,7 @@
     <!-- People -->
     <Border Grid.Column="0" Classes="card" Padding="10">
       <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
-        <TextBlock Grid.Row="0" Text="People" FontWeight="SemiBold"/>
+        <TextBlock Grid.Row="0" Text="People" Classes="sectionTitle"/>
 
         <ListBox Grid.Row="1"
                  ItemsSource="{Binding People}"
@@ -39,14 +39,14 @@
       <StackPanel Spacing="12">
 
         <TextBlock Text="{Binding SelectedPerson.Name, FallbackValue='Select or add a person to begin'}"
-                   FontSize="18" FontWeight="SemiBold"/>
+                   FontSize="18" Classes="sectionTitle"/>
 
         <!-- Entry forms -->
         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
 
           <Border Grid.Column="0" Classes="card" Padding="10">
             <StackPanel Spacing="6">
-              <TextBlock Text="Log food" FontWeight="SemiBold"/>
+              <TextBlock Text="Log food" Classes="sectionTitle"/>
               <TextBox Text="{Binding NewFoodDescription}" PlaceholderText="Description (e.g. Porridge)"/>
               <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
                 <NumericUpDown Grid.Column="0" Value="{Binding NewFoodCalories}"
@@ -60,7 +60,7 @@
 
           <Border Grid.Column="1" Classes="card" Padding="10">
             <StackPanel Spacing="6">
-              <TextBlock Text="Log weight" FontWeight="SemiBold"/>
+              <TextBlock Text="Log weight" Classes="sectionTitle"/>
               <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
                 <NumericUpDown Grid.Column="0" Value="{Binding NewWeightKilograms}"
                                Minimum="0" Increment="0.1" FormatString="0.0" PlaceholderText="kg"/>
@@ -76,14 +76,14 @@
         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
           <Border Grid.Column="0" Classes="card" Padding="10">
             <StackPanel Spacing="6">
-              <TextBlock Text="Calorie intake (per day)" FontWeight="SemiBold"/>
-              <controls:LineChart Series="{Binding CalorieSeries}" Stroke="#E67E22" Height="180"/>
+              <TextBlock Text="Calorie intake (per day)" Classes="sectionTitle"/>
+              <controls:LineChart Series="{Binding CalorieSeries}" Stroke="{DynamicResource AccentBrush}" Height="180"/>
             </StackPanel>
           </Border>
           <Border Grid.Column="1" Classes="card" Padding="10">
             <StackPanel Spacing="6">
-              <TextBlock Text="Weight" FontWeight="SemiBold"/>
-              <controls:LineChart Series="{Binding WeightSeries}" Stroke="#3498DB" Height="180"/>
+              <TextBlock Text="Weight" Classes="sectionTitle"/>
+              <controls:LineChart Series="{Binding WeightSeries}" Stroke="{DynamicResource AccentBrush}" Height="180"/>
             </StackPanel>
           </Border>
         </Grid>
@@ -92,7 +92,7 @@
         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
           <Border Grid.Column="0" Classes="card" Padding="10">
             <StackPanel Spacing="6">
-              <TextBlock Text="Food log" FontWeight="SemiBold"/>
+              <TextBlock Text="Food log" Classes="sectionTitle"/>
               <ItemsControl ItemsSource="{Binding FoodEntries}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="data:FoodEntry">
@@ -109,7 +109,7 @@
 
           <Border Grid.Column="1" Classes="card" Padding="10">
             <StackPanel Spacing="6">
-              <TextBlock Text="Weight log" FontWeight="SemiBold"/>
+              <TextBlock Text="Weight log" Classes="sectionTitle"/>
               <ItemsControl ItemsSource="{Binding WeightEntries}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="data:WeightEntry">

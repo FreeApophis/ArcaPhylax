@@ -8,7 +8,7 @@
 
     <!-- Scanner device -->
     <StackPanel Spacing="6">
-      <TextBlock Text="Scanner" FontWeight="SemiBold"/>
+      <TextBlock Text="Scanner" Classes="fieldLabel"/>
       <StackPanel Orientation="Horizontal" Spacing="8">
         <ComboBox Width="320"
                   ItemsSource="{Binding Devices}"
@@ -22,7 +22,7 @@
 
     <!-- Profile selection -->
     <StackPanel Spacing="6">
-      <TextBlock Text="Profile" FontWeight="SemiBold"/>
+      <TextBlock Text="Profile" Classes="fieldLabel"/>
       <StackPanel Orientation="Horizontal" Spacing="8">
         <ComboBox Width="320"
                   ItemsSource="{Binding Settings.Profiles}"

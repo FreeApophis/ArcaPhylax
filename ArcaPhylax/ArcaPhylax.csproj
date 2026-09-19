@@ -35,8 +35,6 @@
 
 
 	<ItemGroup>
-		<PluginProject Include="..\Plugins\CharacterArchivePlugin\CharacterArchivePlugin.csproj" />
-		<PluginProject Include="..\Plugins\CharacterPlugin\CharacterPlugin.csproj" />
 		<PluginProject Include="..\Plugins\DemiurgPlaygroundPlugin\DemiurgPlaygroundPlugin.csproj" />
 		<PluginProject Include="..\Plugins\FractalPlugin\FractalPlugin.csproj" />
 		<PluginProject Include="..\Plugins\NutritionPlugin\NutritionPlugin.csproj" />

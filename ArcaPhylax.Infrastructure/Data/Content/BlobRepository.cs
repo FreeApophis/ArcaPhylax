@@ -48,6 +48,7 @@ public sealed class BlobRepository(ISqliteConnectionFactory db) : IBlobRepositor
             .Add("uri", storageUri)
             .Add("hash", contentHash)
             .ToDynamicParameters();
+
         return connection.QuerySingle<long>(SqlInsert, p);
     }
 
@@ -57,6 +58,7 @@ public sealed class BlobRepository(ISqliteConnectionFactory db) : IBlobRepositor
         var p = ImmutableDictionary<string, object?>.Empty
             .Add("id", id)
             .ToDynamicParameters();
+
         return connection.QuerySingleOrDefault<Blob>(SqlGetById, p);
     }
 
@@ -66,6 +68,7 @@ public sealed class BlobRepository(ISqliteConnectionFactory db) : IBlobRepositor
         var p = ImmutableDictionary<string, object?>.Empty
             .Add("itemId", itemId)
             .ToDynamicParameters();
+
         return connection.Query<Blob>(SqlGetByItem, p);
     }
 
@@ -75,6 +78,7 @@ public sealed class BlobRepository(ISqliteConnectionFactory db) : IBlobRepositor
         var p = ImmutableDictionary<string, object?>.Empty
             .Add("itemId", itemId)
             .ToDynamicParameters();
+
         return connection.QuerySingleOrDefault<Blob>(SqlGetPrimary, p);
     }
 
@@ -84,6 +88,7 @@ public sealed class BlobRepository(ISqliteConnectionFactory db) : IBlobRepositor
         var p = ImmutableDictionary<string, object?>.Empty
             .Add("id", id)
             .ToDynamicParameters();
+
         connection.Execute(SqlDelete, p);
     }
 }

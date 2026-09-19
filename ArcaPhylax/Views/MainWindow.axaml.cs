@@ -2,6 +2,7 @@ using ArcaPhylax.ViewModels;
 using Autofac;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 
 namespace ArcaPhylax.Views;
@@ -27,6 +28,26 @@ public partial class MainWindow : Window
     public MainWindow(IComponentContext ctx)
         : this()
         => DataContext = ctx.Resolve<MainWindowViewModel>();
+
+    // The window draws its own chrome (ExtendClientAreaToDecorationsHint), so the drag strip and
+    // the pane header stand in for the system title bar: press-and-drag moves, double-click
+    // toggles maximise.
+    private void OnChromePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState is WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        }
+        else
+        {
+            BeginMoveDrag(e);
+        }
+    }
 
     private void MoveHighlight()
     {

@@ -9,16 +9,15 @@
              x:Class="ArcaPhylax.Views.DashboardView"
              x:DataType="vm:DashboardViewModel">
 
-  <Grid ColumnDefinitions="*" RowDefinitions="Auto,*" Margin="16">
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto,*" RowSpacing="11">
 
-
-    <!-- Left: Search -->
-    <Border Classes="Card" Grid.Column="0" Grid.Row="0" Padding="12">
+    <!-- Search -->
+    <Border Classes="Card" Grid.Column="0" Grid.Row="0" Padding="11">
       <TextBox Classes="SearchBox" PlaceholderText="Search documents, images, tags…" Text="{Binding Query}"/>
     </Border>
 
-    <!-- Left: High-performance virtualized icon grid -->
-    <Border Classes="Card" Grid.Column="0" Grid.Row="1" Padding="12">
+    <!-- High-performance virtualized icon grid -->
+    <Border Classes="Card" Grid.Column="0" Grid.Row="1" Padding="11">
       <ScrollViewer>
         <ir:ItemsRepeater ItemsSource="{Binding Items}">
           <ir:ItemsRepeater.Layout>
@@ -27,16 +26,20 @@
 
           <ir:ItemsRepeater.ItemTemplate>
             <DataTemplate x:DataType="vm:DocumentTileVm">
-              <Border Classes="Tile" Width="118" Height="118" Padding="10">
-                <StackPanel Spacing="8">
+              <Border Classes="Tile" Width="118" Height="118" Padding="8">
+                <StackPanel Spacing="6">
                   <!-- Thumbnail placeholder -->
-                  <Border Height="58" CornerRadius="10" Background="#20252B">
-                    <TextBlock Text="{Binding Kind}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#8C98A6" FontSize="12"/>
+                  <Border Height="58" CornerRadius="{DynamicResource RadiusSm}"
+                          Background="{DynamicResource ThumbBackgroundBrush}">
+                    <TextBlock Text="{Binding Kind}" Classes="h6"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                   </Border>
 
-                  <TextBlock Text="{Binding Title}" Foreground="#D9DEE5" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Text="{Binding Title}" FontSize="{DynamicResource FontSizeSmall}"
+                             TextTrimming="CharacterEllipsis"/>
 
-                  <TextBlock Text="{Binding Subtitle}" Foreground="#8C98A6" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Text="{Binding Subtitle}" Classes="micro"
+                             TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
               </Border>
             </DataTemplate>

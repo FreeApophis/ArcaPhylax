@@ -22,7 +22,6 @@ ArcaPhylax.Plugin.Sdk/       Plugin-authoring surface: IPlugin, ViewModelBase. R
                              Autofac + CommunityToolkit.Mvvm. Plugins reference THIS (not Abstractions).
 ArcaPhylax.Infrastructure/   Persistence + provisioning: SQLite/Dapper repositories, DbInitializer,
                              indexing queue/worker, Postgres provisioning, InfrastructureModule. No Avalonia.
-Plugins/CharacterPlugin/     Plugin example
 Plugins/FractalPlugin/       Plugin example (with tabs, FractalPluginModule)
 Plugins/ScannerPlugin/       Plugin example (NAPS2 scanner workflow)
 ```
@@ -145,7 +144,6 @@ Test projects mirror the source project they test with a `.Tests` suffix and liv
 |---|---|
 | `ArcaPhylax` | `ArcaPhylax.Tests` |
 | `ArcaPhylax.Abstractions` | `ArcaPhylax.Abstractions.Tests` |
-| `Plugins/CharacterPlugin` | `Plugins/CharacterPlugin.Tests` |
 | `Plugins/FractalPlugin` | `Plugins/FractalPlugin.Tests` |
 | `Plugins/ScannerPlugin` | `Plugins/ScannerPlugin.Tests` |
 

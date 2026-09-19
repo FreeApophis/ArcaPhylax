@@ -1,13 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ArcaPhylax.Views.ImagesView">
-  <Grid RowDefinitions="Auto,Auto,*" Margin="6">
-    <TextBlock Text="🖼 Images" FontSize="22" Foreground="#D9DEE5"/>
-    <TextBlock Grid.Row="1" Text="Browse and filter image assets. Hook thumbnail loading + cache here." Margin="0,8,0,0" Foreground="#8C98A6"/>
-    <Border Grid.Row="2" Margin="0,14,0,0" CornerRadius="12" Background="#121416" BorderBrush="#2A2F35" BorderThickness="1" Padding="14">
-      <TextBlock Text="This area is resolved via Autofac (ViewFactory) and can host complex views, editors, media players, chat UI, etc."
-                 Foreground="#B7C0CB" TextWrapping="Wrap"/>
+  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="6">
+    <TextBlock Classes="pageTitle" Text="Images"/>
+    <TextBlock Grid.Row="1" Classes="pageSubtitle"
+               Text="Browse and filter image assets. Hook thumbnail loading + cache here."/>
+    <Border Grid.Row="2" Classes="well" Margin="0,11,0,0">
+      <TextBlock Classes="subtle" TextWrapping="Wrap"
+                 Text="This area is resolved via Autofac (ViewFactory) and can host complex views, editors, media players, chat UI, etc."/>
     </Border>
   </Grid>
 </UserControl>
-

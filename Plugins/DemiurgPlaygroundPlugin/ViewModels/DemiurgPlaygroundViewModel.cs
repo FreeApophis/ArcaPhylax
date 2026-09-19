@@ -15,8 +15,7 @@ namespace DemiurgPlaygroundPlugin.ViewModels;
 /// the ship's computer directly. Inference streams off the UI thread, marshalling tokens back via the
 /// dispatcher.
 /// </summary>
-// Derives from ObservableObject directly (not the shared ViewModelBase) — see the cross-AssemblyLoadContext
-// note on CharacterArchiveViewModel.
+// Derives from ObservableObject directly (not the shared ViewModelBase)
 public sealed partial class DemiurgPlaygroundViewModel(ILlamaChatService chat) : ObservableObject, ITabContentViewModel, IDisposable
 {
     private readonly ILlamaChatService _chat = chat;

@@ -7,13 +7,13 @@
   <StackPanel Spacing="10">
 
     <StackPanel Spacing="6">
-      <TextBlock Text="Model file (.gguf)" FontWeight="SemiBold"/>
+      <TextBlock Text="Model file (.gguf)" Classes="fieldLabel"/>
       <TextBox Text="{Binding Settings.ModelPath}"
                PlaceholderText="C:\models\your-model.Q4_K_M.gguf"/>
     </StackPanel>
 
     <StackPanel Spacing="6">
-      <TextBlock Text="CUDA runtime folder (for GPU)" FontWeight="SemiBold"/>
+      <TextBlock Text="CUDA runtime folder (for GPU)" Classes="fieldLabel"/>
       <TextBox Text="{Binding Settings.CudaRuntimePath}"
                PlaceholderText="Folder with cudart64_12.dll, cublas64_12.dll, cublasLt64_12.dll"/>
       <TextBlock Text="Leave empty to run on CPU. Point at a CUDA 12 Toolkit bin, or another app's CUDA runtime."
@@ -22,19 +22,19 @@
 
     <StackPanel Orientation="Horizontal" Spacing="16">
       <StackPanel Spacing="6">
-        <TextBlock Text="Context size" FontWeight="SemiBold"/>
+        <TextBlock Text="Context size" Classes="fieldLabel"/>
         <TextBox Width="120" Text="{Binding Settings.ContextSize}" PlaceholderText="4096"/>
       </StackPanel>
       <StackPanel Spacing="6">
-        <TextBlock Text="GPU layers" FontWeight="SemiBold"/>
+        <TextBlock Text="GPU layers" Classes="fieldLabel"/>
         <TextBox Width="120" Text="{Binding Settings.GpuLayerCount}" PlaceholderText="999"/>
       </StackPanel>
       <StackPanel Spacing="6">
-        <TextBlock Text="Temperature" FontWeight="SemiBold"/>
+        <TextBlock Text="Temperature" Classes="fieldLabel"/>
         <TextBox Width="120" Text="{Binding Settings.Temperature}" PlaceholderText="0.7"/>
       </StackPanel>
       <StackPanel Spacing="6">
-        <TextBlock Text="Max tokens" FontWeight="SemiBold"/>
+        <TextBlock Text="Max tokens" Classes="fieldLabel"/>
         <TextBox Width="120" Text="{Binding Settings.MaxTokens}" PlaceholderText="512"/>
       </StackPanel>
     </StackPanel>

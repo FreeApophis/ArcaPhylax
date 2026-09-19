@@ -1,44 +1,287 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Accent gradient: shared across both themes for a consistent brand. -->
-    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-        <GradientStop Color="#14B8A6" Offset="0"/>
-        <GradientStop Color="#6366F1" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="AccentBrushHover" StartPoint="0%,0%" EndPoint="100%,100%">
-        <GradientStop Color="#19C8B6" Offset="0"/>
-        <GradientStop Color="#7376F4" Offset="1"/>
-    </LinearGradientBrush>
-    <SolidColorBrush x:Key="AccentColorBrush" Color="#14B8A6"/>
-    <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF"/>
+    <!-- ══════════════════════════════════════════════════════════════════
+         Nocturne — the token sheet.
 
-    <!-- Per-variant brushes; flat surfaces with a very subtle background gradient. -->
+         Ported from the Nocturne design system (claude.ai/design → styles.css).
+         A quiet, compact dark interface: a near-neutral blue-grey ground,
+         Inter at medium weight, soft 8px radii, and an accent used as a line
+         and a glow rather than a flood.
+
+         Every colour, size, radius and shadow in the app comes from here.
+         Do not hard-code a hex, a font name or a px value these tokens carry.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Tonal ramps ────────────────────────────────────────────────────
+         Generated in OKLCH on one shared perceptual lightness scale, so the
+         same step of any role carries the same visual weight. Absolute
+         values: they do not change with the theme variant — only the roles
+         that pick from them do.
+         ─────────────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Neutral100" Color="#F3F5FE"/>
+    <SolidColorBrush x:Key="Neutral200" Color="#E4E7F5"/>
+    <SolidColorBrush x:Key="Neutral300" Color="#CFD3E5"/>
+    <SolidColorBrush x:Key="Neutral400" Color="#B2B6CA"/>
+    <SolidColorBrush x:Key="Neutral500" Color="#9397AB"/>
+    <SolidColorBrush x:Key="Neutral600" Color="#75798C"/>
+    <SolidColorBrush x:Key="Neutral700" Color="#595D6C"/>
+    <SolidColorBrush x:Key="Neutral800" Color="#3F424D"/>
+    <SolidColorBrush x:Key="Neutral900" Color="#292B31"/>
+
+    <SolidColorBrush x:Key="Accent100" Color="#F5F4FF"/>
+    <SolidColorBrush x:Key="Accent200" Color="#E7E5FE"/>
+    <SolidColorBrush x:Key="Accent300" Color="#D2CEFD"/>
+    <SolidColorBrush x:Key="Accent400" Color="#B5ABFC"/>
+    <SolidColorBrush x:Key="Accent500" Color="#968AE0"/>
+    <SolidColorBrush x:Key="Accent600" Color="#796CBF"/>
+    <SolidColorBrush x:Key="Accent700" Color="#5D5294"/>
+    <SolidColorBrush x:Key="Accent800" Color="#423A6A"/>
+    <SolidColorBrush x:Key="Accent900" Color="#2B2741"/>
+
+    <!-- Mono scheme: accent-2 is a machine-derived stand-in kept only so both
+         sets resolve. Treat it as one role with the accent. -->
+    <SolidColorBrush x:Key="Accent2_100" Color="#F5F4FF"/>
+    <SolidColorBrush x:Key="Accent2_300" Color="#D2CEFD"/>
+    <SolidColorBrush x:Key="Accent2_500" Color="#9690C9"/>
+    <SolidColorBrush x:Key="Accent2_800" Color="#423E5D"/>
+
+    <!-- Section ground — saturation as presence. Full-bleed feature bands
+         only; never interface chrome. -->
+    <SolidColorBrush x:Key="SectionBrush" Color="#262A60"/>
+    <SolidColorBrush x:Key="SectionGlowBrush" Color="#353B80"/>
+
+    <!-- ── Type ──────────────────────────────────────────────────────────
+         Inter for headings over Inter for body, weight 500 for headings.
+         Hierarchy here is size and space — never a heavier weight.
+         ─────────────────────────────────────────────────────────────────── -->
+    <FontFamily x:Key="FontHeading">Inter, Segoe UI Variable Display, Segoe UI, sans-serif</FontFamily>
+    <FontFamily x:Key="FontBody">Inter, Segoe UI Variable Text, Segoe UI, sans-serif</FontFamily>
+
+    <x:Double x:Key="FontSizeH1">42</x:Double>
+    <x:Double x:Key="FontSizeH2">32</x:Double>
+    <x:Double x:Key="FontSizeH3">25</x:Double>
+    <x:Double x:Key="FontSizeH4">20</x:Double>
+    <x:Double x:Key="FontSizeH5">16</x:Double>
+    <x:Double x:Key="FontSizeH6">13</x:Double>
+    <x:Double x:Key="FontSizeBody">15</x:Double>
+    <x:Double x:Key="FontSizeControl">14</x:Double>
+    <x:Double x:Key="FontSizeSmall">13</x:Double>
+    <x:Double x:Key="FontSizeMicro">11</x:Double>
+
+    <!-- ── Spacing — density 0.70×, dense on purpose ─────────────────────── -->
+    <x:Double x:Key="Space1">3</x:Double>
+    <x:Double x:Key="Space2">6</x:Double>
+    <x:Double x:Key="Space3">8</x:Double>
+    <x:Double x:Key="Space4">11</x:Double>
+    <x:Double x:Key="Space6">17</x:Double>
+    <x:Double x:Key="Space8">22</x:Double>
+
+    <Thickness x:Key="PadCard">14</Thickness>
+    <Thickness x:Key="PadPage">22</Thickness>
+    <!-- Page padding when the window's drag strip already supplies the top gap. -->
+    <Thickness x:Key="PadPageBelowChrome">22,0,22,22</Thickness>
+    <Thickness x:Key="PadControl">10,6</Thickness>
+    <Thickness x:Key="PadButton">11,6</Thickness>
+
+    <!-- Height of the custom title bar / window drag strip. -->
+    <x:Double x:Key="TitleBarHeight">40</x:Double>
+    <!-- Right-hand strip the system caption buttons occupy; the drag area must not cover it. -->
+    <Thickness x:Key="CaptionButtonsReserve">0,0,140,0</Thickness>
+
+    <!-- ── Radii — 8px base ──────────────────────────────────────────────── -->
+    <CornerRadius x:Key="RadiusSm">4</CornerRadius>
+    <CornerRadius x:Key="RadiusMd">8</CornerRadius>
+    <CornerRadius x:Key="RadiusLg">14</CornerRadius>
+
+    <!-- ── Elevation ─────────────────────────────────────────────────────
+         On a dark ground elevation is an edge plus ambient darkness — never
+         a stack of heavy shadows.
+         ─────────────────────────────────────────────────────────────────── -->
+    <BoxShadows x:Key="ShadowSm">0 0 0 1 #3F424D</BoxShadows>
+    <BoxShadows x:Key="ShadowMd">0 0 0 1 #595D6C, 0 6 18 0 #8C000000</BoxShadows>
+    <BoxShadows x:Key="ShadowLg">0 0 0 1 #9397AB, 0 16 40 0 #A6000000</BoxShadows>
+
+    <!-- ── Roles ─────────────────────────────────────────────────────────
+         Nocturne is a dark system; the Dark variant is the system as
+         designed. The Light variant reads the same ramps from the other end
+         so the app's theme switch keeps working.
+         ─────────────────────────────────────────────────────────────────── -->
     <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Dark">
+            <!-- Ground: soft gradient depth rather than a flat fill. -->
+            <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#161826" Offset="0"/>
+                <GradientStop Color="#12141F" Offset="1"/>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="BackgroundBrush" Color="#161826"/>
+            <SolidColorBrush x:Key="SidebarBrush" Color="#1A1C2B"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#232532"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#232532"/>
+            <SolidColorBrush x:Key="SurfaceSunkenBrush" Color="#1B1D2A"/>
+            <SolidColorBrush x:Key="ThumbBackgroundBrush" Color="#1B1D2A"/>
+
+            <!-- Rules and box outlines: 16% of the text colour. -->
+            <SolidColorBrush x:Key="DividerBrush" Color="#E9E9ED" Opacity="0.16"/>
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#E9E9ED" Opacity="0.12"/>
+
+            <SolidColorBrush x:Key="PrimaryTextBrush" Color="#E9E9ED"/>
+            <SolidColorBrush x:Key="SubtleTextBrush" Color="#E9E9ED" Opacity="0.55"/>
+            <SolidColorBrush x:Key="FaintTextBrush" Color="#E9E9ED" Opacity="0.40"/>
+
+            <!-- The accent: a line and a glow. Base 500, one step lighter for
+                 pressed (400), tints for hover. -->
+            <SolidColorBrush x:Key="AccentBrush" Color="#9184D9"/>
+            <SolidColorBrush x:Key="AccentColorBrush" Color="#9184D9"/>
+            <SolidColorBrush x:Key="AccentPressedBrush" Color="#B5ABFC"/>
+            <SolidColorBrush x:Key="AccentTextBrush" Color="#D2CEFD"/>
+            <SolidColorBrush x:Key="AccentTintBrush" Color="#9184D9" Opacity="0.12"/>
+            <SolidColorBrush x:Key="AccentTintStrongBrush" Color="#9184D9" Opacity="0.22"/>
+            <SolidColorBrush x:Key="AccentBrushHover" Color="#9184D9" Opacity="0.12"/>
+            <SolidColorBrush x:Key="OnAccentBrush" Color="#F5F4FF"/>
+
+            <!-- Freestanding rules fade to transparent at both ends. -->
+            <LinearGradientBrush x:Key="RuleBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+                <GradientStop Color="#00E9E9ED" Offset="0"/>
+                <GradientStop Color="#29E9E9ED" Offset="0.08"/>
+                <GradientStop Color="#29E9E9ED" Offset="0.92"/>
+                <GradientStop Color="#00E9E9ED" Offset="1"/>
+            </LinearGradientBrush>
+
+            <SolidColorBrush x:Key="NavHoverBrush" Color="#E9E9ED" Opacity="0.07"/>
+            <SolidColorBrush x:Key="NavPressedBrush" Color="#E9E9ED" Opacity="0.14"/>
+            <SolidColorBrush x:Key="ScrimBrush" Color="#292B31" Opacity="0.55"/>
+
+            <!-- ── Fluent's own palette ──────────────────────────────────
+                 Every built-in control derives its chrome from these keys, so
+                 repointing them is what carries Nocturne into the TextBoxes,
+                 ComboBoxes, scrollbars and grids we never touch by hand.
+                 "Alt" is the ground, "Base" is the ink, "Chrome" the neutrals.
+                 ───────────────────────────────────────────────────────────── -->
+            <Color x:Key="SystemAccentColor">#9184D9</Color>
+            <Color x:Key="SystemAccentColorLight1">#B5ABFC</Color>
+            <Color x:Key="SystemAccentColorLight2">#D2CEFD</Color>
+            <Color x:Key="SystemAccentColorLight3">#E7E5FE</Color>
+            <Color x:Key="SystemAccentColorDark1">#796CBF</Color>
+            <Color x:Key="SystemAccentColorDark2">#5D5294</Color>
+            <Color x:Key="SystemAccentColorDark3">#423A6A</Color>
+
+            <Color x:Key="SystemAltHighColor">#FF161826</Color>
+            <Color x:Key="SystemAltLowColor">#33161826</Color>
+            <Color x:Key="SystemAltMediumColor">#99161826</Color>
+            <Color x:Key="SystemAltMediumHighColor">#CC161826</Color>
+            <Color x:Key="SystemAltMediumLowColor">#66161826</Color>
+
+            <Color x:Key="SystemBaseHighColor">#FFE9E9ED</Color>
+            <Color x:Key="SystemBaseLowColor">#33E9E9ED</Color>
+            <Color x:Key="SystemBaseMediumColor">#99E9E9ED</Color>
+            <Color x:Key="SystemBaseMediumHighColor">#CCE9E9ED</Color>
+            <Color x:Key="SystemBaseMediumLowColor">#66E9E9ED</Color>
+
+            <Color x:Key="SystemChromeAltLowColor">#FFE4E7F5</Color>
+            <Color x:Key="SystemChromeBlackHighColor">#FF12141F</Color>
+            <Color x:Key="SystemChromeBlackLowColor">#3312141F</Color>
+            <Color x:Key="SystemChromeBlackMediumColor">#CC12141F</Color>
+            <Color x:Key="SystemChromeBlackMediumLowColor">#6612141F</Color>
+            <Color x:Key="SystemChromeDisabledHighColor">#FF3F424D</Color>
+            <Color x:Key="SystemChromeDisabledLowColor">#FF75798C</Color>
+            <Color x:Key="SystemChromeGrayColor">#FF9397AB</Color>
+            <Color x:Key="SystemChromeHighColor">#FF595D6C</Color>
+            <Color x:Key="SystemChromeLowColor">#FF1B1D2A</Color>
+            <Color x:Key="SystemChromeMediumColor">#FF232532</Color>
+            <Color x:Key="SystemChromeMediumLowColor">#FF2A2C3A</Color>
+            <Color x:Key="SystemChromeWhiteColor">#FFF3F5FE</Color>
+
+            <Color x:Key="SystemListLowColor">#19E9E9ED</Color>
+            <Color x:Key="SystemListMediumColor">#33E9E9ED</Color>
+            <Color x:Key="SystemRevealListLowColor">#19E9E9ED</Color>
+            <Color x:Key="SystemRevealListMediumColor">#33E9E9ED</Color>
+            <Color x:Key="SystemRegionColor">#FF161826</Color>
+            <Color x:Key="SystemErrorTextColor">#FFE3899B</Color>
+        </ResourceDictionary>
+
         <ResourceDictionary x:Key="Light">
             <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#F7F8FB" Offset="0"/>
-                <GradientStop Color="#EBEEF4" Offset="1"/>
+                <GradientStop Color="#F3F5FE" Offset="0"/>
+                <GradientStop Color="#E4E7F5" Offset="1"/>
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="SidebarBrush" Color="#FFFFFF"/>
-            <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
-            <SolidColorBrush x:Key="CardBorderBrush" Color="#E3E7EE"/>
-            <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1F2533"/>
-            <SolidColorBrush x:Key="SubtleTextBrush" Color="#6B7280"/>
-            <SolidColorBrush x:Key="NavHoverBrush" Color="#0F000000"/>
-            <SolidColorBrush x:Key="ThumbBackgroundBrush" Color="#F1F3F7"/>
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Dark">
-            <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#1C1F27" Offset="0"/>
-                <GradientStop Color="#14161C" Offset="1"/>
+            <SolidColorBrush x:Key="BackgroundBrush" Color="#F3F5FE"/>
+            <SolidColorBrush x:Key="SidebarBrush" Color="#EDEFFA"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#FBFCFF"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#FBFCFF"/>
+            <SolidColorBrush x:Key="SurfaceSunkenBrush" Color="#E4E7F5"/>
+            <SolidColorBrush x:Key="ThumbBackgroundBrush" Color="#E4E7F5"/>
+
+            <SolidColorBrush x:Key="DividerBrush" Color="#292B31" Opacity="0.16"/>
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#292B31" Opacity="0.12"/>
+
+            <SolidColorBrush x:Key="PrimaryTextBrush" Color="#292B31"/>
+            <SolidColorBrush x:Key="SubtleTextBrush" Color="#292B31" Opacity="0.60"/>
+            <SolidColorBrush x:Key="FaintTextBrush" Color="#292B31" Opacity="0.42"/>
+
+            <!-- A light ground takes the deeper ramp steps so the accent keeps
+                 its contrast; pressed goes one step deeper again. -->
+            <SolidColorBrush x:Key="AccentBrush" Color="#796CBF"/>
+            <SolidColorBrush x:Key="AccentColorBrush" Color="#796CBF"/>
+            <SolidColorBrush x:Key="AccentPressedBrush" Color="#5D5294"/>
+            <SolidColorBrush x:Key="AccentTextBrush" Color="#5D5294"/>
+            <SolidColorBrush x:Key="AccentTintBrush" Color="#796CBF" Opacity="0.12"/>
+            <SolidColorBrush x:Key="AccentTintStrongBrush" Color="#796CBF" Opacity="0.22"/>
+            <SolidColorBrush x:Key="AccentBrushHover" Color="#796CBF" Opacity="0.12"/>
+            <SolidColorBrush x:Key="OnAccentBrush" Color="#F5F4FF"/>
+
+            <LinearGradientBrush x:Key="RuleBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+                <GradientStop Color="#00292B31" Offset="0"/>
+                <GradientStop Color="#29292B31" Offset="0.08"/>
+                <GradientStop Color="#29292B31" Offset="0.92"/>
+                <GradientStop Color="#00292B31" Offset="1"/>
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="SidebarBrush" Color="#1E212A"/>
-            <SolidColorBrush x:Key="CardBrush" Color="#24262F"/>
-            <SolidColorBrush x:Key="CardBorderBrush" Color="#343844"/>
-            <SolidColorBrush x:Key="PrimaryTextBrush" Color="#E8EAEF"/>
-            <SolidColorBrush x:Key="SubtleTextBrush" Color="#9AA1AD"/>
-            <SolidColorBrush x:Key="NavHoverBrush" Color="#1AFFFFFF"/>
-            <SolidColorBrush x:Key="ThumbBackgroundBrush" Color="#1A1C22"/>
+
+            <SolidColorBrush x:Key="NavHoverBrush" Color="#292B31" Opacity="0.07"/>
+            <SolidColorBrush x:Key="NavPressedBrush" Color="#292B31" Opacity="0.14"/>
+            <SolidColorBrush x:Key="ScrimBrush" Color="#292B31" Opacity="0.40"/>
+
+            <Color x:Key="SystemAccentColor">#796CBF</Color>
+            <Color x:Key="SystemAccentColorLight1">#968AE0</Color>
+            <Color x:Key="SystemAccentColorLight2">#B5ABFC</Color>
+            <Color x:Key="SystemAccentColorLight3">#D2CEFD</Color>
+            <Color x:Key="SystemAccentColorDark1">#5D5294</Color>
+            <Color x:Key="SystemAccentColorDark2">#423A6A</Color>
+            <Color x:Key="SystemAccentColorDark3">#2B2741</Color>
+
+            <Color x:Key="SystemAltHighColor">#FFFBFCFF</Color>
+            <Color x:Key="SystemAltLowColor">#33FBFCFF</Color>
+            <Color x:Key="SystemAltMediumColor">#99FBFCFF</Color>
+            <Color x:Key="SystemAltMediumHighColor">#CCFBFCFF</Color>
+            <Color x:Key="SystemAltMediumLowColor">#66FBFCFF</Color>
+
+            <Color x:Key="SystemBaseHighColor">#FF292B31</Color>
+            <Color x:Key="SystemBaseLowColor">#33292B31</Color>
+            <Color x:Key="SystemBaseMediumColor">#99292B31</Color>
+            <Color x:Key="SystemBaseMediumHighColor">#CC292B31</Color>
+            <Color x:Key="SystemBaseMediumLowColor">#66292B31</Color>
+
+            <Color x:Key="SystemChromeAltLowColor">#FF595D6C</Color>
+            <Color x:Key="SystemChromeBlackHighColor">#FF292B31</Color>
+            <Color x:Key="SystemChromeBlackLowColor">#33292B31</Color>
+            <Color x:Key="SystemChromeBlackMediumColor">#CC292B31</Color>
+            <Color x:Key="SystemChromeBlackMediumLowColor">#66292B31</Color>
+            <Color x:Key="SystemChromeDisabledHighColor">#FFCFD3E5</Color>
+            <Color x:Key="SystemChromeDisabledLowColor">#FF9397AB</Color>
+            <Color x:Key="SystemChromeGrayColor">#FF75798C</Color>
+            <Color x:Key="SystemChromeHighColor">#FFB2B6CA</Color>
+            <Color x:Key="SystemChromeLowColor">#FFE4E7F5</Color>
+            <Color x:Key="SystemChromeMediumColor">#FFEDEFFA</Color>
+            <Color x:Key="SystemChromeMediumLowColor">#FFE4E7F5</Color>
+            <Color x:Key="SystemChromeWhiteColor">#FFFBFCFF</Color>
+
+            <Color x:Key="SystemListLowColor">#19292B31</Color>
+            <Color x:Key="SystemListMediumColor">#33292B31</Color>
+            <Color x:Key="SystemRevealListLowColor">#19292B31</Color>
+            <Color x:Key="SystemRevealListMediumColor">#33292B31</Color>
+            <Color x:Key="SystemRegionColor">#FFF3F5FE</Color>
+            <Color x:Key="SystemErrorTextColor">#FFA33B52</Color>
         </ResourceDictionary>
+
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
