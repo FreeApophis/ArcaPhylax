@@ -32,6 +32,7 @@
           <li><a href="#writing-a-plugin">Writing a plugin</a></li>
           <li><a href="#packaging">Packaging and signing</a></li>
           <li><a href="#publishing">Publishing</a></li>
+          <li><a href="#publish-your-plugin">Publish your plugin</a></li>
           <li><a href="#catalog-format">Catalog format</a></li>
         </ol>
       </nav>
@@ -135,6 +136,31 @@ internal sealed class HelloModule : Module
           <p>To try a catalog before publishing it, point the app at a local file:</p>
 <pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/Hello/Hello.csproj --out site-test/plugins --catalog site-test/catalog.json
 ARCAPHYLAX_PLUGIN_CATALOG=site-test/catalog.json dotnet run --project ArcaPhylax/ArcaPhylax.csproj</code></pre>
+        </section>
+
+        <section id="publish-your-plugin">
+          <h2>Publish your plugin</h2>
+          <p>Anyone can write a plugin. To have it listed in the catalog (and offered on the Plugins page in ArcaPhylax), you host the packages yourself and ArcaPhylax lists them:</p>
+          <ol>
+            <li>
+              <strong>Create your signing key</strong> and keep the private key file to yourself:
+<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- keygen my.key</code></pre>
+            </li>
+            <li>
+              <strong>Get endorsed.</strong> Open a <a href="https://github.com/FreeApophis/ArcaPhylax/issues/new?template=publisher-endorsement.yml">publisher endorsement issue</a> with your public key and the plugin id prefix you want (for example <code>Contoso</code>, which covers <code>Contoso</code> and <code>Contoso.*</code>). Once endorsed, your key is in <a href="../publishers.json">publishers.json</a>.
+            </li>
+            <li>
+              <strong>Pack for each platform and upload</strong> the <code>.arcaplugin</code> files to a release, for example on GitHub. With <code>--catalog</code> and <code>--base-url</code>, the pack tool writes your listing file:
+<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Hello/Hello.csproj --key my.key --rid win-x64 \
+    --out out --catalog catalog/contoso.json \
+    --base-url https://github.com/contoso/hello/releases/download/v1.0.0</code></pre>
+            </li>
+            <li>
+              <strong>Open a pull request</strong> adding <code>catalog/contoso.json</code> to the <a href="https://github.com/FreeApophis/ArcaPhylax">ArcaPhylax repository</a>. A check downloads every listed package and verifies its size, hash, signature, contents and publisher before it can be merged.
+            </li>
+          </ol>
+          <p>While you develop, you do not need an endorsement: install your package with <strong>Install from file…</strong> and choose <strong>Trust and install</strong> for your own key. That trust applies to your computer only.</p>
+          <p>Never replace a released package file: users' downloads are checked against the listed SHA-256. Publish a new version instead.</p>
         </section>
 
         <section id="catalog-format">

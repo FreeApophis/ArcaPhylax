@@ -5,10 +5,15 @@ namespace ArcaPhylax.PluginPack;
 /// <summary>Adds a packed plugin to a <c>catalog.json</c> on disk, linking the package relative to the catalog.</summary>
 internal static class CatalogFile
 {
-    public static Either<string, Unit> Add(string catalogPath, PackedPlugin packed, string packagePath)
+    /// <summary>Adds the package, linked relative to the catalog, or as <c>&lt;baseUrl&gt;/&lt;file&gt;</c> when a base URL is given.</summary>
+    public static Either<string, Unit> Add(string catalogPath, PackedPlugin packed, string packagePath, Option<string> baseUrl)
         => Existing(catalogPath).Select(catalog => Written(
             catalogPath,
-            catalog.With(packed.Manifest, RelativeUrl(catalogPath, packagePath), packed.Size, packed.Sha256)));
+            catalog.With(
+                packed.Manifest,
+                baseUrl.Match(none: () => RelativeUrl(catalogPath, packagePath), some: url => $"{url.TrimEnd('/')}/{packed.File}"),
+                packed.Size,
+                packed.Sha256)));
 
     private static Either<string, PluginCatalog> Existing(string catalogPath)
         => File.Exists(catalogPath)

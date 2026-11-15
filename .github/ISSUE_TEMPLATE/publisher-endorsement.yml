@@ -1,0 +1,42 @@
+name: Publisher endorsement
+description: Ask for your signing key to be endorsed, so your plugins can be listed in the ArcaPhylax catalog.
+title: "Publisher endorsement: <your name>"
+labels: [publisher-endorsement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Plugins run inside ArcaPhylax with full access to the user's computer, so only endorsed publishers are listed.
+        Create a signing key with `dotnet run --project tools/ArcaPhylax.PluginPack -- keygen my.key`, keep the
+        private key file to yourself, and paste the **public** key it prints below. Never post the private key.
+  - type: input
+    id: name
+    attributes:
+      label: Publisher name
+      description: Shown to users next to your plugins.
+      placeholder: Contoso
+    validations:
+      required: true
+  - type: input
+    id: public-key
+    attributes:
+      label: Public key
+      description: The base64 `publicKey` value printed by `keygen` (starts with MFkw).
+      placeholder: MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE...
+    validations:
+      required: true
+  - type: input
+    id: prefixes
+    attributes:
+      label: Plugin id prefixes
+      description: The ids you want to publish under. `Contoso` covers `Contoso` and `Contoso.*`. Separate several with `;`.
+      placeholder: Contoso
+    validations:
+      required: true
+  - type: textarea
+    id: about
+    attributes:
+      label: About you and your plugins
+      description: Who you are, where the source code lives, and what the plugins do.
+    validations:
+      required: true

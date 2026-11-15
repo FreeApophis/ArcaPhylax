@@ -1,6 +1,6 @@
 namespace ArcaPhylax.PluginPack;
 
-internal sealed record PackOptions(string Project, string KeyPath, string RuntimeIdentifier, string OutputDirectory, string Configuration, Option<string> Catalog)
+internal sealed record PackOptions(string Project, string KeyPath, string RuntimeIdentifier, string OutputDirectory, string Configuration, Option<string> Catalog, Option<string> BaseUrl)
 {
     /// <summary>The options, or None when the arguments are incomplete (no key) or malformed.</summary>
     public static Option<PackOptions> Parse(string project, IReadOnlyList<string> options, Option<string> defaultKey, string defaultRid)
@@ -12,5 +12,6 @@ internal sealed record PackOptions(string Project, string KeyPath, string Runtim
                pairs.Value("--rid").GetOrElse(defaultRid),
                pairs.Value("--out").GetOrElse(Path.Combine("artifacts", "plugins")),
                pairs.Value("--configuration").GetOrElse("Release"),
-               pairs.Value("--catalog"));
+               pairs.Value("--catalog"),
+               pairs.Value("--base-url"));
 }

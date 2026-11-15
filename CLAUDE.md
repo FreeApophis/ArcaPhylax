@@ -25,7 +25,9 @@ ArcaPhylax.Infrastructure/   Persistence + provisioning: SQLite/Dapper repositor
 ArcaPhylax.PluginPackaging/  The .arcaplugin format: plugin.json manifest, signing/verification,
                              compatibility check, per-user PluginStore. No Avalonia. Used by host + tool.
 tools/ArcaPhylax.PluginPack/ Developer tool: `keygen`, `pack` (publish + sign + verify, `--catalog` adds to catalog.json).
-site/                        Static website (homepage, plugins page, docs) for GitHub Pages.
+site/                        Static website (homepage, plugins page, docs) for GitHub Pages; site/publishers.json
+                             (root-signed publisher list, edited locally with `pluginpack endorse|revoke`).
+catalog/                     Third-party plugin listings (one JSON per publisher), merged into the catalog by CI.
 .github/workflows/pages.yml  Builds site/ + packs/signs every catalog plugin + catalog.json, deploys to Pages.
 Plugins/FractalPlugin/       Plugin example (with tabs, FractalPluginModule)
 Plugins/ScannerPlugin/       Plugin example (NAPS2 scanner workflow)
@@ -301,6 +303,13 @@ If a plugin needs a type to cross the plugin/host boundary, that type must live 
   `PluginOffer`; downloads must match the catalog's size + SHA-256, then go through the normal signed install.
   CI packs each plugin for its `PluginPlatforms` (default: all RIDs); `<PluginInCatalog>false</PluginInCatalog>`
   keeps a plugin bundled-only. Releasing = bump the plugin's `<Version>` and push to main.
+- **Third-party listings** live in `catalog/*.json` (catalog format, absolute https URLs to packages the
+  publisher hosts; `pack --catalog <file> --base-url <release url>` writes them). `pluginpack add-listings`
+  downloads every listed package and requires size/SHA-256, signature, manifest == listing, and an
+  endorsed signer from `site/publishers.json` owning the id (`ThirdPartyListing.Check`; built-ins and user
+  overrides do not count there). It runs on PRs (`check-listings.yml`, no secrets) and before every Pages
+  deploy; any problem fails the run. Endorsement requests come in via the issue form
+  `.github/ISSUE_TEMPLATE/publisher-endorsement.yml`.
 
 ### Plugin Registration Pattern
 

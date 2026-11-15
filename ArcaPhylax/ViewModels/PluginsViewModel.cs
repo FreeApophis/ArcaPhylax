@@ -249,7 +249,11 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     }
 
     private IEnumerable<CatalogRowVm> CatalogRows(PluginCatalog catalog)
-        => catalog.Plugins.Select(plugin => CatalogRowVm.Of(plugin, PluginOffer.For(plugin, PluginHost.Environment, InstalledVersion(plugin))));
+        => catalog.Plugins.Select(plugin => CatalogRowVm.Of(plugin, OwnerOf(plugin.Id), PluginOffer.For(plugin, PluginHost.Environment, InstalledVersion(plugin))));
+
+    /// <summary>The endorsed publisher that owns <paramref name="pluginId"/>; installing checks the actual signer.</summary>
+    private Option<string> OwnerOf(string pluginId)
+        => _plugins.Trust.Policy.Endorsed.FirstOrNone(publisher => publisher.Owns(pluginId)).Select(publisher => publisher.Name);
 
     /// <summary>The version this app runs of <paramref name="plugin"/>: an installed copy, else a loaded bundled one.</summary>
     private Option<string> InstalledVersion(CatalogPlugin plugin)

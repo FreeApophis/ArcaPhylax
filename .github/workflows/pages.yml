@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths:
       - site/**
+      - catalog/**
       - Plugins/**
       - ArcaPhylax.Plugin.Sdk/**
       - ArcaPhylax.Abstractions/**
@@ -29,6 +30,11 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: false
+
+env:
+  # Public half of the ArcaPhylax root key (also in ArcaPhylax/PluginSystem/TrustAnchors.cs). Only lists
+  # signed by it count when checking third-party listings.
+  ARCAPHYLAX_ROOT_PUBLIC_KEY: MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4u4tJe9ykuuKmaswvCYwP6HY5JgwNxNCxx+UJSKiTDFtjkI88UU9HW2RNgj7DOp9CWgmH8rQL52rTpvYLG/jHw==
 
 jobs:
   # Packing runs on Windows: ComputeSharp (FractalPlugin) compiles its HLSL shaders at build time with a
@@ -86,6 +92,12 @@ jobs:
               echo "::endgroup::"
             done
           done
+
+      - name: Add third-party listings
+        run: |
+          dotnet run --project tools/ArcaPhylax.PluginPack -c Release --no-build -- \
+            add-listings _site/catalog.json catalog \
+            --publishers site/publishers.json --root "$ARCAPHYLAX_ROOT_PUBLIC_KEY"
 
       - name: Remove signing key
         if: always()

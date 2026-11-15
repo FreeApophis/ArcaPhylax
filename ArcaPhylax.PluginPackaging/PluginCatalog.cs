@@ -46,6 +46,17 @@ public sealed record PluginCatalog(int SchemaVersion, ImmutableList<CatalogPlugi
         };
     }
 
+    /// <summary>This catalog plus the plugins of <paramref name="listing"/>; a plugin id may only be listed once.</summary>
+    public Either<string, PluginCatalog> Merge(PluginCatalog listing)
+        => listing.Plugins
+            .FirstOrNone(plugin => Plugins.Any(existing => string.Equals(existing.Id, plugin.Id, StringComparison.OrdinalIgnoreCase)))
+            .Match(
+                none: () => Either<string, PluginCatalog>.Right(this with
+                {
+                    Plugins = Plugins.AddRange(listing.Plugins).OrderBy(plugin => plugin.Id, StringComparer.Ordinal).ToImmutableList(),
+                }),
+                some: duplicate => Either<string, PluginCatalog>.Left($"the plugin id '{duplicate.Id}' is already listed."));
+
     private static Either<string, PluginCatalog> Deserialize(string json)
     {
         // JsonException is the parser's way of reporting malformed input; translate it at this boundary.

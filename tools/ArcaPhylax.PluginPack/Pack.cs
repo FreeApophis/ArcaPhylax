@@ -40,7 +40,7 @@ internal static class Pack
     private static Either<string, PackedPlugin> Catalogued(PackOptions options, PackedPlugin entry)
         => options.Catalog.Match(
             none: () => Either<string, PackedPlugin>.Right(entry),
-            some: catalog => CatalogFile.Add(catalog, entry, Path.Combine(options.OutputDirectory, entry.File)).Select(_ => entry));
+            some: catalog => CatalogFile.Add(catalog, entry, Path.Combine(options.OutputDirectory, entry.File), options.BaseUrl).Select(_ => entry));
 
     private static Either<string, PackedPlugin> Packed(PackOptions options, string publishDirectory)
         => from properties in ProjectProperties(options.Project)
