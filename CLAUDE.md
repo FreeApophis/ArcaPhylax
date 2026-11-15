@@ -284,7 +284,8 @@ If a plugin needs a type to cross the plugin/host boundary, that type must live 
   get `ExcludeAssets="runtime;native"`. A plugin's publish output must contain only its OWN files.
   After changing these rules, compare the bundled plugin sizes (Fractal 2.3 MB, Nutrition 3.4 MB,
   Scanner 30.2 MB, Demiurg 539 MB incl. CUDA) after deleting `ArcaPhylax/bin/.../Plugins`.
-- **Author kit** (nuget.org, `.github/workflows/nuget.yml` on tag `sdk-v*`, secret `NUGET_API_KEY`):
+- **Author kit** (nuget.org, `.github/workflows/nuget.yml` on tag `sdk-v*`; nuget.org Trusted Publishing via
+  `NuGet/login` + OIDC, environment `nuget`, repo variable `NUGET_USER` — no stored API key):
   ArcaPhylax.Abstractions + ArcaPhylax.Plugin.Sdk (keep versions equal; the SDK depends on Autofac,
   CommunityToolkit.Mvvm and Avalonia with `PrivateAssets="none"` so XAML compilation and source generators
   reach plugins), ArcaPhylax.Plugin.Templates, ArcaPhylax.PluginPack. Polyadic.CodeStyle blocks local

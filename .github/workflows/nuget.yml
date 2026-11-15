@@ -1,6 +1,13 @@
 # Publishes the plugin author kit to nuget.org: ArcaPhylax.Abstractions, ArcaPhylax.Plugin.Sdk,
 # ArcaPhylax.Plugin.Templates and the ArcaPhylax.PluginPack tool. Runs when a tag like sdk-v1.0.0 is pushed,
-# or by hand. Needs the repository secret NUGET_API_KEY (a nuget.org API key scoped to ArcaPhylax.*).
+# or by hand.
+#
+# Authentication is nuget.org Trusted Publishing: no stored API key. GitHub issues an OIDC token for this
+# workflow run, NuGet/login exchanges it for a short-lived (about an hour) API key. Setup, once:
+#   - nuget.org → your account → Trusted Publishing: add a policy for owner FreeApophis, repository ArcaPhylax,
+#     workflow file nuget.yml, environment nuget.
+#   - GitHub → Settings → Secrets and variables → Actions → Variables: NUGET_USER = your nuget.org user name.
+#
 # The version comes from each project's <Version>. Versions already on nuget.org are skipped, so bump the
 # <Version> of every package that changed before tagging.
 name: Publish plugin author kit
@@ -16,6 +23,11 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # A GitHub environment, so the trusted publishing policy can be bound to it (and approval rules added).
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write   # required to request the OIDC token for Trusted Publishing
     steps:
       - uses: actions/checkout@v5
 
@@ -40,13 +52,22 @@ jobs:
           name: nuget-packages
           path: artifacts/nuget/*.nupkg
 
-      - name: Push to nuget.org
+      - name: Check configuration
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_USER: ${{ vars.NUGET_USER }}
         run: |
-          if [ -z "$NUGET_API_KEY" ]; then
-            echo "::error::The repository secret NUGET_API_KEY is not set."
+          if [ -z "$NUGET_USER" ]; then
+            echo "::error::Set the repository variable NUGET_USER to your nuget.org user name."
             exit 1
           fi
-          dotnet nuget push "artifacts/nuget/*.nupkg" --api-key "$NUGET_API_KEY" \
+
+      - name: Log in to nuget.org (Trusted Publishing)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push to nuget.org
+        run: |
+          dotnet nuget push "artifacts/nuget/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --source https://api.nuget.org/v3/index.json --skip-duplicate
