@@ -56,5 +56,7 @@ public sealed class PluginLoadContext : AssemblyLoadContext
             || assemblyName == "ArcaPhylax.Plugin.Sdk"
             || assemblyName == "CommunityToolkit.Mvvm" // CommunityToolkit.Mvvm MUST be shared: its source-generated setters bind to whichever ObservableObject the plugin compiled against. If the plugin loaded its own copy, a ViewModelBase-derived VM using [ObservableProperty] would hit MethodAccessException across the ALC boundary. One shared copy gives a single ObservableObject identity.
             || assemblyName == "Autofac"
+            || assemblyName == "SkiaSharp" // Avalonia's renderer; the native libSkiaSharp exists once per process, so plugins (e.g. NAPS2.Images.Skia) must use the host's copy.
+            || assemblyName == "HarfBuzzSharp"
             || assemblyName.StartsWith("Avalonia", StringComparison.OrdinalIgnoreCase));
 }

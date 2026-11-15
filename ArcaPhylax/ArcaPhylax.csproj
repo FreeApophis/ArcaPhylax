@@ -50,7 +50,7 @@
 		<RemoveDir Directories="$(_HostPluginsDir)" Condition="Exists('$(_HostPluginsDir)')" />
 		<MakeDir Directories="$(_HostPluginsDir)" />
 
-		<MSBuild Projects="@(PluginProject)" Targets="Publish" BuildInParallel="true" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        PublishDir=$([System.IO.Path]::Combine('$(_HostPluginsDir)', '%(PluginProject.Filename)\'));&#xD;&#xA;        _PluginPublishFromHost=true" />
+		<MSBuild Projects="@(PluginProject)" Targets="Publish" BuildInParallel="true" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        PublishDir=$([System.IO.Path]::Combine('$(_HostPluginsDir)', '%(PluginProject.Filename)\'));&#xD;&#xA;        _PluginPublishFromHost=true;&#xD;&#xA;        RuntimeIdentifier=$(NETCoreSdkRuntimeIdentifier);&#xD;&#xA;        SelfContained=false" />
 	</Target>
 
 	<!-- PUBLISH : Copy the plugins -->
@@ -66,7 +66,7 @@
 		<RemoveDir Directories="$(_PublishedPluginsDir)" Condition="Exists('$(_PublishedPluginsDir)')" />
 		<MakeDir Directories="$(_PublishedPluginsDir)" />
 
-		<MSBuild Projects="@(PluginProject)" Targets="Publish" BuildInParallel="true" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        PublishDir=$([System.IO.Path]::Combine('$(_PublishedPluginsDir)', '%(PluginProject.Filename)\'));&#xD;&#xA;        _PluginPublishFromHost=true" />
+		<MSBuild Projects="@(PluginProject)" Targets="Publish" BuildInParallel="true" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        PublishDir=$([System.IO.Path]::Combine('$(_PublishedPluginsDir)', '%(PluginProject.Filename)\'));&#xD;&#xA;        _PluginPublishFromHost=true;&#xD;&#xA;        RuntimeIdentifier=$(NETCoreSdkRuntimeIdentifier);&#xD;&#xA;        SelfContained=false" />
 	</Target>
 
 </Project>
