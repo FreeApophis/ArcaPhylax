@@ -29,9 +29,9 @@ jobs:
       contents: read
       id-token: write   # required to request the OIDC token for Trusted Publishing
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -47,7 +47,7 @@ jobs:
           done
           ls -l artifacts/nuget
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: nuget-packages
           path: artifacts/nuget/*.nupkg
