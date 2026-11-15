@@ -1,11 +1,13 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <FunckyImplicitUsings>enable</FunckyImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup Label="Code Style">
     <PackageReference Include="Polyadic.CodeStyle" PrivateAssets="all" />
+    <PackageReference Include="Funcky.Analyzers" PrivateAssets="all" />
   </ItemGroup>
-</Project> 
+</Project>

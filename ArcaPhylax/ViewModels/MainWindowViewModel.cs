@@ -45,7 +45,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // single nav item is ever highlighted, and the active tab drives CurrentContent.
     public TabButtonViewModel? SelectedMainTab
     {
-        get => field;
+        get
+        {
+            return field;
+        }
+
         set
         {
             if (SetProperty(ref field, value) && value is not null)

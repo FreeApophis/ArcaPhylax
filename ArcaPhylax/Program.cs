@@ -2,7 +2,6 @@ using ArcaPhylax.Composition;
 using ArcaPhylax.PluginSystem;
 using Autofac;
 using Avalonia;
-using Funcky.Monads;
 
 namespace ArcaPhylax;
 

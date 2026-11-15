@@ -1,12 +1,38 @@
 ﻿
-# Temporary visual studio files
+# IDE / editor files
 /.vs
+.idea/
+.vscode/
+*.suo
+*.swp
+*.DotSettings.user
 
-# Build Directories
+# Build directories
 bin/
 obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+
+# Test results
+TestResults/
+*.trx
+coverage*.xml
+coverage*.json
 
 # User files
 *.user
-/app.db
+
+# Local SQLite databases (incl. WAL / shared-memory journals) and migration backups
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+/backups/
+
+# Logs and run output
+*.log
 /run_err.txt
+
+# Six Labors license files (not committed; no longer needed after removing ImageSharp)
+sixlabors.lic

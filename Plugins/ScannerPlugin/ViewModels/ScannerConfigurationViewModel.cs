@@ -4,7 +4,7 @@ using ArcaPhylax.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NAPS2.Images;
-using NAPS2.Images.ImageSharp;
+using NAPS2.Images.Skia;
 using NAPS2.Scan;
 using ScannerPlugin.Models;
 using ScannerPlugin.Services;
@@ -25,7 +25,7 @@ public sealed partial class ScannerConfigurationViewModel : ObservableObject, IC
     {
         Settings = settings;
 
-        _scanningContext = new ScanningContext(new ImageSharpImageContext());
+        _scanningContext = new ScanningContext(new SkiaImageContext());
         _controller = new ScanController(_scanningContext);
 
         Settings.PropertyChanged += OnSettingsChanged;

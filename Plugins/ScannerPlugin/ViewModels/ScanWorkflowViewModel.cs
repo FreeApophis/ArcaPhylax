@@ -6,7 +6,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NAPS2.Images;
-using NAPS2.Images.ImageSharp;
+using NAPS2.Images.Skia;
 using NAPS2.Pdf;
 using NAPS2.Scan;
 using ScannerPlugin.Models;
@@ -30,7 +30,7 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
         Settings = settings;
         Settings.PropertyChanged += OnSettingsChanged;
 
-        _scanningContext = new ScanningContext(new ImageSharpImageContext());
+        _scanningContext = new ScanningContext(new SkiaImageContext());
         _controller = new ScanController(_scanningContext);
 
         Pages = new ObservableCollection<ScanPageViewModel>();
@@ -242,7 +242,7 @@ public sealed partial class ScanWorkflowViewModel : ObservableObject, ITabConten
             AllowMultiple = false,
         });
 
-        if (folders.FirstOrDefault() is not { } folder)
+        if (folders.FirstOrNone() is not [var folder])
         {
             return;
         }

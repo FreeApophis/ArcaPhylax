@@ -263,12 +263,11 @@ public sealed class LlamaChatService : ILlamaChatService, IDisposable
 
         var source = CpuBackendPreference
             .Select(folder => Path.Combine(nativeRoot, folder, "ggml-cpu.dll"))
-            .FirstOrDefault(File.Exists)
-            ?? Directory.EnumerateFiles(nativeRoot, "ggml-cpu.dll", SearchOption.AllDirectories).FirstOrDefault();
+            .FirstOrNone(File.Exists).OrElse(() => Directory.EnumerateFiles(nativeRoot, "ggml-cpu.dll", SearchOption.AllDirectories).FirstOrNone());
 
-        if (source is not null)
+        if (source is [var notNullSource])
         {
-            File.Copy(source, target, overwrite: true);
+            File.Copy(notNullSource, target, overwrite: true);
         }
     }
 

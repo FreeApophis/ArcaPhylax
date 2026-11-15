@@ -4,16 +4,6 @@ using NAPS2.Scan;
 
 namespace ScannerPlugin.Models;
 
-/// <summary>Page sizes offered by a scanner profile. Mapped to NAPS2 page sizes on the scan page.</summary>
-public enum ScanPageSize
-{
-    A4,
-    A5,
-    A3,
-    Letter,
-    Legal,
-}
-
 /// <summary>
 /// A named bundle of scan settings. This is an editable, two-way-bound model rather than a record
 /// (it needs INPC so the configuration UI can edit it in place), hence <see cref="ObservableObject"/>.

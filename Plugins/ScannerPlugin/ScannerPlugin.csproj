@@ -13,11 +13,12 @@
 		<PackageReference Include="Funcky" />
 		<PackageReference Include="Microsoft.Data.Sqlite" />
 		<PackageReference Include="NAPS2.Sdk" />
-		<PackageReference Include="NAPS2.Images.ImageSharp" />
+		<!-- Skia image backend; replaces NAPS2.Images.ImageSharp (SixLabors license gate).
+		     Requires SkiaSharp 4.x, pinned centrally to match the host. -->
+		<PackageReference Include="NAPS2.Images.Skia" />
 
 		<!-- Optional, aber für TWAIN unter Windows oft nötig -->
 		<PackageReference Include="NAPS2.Sdk.Worker.Win32" Condition="'$(OS)' == 'Windows_NT'" />
-		<PackageReference Include="SixLabors.ImageSharp" />
 	</ItemGroup>
 
 

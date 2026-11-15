@@ -6,6 +6,6 @@ public interface IPostgresProvisioner
         CancellationToken cancellationToken = default);
 
     Task<PostgresInstallationStatus> EnsureInstalledAsync(
-        PostgresProvisioningOptions options,
+        PostgresProvisioningOptions provisioningOptions,
         CancellationToken cancellationToken = default);
 }

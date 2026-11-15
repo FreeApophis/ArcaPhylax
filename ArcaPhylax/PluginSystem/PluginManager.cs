@@ -2,9 +2,6 @@
 using ArcaPhylax.Abstractions;
 using Autofac;
 using Autofac.Features.Metadata;
-using Funcky.Extensions;
-using Funcky.Monads;
-using static Funcky.Functional;
 
 namespace ArcaPhylax.PluginSystem;
 
@@ -133,7 +130,8 @@ public sealed class PluginManager
         => Path.Combine(AppContext.BaseDirectory, "plugins");
 
     private static Option<string> ToPluginDllOrNone(string pluginDll)
-        => Option.FromBoolean(File.Exists(pluginDll), pluginDll);
+        => File.Exists(pluginDll)
+            .Then(pluginDll);
 
     private static string PluginDllFromName(string pluginName)
         => Path.Combine(GetPluginsPath(), pluginName, $"{pluginName}.dll");

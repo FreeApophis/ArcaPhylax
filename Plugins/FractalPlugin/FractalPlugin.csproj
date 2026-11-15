@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<!-- ComputeSharp is DirectX 12 / Windows-only; this plugin only renders on Windows.
 		     Suppress CA1416 platform-compatibility warnings for its GPU APIs. -->

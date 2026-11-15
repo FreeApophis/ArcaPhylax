@@ -12,7 +12,7 @@ namespace ArcaPhylax.Composition;
 /// </summary>
 public sealed class ViewLocator(IViewFactory views) : IDataTemplate
 {
-    public Control? Build(object? data) => data is null ? null : views.Create(data);
+    public Control? Build(object? param) => param is null ? null : views.Create(param);
 
     public bool Match(object? data) => data is IConfigurationSection;
 }

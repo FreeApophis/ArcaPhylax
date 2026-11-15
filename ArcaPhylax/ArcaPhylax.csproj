@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
 		<OutputType>WinExe</OutputType>
 		<ApplicationIcon>Resources/arca-phylax.ico</ApplicationIcon>
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
@@ -19,8 +16,9 @@
 		<PackageReference Include="Autofac" />
 		<PackageReference Include="CommunityToolkit.Mvvm" />
 		<PackageReference Include="Funcky" />
+		<!-- Explicit SkiaSharp 4.x: Avalonia 12.1 supports it but still depends on 3.x. -->
+		<PackageReference Include="SkiaSharp" />
 
-		<PackageReference Include="SixLabors.ImageSharp" />
 	</ItemGroup>
 
 	<ItemGroup>

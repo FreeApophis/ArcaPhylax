@@ -26,7 +26,11 @@ internal sealed class DashboardViewModel : ViewModelBase, ITabContentViewModel
 
     public string? Query
     {
-        get => field;
+        get
+        {
+            return field;
+        }
+
         set
         {
             SetProperty(ref field, value);

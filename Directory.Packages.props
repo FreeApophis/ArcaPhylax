@@ -1,12 +1,14 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Lets the SkiaSharp pins below override Avalonia.Skia's transitive SkiaSharp 3.x in every
+         project that pulls in Avalonia (host and plugins alike). -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <ItemGroup Label="Analyzers">
-    <PackageVersion Include="Polyadic.CodeStyle" Version="1.1.0" />
+    <PackageVersion Include="Polyadic.CodeStyle" Version="1.2.3" />
+    <PackageVersion Include="Funcky.Analyzers" Version="2.1.0" />
   </ItemGroup>
-
   <ItemGroup Label="Avalonia">
     <PackageVersion Include="Avalonia" Version="12.1.0" />
     <PackageVersion Include="Avalonia.Desktop" Version="12.1.0" />
@@ -19,26 +21,29 @@
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
-
+  <ItemGroup Label="SkiaSharp">
+    <!-- Avalonia 12.1 supports SkiaSharp 4.x but still depends on 3.x, so 4.x must be referenced
+         explicitly (https://github.com/AvaloniaUI/Avalonia/issues/21696). Needed by NAPS2.Images.Skia.
+         Keep all SkiaSharp packages on one version: the native libSkiaSharp is loaded once per process.
+         HarfBuzzSharp is versioned separately and stays on Avalonia's 8.x. -->
+    <PackageVersion Include="SkiaSharp" Version="4.156.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="4.156.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.156.1" />
+  </ItemGroup>
   <ItemGroup Label="Runtime">
-    <PackageVersion Include="Autofac" Version="9.1.0" />
-    <PackageVersion Include="Dapper" Version="2.1.72" />
+    <PackageVersion Include="Autofac" Version="9.3.4" />
+    <PackageVersion Include="Dapper" Version="2.1.89" />
     <PackageVersion Include="Serilog" Version="4.3.1" />
-    <PackageVersion Include="Funcky" Version="3.6.0" />
+    <PackageVersion Include="Funcky" Version="3.8.0" />
     <PackageVersion Include="ComputeSharp" Version="3.2.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.2.26159.112" />
     <PackageVersion Include="Npgsql" Version="10.0.1" />
-
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
-
     <PackageVersion Include="LLamaSharp" Version="0.27.0" />
     <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.27.0" />
-
-    <PackageVersion Include="NAPS2.Sdk" Version="1.2.1" />
-    <PackageVersion Include="NAPS2.Sdk.Worker.Win32" Version="1.2.1" />
-    <PackageVersion Include="NAPS2.Images.ImageSharp" Version="1.2.1" />
+    <PackageVersion Include="NAPS2.Sdk" Version="1.6.1" />
+    <PackageVersion Include="NAPS2.Sdk.Worker.Win32" Version="1.6.1" />
+    <PackageVersion Include="NAPS2.Images.Skia" Version="1.6.1" />
   </ItemGroup>
-
   <ItemGroup Label="Testing">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />

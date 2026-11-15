@@ -9,17 +9,17 @@ public sealed class PostgresProvisioner(
         => EnsureInstalledAsync(options, cancellationToken);
 
     public async Task<PostgresInstallationStatus> EnsureInstalledAsync(
-        PostgresProvisioningOptions installOptions,
+        PostgresProvisioningOptions provisioningOptions,
         CancellationToken cancellationToken = default)
     {
         var before = await detector.DetectAsync(cancellationToken).ConfigureAwait(false);
         if (before.IsInstalled)
         {
-            EnsurePreferredVersionIfNeeded(before, installOptions);
+            EnsurePreferredVersionIfNeeded(before, provisioningOptions);
             return before;
         }
 
-        await installer.InstallAsync(installOptions, cancellationToken).ConfigureAwait(false);
+        await installer.InstallAsync(provisioningOptions, cancellationToken).ConfigureAwait(false);
 
         var after = await detector.DetectAsync(cancellationToken).ConfigureAwait(false);
         if (!after.IsInstalled)
@@ -28,7 +28,7 @@ public sealed class PostgresProvisioner(
                 "PostgreSQL installation command completed, but PostgreSQL still could not be detected.");
         }
 
-        EnsurePreferredVersionIfNeeded(after, installOptions);
+        EnsurePreferredVersionIfNeeded(after, provisioningOptions);
         return after;
     }
 
