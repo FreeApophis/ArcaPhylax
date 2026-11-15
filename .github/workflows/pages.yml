@@ -30,8 +30,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Packing runs on Windows: ComputeSharp (FractalPlugin) compiles its HLSL shaders at build time with a
+  # source generator that needs Windows (kernel32/DXC), whatever the target RID. Linux/macOS packages
+  # cross-publish fine from Windows.
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v5
 
@@ -63,9 +69,10 @@ jobs:
           set -euo pipefail
           for project in Plugins/*/*.csproj; do
             properties=$(dotnet msbuild "$project" -getProperty:PluginId -getProperty:PluginPlatforms -getProperty:PluginInCatalog)
-            id=$(jq -r '.Properties.PluginId' <<< "$properties")
-            platforms=$(jq -r '.Properties.PluginPlatforms' <<< "$properties")
-            in_catalog=$(jq -r '.Properties.PluginInCatalog' <<< "$properties")
+            # tr: jq on Windows ends lines with CRLF.
+            id=$(jq -r '.Properties.PluginId' <<< "$properties" | tr -d '\r')
+            platforms=$(jq -r '.Properties.PluginPlatforms' <<< "$properties" | tr -d '\r')
+            in_catalog=$(jq -r '.Properties.PluginInCatalog' <<< "$properties" | tr -d '\r')
             if [ -z "$id" ] || [ "$in_catalog" != "true" ]; then
               echo "Skipping $project"
               continue
@@ -83,12 +90,28 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/plugin.key"
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: _site
+          if-no-files-found: error
+
+  # The Pages artifact is made on Linux, where upload-pages-artifact's tar packaging is the supported path.
+  pages-artifact:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: _site
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
   deploy:
-    needs: build
+    needs: pages-artifact
     runs-on: ubuntu-latest
     environment:
       name: github-pages
