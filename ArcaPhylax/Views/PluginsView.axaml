@@ -36,6 +36,23 @@
         </StackPanel>
       </Border>
 
+      <!-- Unknown publisher: shown when an install stopped because nobody vouches for the signer. -->
+      <Border Classes="card" IsVisible="{Binding IsTrustPromptVisible}"
+              BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="sectionTitle" Text="Trust this publisher?"/>
+          <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource PrimaryTextBrush}"
+                     Text="{Binding PendingTrust.KeyId, StringFormat='This plugin is signed with key {0}, which ArcaPhylax does not know. Plugins run with the same access to your computer as ArcaPhylax itself: they can read your files and use the network.'}"/>
+          <TextBlock TextWrapping="Wrap" Classes="subtle"
+                     Text="Only trust it if you know who made it, for example your own key while you develop a plugin. You can remove the trust later under Trusted publishers."/>
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <TextBox Width="260" PlaceholderText="Name for this publisher" Text="{Binding TrustName}"/>
+            <Button Classes="accent" Content="Trust and install" Command="{Binding ConfirmTrustCommand}"/>
+            <Button Classes="secondary" Content="Cancel" Command="{Binding CancelTrustCommand}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
       <Border Classes="card">
         <StackPanel Spacing="12">
           <Grid ColumnDefinitions="*,Auto">
@@ -71,26 +88,57 @@
       <Border Classes="card">
         <StackPanel Spacing="12">
           <TextBlock Classes="sectionTitle" Text="Plugins"/>
-          <Grid ColumnDefinitions="2*,90,100,3*,Auto" Margin="0,0,0,4">
+          <Grid ColumnDefinitions="2*,80,90,2*,3*,Auto" Margin="0,0,0,4">
             <TextBlock Grid.Column="0" Classes="subtle" Text="Name"/>
             <TextBlock Grid.Column="1" Classes="subtle" Text="Version"/>
             <TextBlock Grid.Column="2" Classes="subtle" Text="Source"/>
-            <TextBlock Grid.Column="3" Classes="subtle" Text="State"/>
+            <TextBlock Grid.Column="3" Classes="subtle" Text="Publisher"/>
+            <TextBlock Grid.Column="4" Classes="subtle" Text="State"/>
           </Grid>
           <ItemsControl ItemsSource="{Binding Rows}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:PluginRowVm">
-                <Grid ColumnDefinitions="2*,90,100,3*,Auto" Margin="0,4">
+                <Grid ColumnDefinitions="2*,80,90,2*,3*,Auto" Margin="0,4">
                   <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding Name}"
                              Foreground="{DynamicResource PrimaryTextBrush}"/>
                   <TextBlock Grid.Column="1" VerticalAlignment="Center" Classes="subtle" Text="{Binding Version}"/>
                   <TextBlock Grid.Column="2" VerticalAlignment="Center" Classes="subtle" Text="{Binding Source}"/>
-                  <TextBlock Grid.Column="3" VerticalAlignment="Center" TextWrapping="Wrap"
+                  <TextBlock Grid.Column="3" VerticalAlignment="Center" Classes="subtle" TextWrapping="Wrap" Text="{Binding Publisher}"/>
+                  <TextBlock Grid.Column="4" VerticalAlignment="Center" TextWrapping="Wrap"
                              Foreground="{DynamicResource PrimaryTextBrush}" Text="{Binding State}"/>
-                  <Button Grid.Column="4" Classes="secondary" Content="Remove"
+                  <Button Grid.Column="5" Classes="secondary" Content="Remove"
                           IsVisible="{Binding CanRemove}"
                           Command="{Binding #Root.((vm:PluginsViewModel)DataContext).RemoveCommand}"
                           CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="sectionTitle" Text="Trusted publishers"/>
+          <TextBlock Classes="subtle" TextWrapping="Wrap"
+                     Text="Plugins are only installed and loaded when their publisher is trusted. Endorsed publishers are vouched for by ArcaPhylax; you can also trust a publisher yourself, or block one."/>
+          <ItemsControl ItemsSource="{Binding Publishers}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:PublisherRowVm">
+                <Grid ColumnDefinitions="*,130,Auto" Margin="0,6">
+                  <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBlock Classes="subtle" FontSize="12" TextWrapping="Wrap" Text="{Binding Summary}"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Classes="subtle" Text="{Binding Standing}"/>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="secondary" Content="Block" IsVisible="{Binding CanBlock}"
+                            Command="{Binding #Root.((vm:PluginsViewModel)DataContext).BlockPublisherCommand}"
+                            CommandParameter="{Binding}"/>
+                    <Button Classes="secondary" Content="{Binding ForgetLabel}" IsVisible="{Binding CanForget}"
+                            Command="{Binding #Root.((vm:PluginsViewModel)DataContext).ForgetPublisherCommand}"
+                            CommandParameter="{Binding}"/>
+                  </StackPanel>
                 </Grid>
               </DataTemplate>
             </ItemsControl.ItemTemplate>

@@ -29,9 +29,24 @@ public sealed record TrustPolicy(ImmutableList<Publisher> Endorsed, ImmutableLis
             (false, false) => EndorsedOrUserTrusted(pluginId, signer),
         };
 
+    /// <summary>Every publisher this policy knows, with its standing: endorsed, trusted by the user, or blocked.</summary>
+    public ImmutableList<PublisherStanding> Standings()
+        => Endorsed
+            .Select(EndorsedStanding)
+            .Concat(User.Trusted.Select(trusted => new UserTrustedPublisher(trusted)))
+            .Concat(User.BlockedKeyIds
+                .Where(keyId => !Endorsed.Any(publisher => publisher.Key.KeyId == keyId))
+                .Select(keyId => new BlockedPublisher(keyId, Option<string>.None)))
+            .ToImmutableList();
+
     private static Either<TrustError, TrustedSigner> Trusted(TrustedSigner signer) => Either<TrustError, TrustedSigner>.Right(signer);
 
     private static Either<TrustError, TrustedSigner> Distrusted(TrustError error) => Either<TrustError, TrustedSigner>.Left(error);
+
+    private PublisherStanding EndorsedStanding(Publisher publisher)
+        => User.BlockedKeyIds.Contains(publisher.Key.KeyId)
+            ? new BlockedPublisher(publisher.Key.KeyId, Option.Some(publisher.Name))
+            : new EndorsedPublisher(publisher);
 
     private Either<TrustError, TrustedSigner> EndorsedOrUserTrusted(string pluginId, PublisherKey signer)
         => Endorsed.FirstOrNone(publisher => publisher.Key == signer).Match(

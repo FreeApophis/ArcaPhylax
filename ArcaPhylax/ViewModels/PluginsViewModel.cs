@@ -10,7 +10,10 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ArcaPhylax.ViewModels;
 
-/// <summary>The Plugins page: what is loaded, what waits for a restart, the online catalog, and installing from a file.</summary>
+/// <summary>
+/// The Plugins page: what is loaded, what waits for a restart, the online catalog, installing from a file,
+/// and which publishers are trusted.
+/// </summary>
 public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewModel
 {
     private readonly PluginManager _plugins;
@@ -37,6 +40,8 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
 
     public ObservableCollection<CatalogRowVm> Available { get; } = [];
 
+    public ObservableCollection<PublisherRowVm> Publishers { get; } = [];
+
     /// <summary>Set by the view so the file picker has a parent window.</summary>
     public TopLevel? HostTopLevel { get; set; }
 
@@ -49,13 +54,29 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     [ObservableProperty]
     public partial bool IsRestartPending { get; set; }
 
+    /// <summary>An install waiting for the user to decide about an unknown publisher; null when none.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTrustPromptVisible))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmTrustCommand))]
+    public partial TrustRequest? PendingTrust { get; set; }
+
+    /// <summary>The name the user gives the publisher they are about to trust.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmTrustCommand))]
+    public partial string TrustName { get; set; } = string.Empty;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallFromFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(InstallFromCatalogCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoadCatalogCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmTrustCommand))]
     public partial bool IsBusy { get; set; }
 
+    public bool IsTrustPromptVisible => PendingTrust is not null;
+
     private bool CanInstall => !IsBusy;
+
+    private bool CanConfirmTrust => !IsBusy && PendingTrust is not null && !string.IsNullOrWhiteSpace(TrustName);
 
     /// <summary>Called when the page is shown: the catalog is fetched the first time only, not at startup.</summary>
     public void OnShown()
@@ -80,8 +101,8 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
         var catalog = await _catalogClient.CatalogAsync();
         _catalog = catalog.Match(left: _ => Option<PluginCatalog>.None, right: Option.Some);
         CatalogStatus = catalog.Match<string?>(left: error => $"The plugin catalog is unavailable: {error}", right: _ => null);
-        RefreshCatalog();
         IsBusy = false;
+        Refresh();
     }
 
     private bool CanInstallFromCatalog(CatalogRowVm? row) => !IsBusy && row is { CanInstall: true };
@@ -97,7 +118,7 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
         var downloaded = await _catalogClient.DownloadAsync(package);
         Status = await downloaded.Match(
             left: error => Task.FromResult($"{name} was not installed: {error}"),
-            right: async bytes => PluginMessages.Of(await _plugins.InstallAsync(bytes)));
+            right: bytes => ReportedAsync(() => _plugins.InstallAsync(bytes)));
         IsBusy = false;
         Refresh();
     }
@@ -126,8 +147,65 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     {
         IsBusy = true;
         Status = "Installing…";
-        Status = PluginMessages.Of(await _plugins.InstallFromFileAsync(path));
+        Status = await ReportedAsync(() => _plugins.InstallFromFileAsync(path));
         IsBusy = false;
+        Refresh();
+    }
+
+    /// <summary>Runs an install; one that stops at an unknown publisher becomes a trust prompt instead of an error.</summary>
+    private async Task<string> ReportedAsync(Func<Task<InstallReport>> install)
+        => await install() switch
+        {
+            InstallRejected { Error: Untrusted { Error: UnknownPublisher unknown } } => AskForTrust(new TrustRequest(unknown.Key, install)),
+            var report => PluginMessages.Of(report),
+        };
+
+    private string AskForTrust(TrustRequest request)
+    {
+        TrustName = string.Empty;
+        PendingTrust = request;
+        return $"Not installed yet: the plugin is signed by an unknown publisher (key {request.KeyId}).";
+    }
+
+    [RelayCommand(CanExecute = nameof(CanConfirmTrust))]
+    private async Task ConfirmTrust()
+    {
+        if (PendingTrust is not { } request)
+        {
+            return;
+        }
+
+        _plugins.Trust.TrustPublisher(TrustName.Trim(), request.Key);
+        PendingTrust = null;
+        IsBusy = true;
+        Status = "Installing…";
+        Status = PluginMessages.Of(await request.Retry());
+        IsBusy = false;
+        Refresh();
+    }
+
+    [RelayCommand]
+    private void CancelTrust()
+    {
+        PendingTrust = null;
+        Status = "Not installed. The publisher was not trusted.";
+    }
+
+    [RelayCommand]
+    private void BlockPublisher(PublisherRowVm row)
+    {
+        _plugins.Trust.BlockPublisher(row.KeyId);
+        Status = $"{row.Name} is blocked. Its plugins are no longer installed, and installed ones stop loading when ArcaPhylax restarts.";
+        Refresh();
+    }
+
+    [RelayCommand]
+    private void ForgetPublisher(PublisherRowVm row)
+    {
+        _plugins.Trust.ForgetPublisher(row.KeyId);
+        Status = row.ForgetLabel == "Unblock"
+            ? $"{row.Name} is no longer blocked. Its installed plugins load again after a restart."
+            : $"{row.Name} is no longer trusted. Its installed plugins stop loading when ArcaPhylax restarts.";
         Refresh();
     }
 
@@ -143,27 +221,28 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
 
     private void Refresh()
     {
+        var policy = _plugins.Trust.Policy;
         var pending = _plugins.Store.Pending();
         var waiting = InstalledButNotLoaded();
 
-        Rows.Clear();
-        foreach (var row in LoadedRows(pending).Concat(WaitingRows(waiting, pending)).Concat(FailedRows()))
-        {
-            Rows.Add(row);
-        }
-
-        IsRestartPending = !pending.IsEmpty || !waiting.IsEmpty;
+        Replace(Rows, LoadedRows(policy, pending).Concat(WaitingRows(policy, waiting, pending)).Concat(FailedRows(policy)));
+        Replace(Publishers, policy.Standings().Select(PublisherRowVm.Of));
+        IsRestartPending = !pending.IsEmpty || !waiting.IsEmpty || LoadedButNoLongerTrusted(policy);
         RefreshCatalog();
+    }
+
+    private static void Replace<T>(ObservableCollection<T> collection, IEnumerable<T> items)
+    {
+        collection.Clear();
+        foreach (var item in items)
+        {
+            collection.Add(item);
+        }
     }
 
     private void RefreshCatalog()
     {
-        Available.Clear();
-        foreach (var row in _catalog.Match(none: [], some: CatalogRows))
-        {
-            Available.Add(row);
-        }
-
+        Replace(Available, _catalog.Match(none: [], some: CatalogRows));
         CatalogStatus = _catalog.Match(
             none: CatalogStatus,
             some: catalog => catalog.Plugins.IsEmpty ? "The catalog has no plugins yet." : null);
@@ -185,27 +264,30 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     private static bool IsEntryAssembly(LoadedPlugin plugin, string entryAssembly)
         => string.Equals($"{plugin.Instance.GetType().Assembly.GetName().Name}.dll", entryAssembly, StringComparison.OrdinalIgnoreCase);
 
-    private IEnumerable<PluginRowVm> LoadedRows(ImmutableList<PendingOperation> pending)
+    private bool LoadedButNoLongerTrusted(TrustPolicy policy)
+        => _plugins.LoadedPlugins.Any(loaded => loaded.Origin is FromStore store && TrustProblem(policy, store.Plugin).Match(none: false, some: True));
+
+    private IEnumerable<PluginRowVm> LoadedRows(TrustPolicy policy, ImmutableList<PendingOperation> pending)
         => _plugins.LoadedPlugins.Select(plugin => plugin.Origin switch
         {
-            Bundled => new PluginRowVm(plugin.Name, AssemblyVersion(plugin), "Bundled", "Loaded", Option<string>.None),
-            FromStore store => StoreRow(store.Plugin.Manifest, StateOf(store.Plugin.Manifest.Id, pending, "Loaded")),
+            Bundled => new PluginRowVm(plugin.Name, AssemblyVersion(plugin), "Bundled", "–", "Loaded", Option<string>.None),
+            FromStore store => StoreRow(
+                policy,
+                store.Plugin,
+                StateOf(store.Plugin.Manifest.Id, pending, TrustProblem(policy, store.Plugin).Match(
+                    none: "Loaded",
+                    some: problem => $"Stops loading after restart: {problem}"))),
         });
 
-    private static IEnumerable<PluginRowVm> WaitingRows(ImmutableList<InstalledPlugin> waiting, ImmutableList<PendingOperation> pending)
-        => waiting.Select(plugin => StoreRow(plugin.Manifest, StateOf(plugin.Manifest.Id, pending, "Activates after restart")));
+    private static IEnumerable<PluginRowVm> WaitingRows(TrustPolicy policy, ImmutableList<InstalledPlugin> waiting, ImmutableList<PendingOperation> pending)
+        => waiting.Select(plugin => StoreRow(policy, plugin, StateOf(plugin.Manifest.Id, pending, "Activates after restart")));
 
-    private IEnumerable<PluginRowVm> FailedRows()
-        => _plugins.Failures.Select(failure => new PluginRowVm(
-            failure.Name,
-            "–",
-            SourceOf(failure.Origin),
-            $"Failed to load: {failure.Message}",
-            failure.Origin switch
-            {
-                Bundled => Option<string>.None,
-                FromStore store => Option.Some(store.Plugin.Manifest.Id),
-            }));
+    private IEnumerable<PluginRowVm> FailedRows(TrustPolicy policy)
+        => _plugins.Failures.Select(failure => failure.Origin switch
+        {
+            Bundled => new PluginRowVm(failure.Name, "–", "Bundled", "–", $"Failed to load: {failure.Message}", Option<string>.None),
+            FromStore store => StoreRow(policy, store.Plugin, $"Failed to load: {failure.Message}"),
+        });
 
     private ImmutableList<InstalledPlugin> InstalledButNotLoaded()
         => _plugins.Store.Installed()
@@ -213,8 +295,22 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
             .Where(installed => !_plugins.Failures.Any(failure => failure.Origin is FromStore store && store.Plugin.Manifest.Id == installed.Manifest.Id))
             .ToImmutableList();
 
-    private static PluginRowVm StoreRow(PluginManifest manifest, string state)
-        => new(manifest.Name, manifest.Version, "Installed", state, Option.Some(manifest.Id));
+    private static PluginRowVm StoreRow(TrustPolicy policy, InstalledPlugin plugin, string state)
+        => new(plugin.Manifest.Name, plugin.Manifest.Version, "Installed", PublisherOf(policy, plugin), state, Option.Some(plugin.Manifest.Id));
+
+    private static string PublisherOf(TrustPolicy policy, InstalledPlugin plugin)
+        => policy.Check(plugin.Manifest.Id, plugin.Signer).Match(
+            left: _ => $"Untrusted ({plugin.Signer.KeyId})",
+            right: signer => signer switch
+            {
+                EndorsedSigner endorsed => endorsed.Publisher.Name,
+                UserTrustedSigner trusted => $"{trusted.Key.Name} (trusted by you)",
+            });
+
+    private static Option<string> TrustProblem(TrustPolicy policy, InstalledPlugin plugin)
+        => policy.Check(plugin.Manifest.Id, plugin.Signer).Match(
+            left: error => Option.Some(PluginMessages.Of(error)),
+            right: _ => Option<string>.None);
 
     private static string StateOf(string id, ImmutableList<PendingOperation> pending, string otherwise)
         => pending.FirstOrNone(operation => operation.Id == id).Match(
@@ -224,12 +320,6 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
                 Activate activate => $"Updates to {activate.Version} after restart",
                 PluginPackaging.Remove => "Removed after restart",
             });
-
-    private static string SourceOf(PluginOrigin origin) => origin switch
-    {
-        Bundled => "Bundled",
-        FromStore => "Installed",
-    };
 
     private static string AssemblyVersion(LoadedPlugin plugin)
         => plugin.Instance.GetType().Assembly.GetName().Version?.ToString(3) ?? "–";
