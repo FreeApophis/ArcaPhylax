@@ -2,6 +2,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="Dapper" />
+    <PackageReference Include="Funcky" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
 

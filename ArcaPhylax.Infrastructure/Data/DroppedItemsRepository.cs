@@ -27,14 +27,16 @@ public sealed class DroppedItemsRepository(ISqliteConnectionFactory db) : IDropp
 
     private readonly ISqliteConnectionFactory _db = db;
 
-    public void Add(string kind, string name, string? originalPath, string? storedPath)
+    public void Add(string name, DropSource source)
     {
+        var columns = DropSourceColumns.Of(source);
+
         using var connection = _db.Create();
         var parameters = ImmutableDictionary<string, object?>.Empty
-            .Add("k", kind)
+            .Add("k", columns.Kind)
             .Add("n", name)
-            .Add("op", originalPath)
-            .Add("sp", storedPath)
+            .Add("op", columns.OriginalPath)
+            .Add("sp", columns.StoredPath)
             .Add("ts", DateTime.UtcNow.ToString("O"))
             .ToDynamicParameters();
 
@@ -48,7 +50,9 @@ public sealed class DroppedItemsRepository(ISqliteConnectionFactory db) : IDropp
             .Add("limit", limit)
             .ToDynamicParameters();
 
-        return connection.Query<DroppedItem>(DroppedItemQuery, parameters);
+        return connection.Query<DroppedItemRow>(DroppedItemQuery, parameters)
+            .WhereSelect(ToDroppedItem)
+            .ToImmutableList();
     }
 
     public IEnumerable<long> SearchIds(string query, int limit)
@@ -61,4 +65,19 @@ public sealed class DroppedItemsRepository(ISqliteConnectionFactory db) : IDropp
 
         return connection.Query<long>(SearchIdQuery, parameters);
     }
+
+    /// <summary>The item a row describes, or None when its columns are not a valid source (legacy data).</summary>
+    private static Option<DroppedItem> ToDroppedItem(DroppedItemRow row)
+        => new DropSourceColumns(row.Kind, row.OriginalPath, row.StoredPath)
+            .ToDropSource()
+            .Select(source => new DroppedItem(row.Id, row.Name, source, row.CreatedUtc));
+
+    /// <summary>The flat table row as Dapper materializes it (binds by column order).</summary>
+    private sealed record DroppedItemRow(
+        long Id,
+        string Kind,
+        string Name,
+        string? OriginalPath,
+        string? StoredPath,
+        string CreatedUtc);
 }

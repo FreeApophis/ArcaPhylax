@@ -1,3 +1,3 @@
 namespace ArcaPhylax.Data;
 
-public record DroppedItem(long Id, string Kind, string Name, string? OriginalPath, string? StoredPath, string CreatedUtc);
+public sealed record DroppedItem(long Id, string Name, DropSource Source, string CreatedUtc);

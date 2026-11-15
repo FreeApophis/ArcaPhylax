@@ -8,6 +8,7 @@ public sealed class IndexingWorker(IndexingQueue queue, ISqliteConnectionFactory
         {
             try
             {
+                var columns = DropSourceColumns.Of(job.Source);
                 using var c = db.Create();
                 using var cmd = c.CreateCommand();
                 cmd.CommandText = @"
@@ -17,8 +18,8 @@ WHERE Name = $name
   AND (OriginalPath = $op OR (OriginalPath IS NULL AND $op IS NULL))
   AND (StoredPath = $sp OR (StoredPath IS NULL AND $sp IS NULL));";
                 cmd.Parameters.AddWithValue("$name", job.Name);
-                cmd.Parameters.AddWithValue("$op", (object?)job.OriginalPath ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("$sp", (object?)job.StoredPath ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$op", (object?)columns.OriginalPath ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$sp", (object?)columns.StoredPath ?? DBNull.Value);
                 cmd.ExecuteNonQuery();
             }
             catch

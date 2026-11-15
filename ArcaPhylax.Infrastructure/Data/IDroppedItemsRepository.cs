@@ -2,7 +2,7 @@ namespace ArcaPhylax.Data;
 
 public interface IDroppedItemsRepository
 {
-    void Add(string kind, string name, string? originalPath, string? storedPath);
+    void Add(string name, DropSource source);
 
     IEnumerable<DroppedItem> Latest(int limit);
 
