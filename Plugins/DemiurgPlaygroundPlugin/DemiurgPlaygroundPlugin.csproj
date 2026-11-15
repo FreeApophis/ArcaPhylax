@@ -3,8 +3,6 @@
 	<ItemGroup>
 		<PackageReference Include="Avalonia" />
 		<PackageReference Include="Avalonia.Desktop" />
-		<!-- Pin transitive dependency away from the vulnerable 0.90.3 (matches host + other plugins). -->
-		<PackageReference Include="Tmds.DBus.Protocol" />
 		<PackageReference Include="Avalonia.Themes.Fluent" />
 		<PackageReference Include="Avalonia.Controls.ItemsRepeater" />
 		<PackageReference Include="Autofac" />
