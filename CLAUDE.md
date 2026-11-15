@@ -42,11 +42,11 @@ dotnet build ArcaPhylax.sln
 # Run
 dotnet run --project ArcaPhylax/ArcaPhylax.csproj
 
-# Run all tests
-dotnet test ArcaPhylax.sln
+# Run all tests (Microsoft Testing Platform, enabled via "test" runner in global.json)
+dotnet test --solution ArcaPhylax.sln
 
 # Run tests for a specific project
-dotnet test ArcaPhylax.Tests/ArcaPhylax.Tests.csproj
+dotnet test --project Plugins/NutritionPlugin.Tests/NutritionPlugin.Tests.csproj
 ```
 
 ---
@@ -127,12 +127,19 @@ Do not use expression bodies when the expression is long enough to harm readabil
 
 ## TDD / Red-Green-Refactor Conventions
 
-No test projects exist yet. Every new test project must follow these rules from its first commit.
+Every test project must follow these rules from its first commit.
 
 ### Test Stack
 
-- **Test runner:** xUnit (`xunit`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk`)
-- **Property-based testing:** FsCheck.Xunit for invariant/generative tests
+- **Test runner:** xUnit v3 (`xunit.v3`) on Microsoft Testing Platform v2. Test projects set
+  `<OutputType>Exe</OutputType>`; do not add `Microsoft.NET.Test.Sdk` or `xunit.runner.visualstudio` (VSTest).
+- **Funcky assertions:** `Funcky.Xunit.v3` — use its static extension members on xUnit's `Assert`
+  (`Assert.Some(option)`, `Assert.Some(expected, option)`, `Assert.None(option)`, `Assert.Ok(result)`,
+  `Assert.Error(result)`, `Assert.Left(either)`, `Assert.Right(either)`) instead of unwrapping by hand.
+  They live in `Funcky.Extensions`, which `FunckyImplicitUsings` already imports. Do not use the legacy
+  `FunctionalAssert` class or reference the old `Funcky.Xunit` package. The package also registers
+  xUnit serializers so `Option`/`Either`/`Unit` can be used as `[Theory]` data.
+- **Property-based testing:** `FsCheck.Xunit.v3` for invariant/generative tests
 - **In-memory SQLite:** `Microsoft.Data.Sqlite` with `DataSource=:memory:` for repository tests
 - **Mocking (last resort):** NSubstitute, only when a hand-written fake would require implementing more than five members
 
@@ -213,7 +220,7 @@ Test in this priority order:
    `DbInitializer` (SQLite schema only) on the in-memory connection before each test class.
 3. **ViewModels** — instantiate directly with fake/mock implementations of interfaces. No Avalonia
    rendering needed. Test observable property changes by subscribing to `PropertyChanged`.
-4. **Property-based tests** — use `[Property]` from FsCheck.Xunit for functions where invariants
+4. **Property-based tests** — use `[Property]` from FsCheck.Xunit.v3 for functions where invariants
    hold for all inputs (e.g., round-trip serialisation, sorting stability, Funcky `Option` laws).
 
 ### What NOT to Test

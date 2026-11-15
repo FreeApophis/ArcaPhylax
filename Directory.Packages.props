@@ -45,9 +45,10 @@
     <PackageVersion Include="NAPS2.Images.Skia" Version="1.6.1" />
   </ItemGroup>
   <ItemGroup Label="Testing">
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
-    <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
-    <PackageVersion Include="FsCheck.Xunit" Version="3.3.0" />
+    <!-- xunit.v3 4.x runs on Microsoft.Testing.Platform v2 (see "test" runner in global.json);
+         no Microsoft.NET.Test.Sdk / xunit.runner.visualstudio (VSTest) needed. -->
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
+    <PackageVersion Include="FsCheck.Xunit.v3" Version="3.6.0" />
+    <PackageVersion Include="Funcky.Xunit.v3" Version="1.1.0" />
   </ItemGroup>
 </Project>
