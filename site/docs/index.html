@@ -58,9 +58,17 @@ dotnet run --project ArcaPhylax/ArcaPhylax.csproj</code></pre>
           <h3>What ArcaPhylax checks</h3>
           <ol>
             <li>The download has exactly the size and SHA-256 the catalog lists.</li>
-            <li>The package is signed by a publisher whose key is built into ArcaPhylax, and every file matches the signature.</li>
+            <li>Every file in the package matches its signature.</li>
+            <li>The signer is a trusted publisher, and owns the plugin's id (see below).</li>
             <li>The package is for this platform (for example <code>win-x64</code>) and this plugin SDK: same major version, minor version no newer than the app's.</li>
           </ol>
+          <h3>Trusted publishers</h3>
+          <p>Plugins run inside ArcaPhylax with the same access to your computer as the app itself, so ArcaPhylax only installs plugins from publishers someone vouched for:</p>
+          <ul>
+            <li><strong>Endorsed publishers</strong> are listed in <a href="../publishers.json">publishers.json</a>, which is signed with the ArcaPhylax root key. Each publisher owns plugin id prefixes: a publisher endorsed for <code>Contoso</code> may publish <code>Contoso</code> and <code>Contoso.*</code>, and nobody else may.</li>
+            <li><strong>Revoked keys</strong> are listed there too. Plugins signed with a revoked key stop loading at the next start.</li>
+            <li><strong>You decide on your computer:</strong> you can trust a publisher that is not endorsed (for example your own key while developing a plugin), or block an endorsed one. A key you trust cannot publish plugins under an id an endorsed publisher owns, and a revocation cannot be overridden.</li>
+          </ul>
         </section>
 
         <section id="writing-a-plugin">

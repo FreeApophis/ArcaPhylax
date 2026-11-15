@@ -15,8 +15,5 @@ public sealed record UnsafeEntryPath(string Path) : PackageError;
 /// <summary><c>plugin.json</c> is malformed or fails validation.</summary>
 public sealed record InvalidManifest(string Reason) : PackageError;
 
-/// <summary>The package is signed by a key the host does not trust.</summary>
-public sealed record UntrustedKey(string KeyId) : PackageError;
-
 /// <summary>The signature does not match the package contents (tampered or corrupt).</summary>
 public sealed record InvalidSignature : PackageError;

@@ -18,6 +18,14 @@ public static class ZipEdits
     public static MemoryStream Remove(MemoryStream package, string entryName)
         => Edit(package, archive => archive.GetEntry(entryName)!.Delete());
 
+    public static string Read(MemoryStream package, string entryName)
+    {
+        package.Position = 0;
+        using var archive = new ZipArchive(package, ZipArchiveMode.Read, leaveOpen: true);
+        using var reader = new StreamReader(archive.GetEntry(entryName)!.Open());
+        return reader.ReadToEnd();
+    }
+
     public static MemoryStream ZipWith(params (string Name, string Content)[] entries)
     {
         var stream = new MemoryStream();

@@ -5,11 +5,11 @@ namespace ArcaPhylax.PluginPackaging;
 
 /// <summary>
 /// The per-user plugin directory: <c>&lt;root&gt;/&lt;id&gt;/&lt;version&gt;/</c> holds an extracted payload plus
-/// its <c>plugin.json</c>; <c>&lt;root&gt;/pending.json</c> holds changes that wait for the next start.
+/// its <c>plugin.json</c> and <c>signer.json</c>; <c>&lt;root&gt;/pending.json</c> holds changes that wait for the next start.
 /// New plugins are usable immediately; updates and removals are staged, because a loaded plugin's
 /// files cannot be replaced safely.
 /// </summary>
-public sealed class PluginStore(string root, HostEnvironment host, IReadOnlyCollection<PublisherKey> trustedKeys)
+public sealed class PluginStore(string root, HostEnvironment host)
 {
     private const string PendingFileName = "pending.json";
     private const string StagingDirectoryName = ".staging";
@@ -20,12 +20,13 @@ public sealed class PluginStore(string root, HostEnvironment host, IReadOnlyColl
 
     private string PendingPath => Path.Combine(Root, PendingFileName);
 
-    /// <summary>Verifies, checks and extracts a package. The stream must be seekable.</summary>
-    public Either<InstallError, InstallOutcome> Install(Stream package)
+    /// <summary>Verifies the package, checks its signer against <paramref name="trust"/> and the host, and extracts it. The stream must be seekable.</summary>
+    public Either<InstallError, InstallOutcome> Install(Stream package, TrustPolicy trust)
         => from verified in Verified(package)
+           from signer in Trusted(verified, trust)
            from manifest in PluginCompatibility.Check(verified.Manifest, host)
            from free in VersionIsFree(manifest)
-           select Extracted(package, manifest);
+           select Extracted(package, manifest, verified.Signer);
 
     /// <summary>Schedules plugin <paramref name="id"/> for removal at the next start.</summary>
     public Either<InstallError, Unit> ScheduleRemoval(string id)
@@ -66,15 +67,42 @@ public sealed class PluginStore(string root, HostEnvironment host, IReadOnlyColl
             .OrderByDescending(plugin => Version.Parse(plugin.Manifest.Version))
             .FirstOrNone();
 
+    /// <summary>The plugin in <paramref name="versionDirectory"/>; a folder without a readable manifest and signer is ignored.</summary>
     private static Option<InstalledPlugin> InstalledAt(string versionDirectory)
+        => from manifest in ManifestAt(versionDirectory)
+           from signer in SignerAt(versionDirectory)
+           select new InstalledPlugin(manifest, versionDirectory, signer);
+
+    private static Option<PluginManifest> ManifestAt(string versionDirectory)
+        => TextOf(Path.Combine(versionDirectory, PluginManifest.FileName))
+            .SelectMany(json => PluginManifest.Parse(json).Match(left: _ => Option<PluginManifest>.None, right: Option.Some));
+
+    private static Option<PublisherKey> SignerAt(string versionDirectory)
     {
-        var manifestPath = Path.Combine(versionDirectory, PluginManifest.FileName);
-        return File.Exists(manifestPath)
-            ? PluginManifest.Parse(File.ReadAllText(manifestPath)).Match(
-                left: _ => Option<InstalledPlugin>.None,
-                right: manifest => Option.Some(new InstalledPlugin(manifest, versionDirectory)))
-            : Option<InstalledPlugin>.None;
+        // A damaged signer.json makes the install unusable, like a missing one.
+        try
+        {
+            return TextOf(Path.Combine(versionDirectory, InstalledPlugin.SignerFileName))
+                .SelectMany(json => Option.FromNullable(JsonSerializer.Deserialize<PublisherKey>(json, JsonOptions)));
+        }
+        catch (JsonException)
+        {
+            return Option<PublisherKey>.None;
+        }
     }
+
+    private static Option<string> TextOf(string path)
+        => File.Exists(path) ? File.ReadAllText(path) : Option<string>.None;
+
+    private static Either<InstallError, TrustedSigner> Trusted(VerifiedPackage package, TrustPolicy trust)
+        => trust.Check(package.Manifest.Id, package.Signer).Match(
+            left: error => Either<InstallError, TrustedSigner>.Left(new Untrusted(error)),
+            right: Either<InstallError, TrustedSigner>.Right);
+
+    private static Either<InstallError, VerifiedPackage> Verified(Stream package)
+        => PluginPackage.Verify(package).Match(
+            left: error => Either<InstallError, VerifiedPackage>.Left(new InvalidPackage(error)),
+            right: Either<InstallError, VerifiedPackage>.Right);
 
     private static void DeleteFileIfExists(string path)
     {
@@ -94,17 +122,12 @@ public sealed class PluginStore(string root, HostEnvironment host, IReadOnlyColl
         return Unit.Value;
     }
 
-    private Either<InstallError, VerifiedPackage> Verified(Stream package)
-        => PluginPackage.Verify(package, trustedKeys).Match(
-            left: error => Either<InstallError, VerifiedPackage>.Left(new InvalidPackage(error)),
-            right: Either<InstallError, VerifiedPackage>.Right);
-
     private Either<InstallError, Unit> VersionIsFree(PluginManifest manifest)
         => Directory.Exists(VersionDirectory(manifest.Id, manifest.Version))
             ? Either<InstallError, Unit>.Left(new AlreadyInstalled(manifest.Id, manifest.Version))
             : Either<InstallError, Unit>.Right(Unit.Value);
 
-    private InstallOutcome Extracted(Stream package, PluginManifest manifest)
+    private InstallOutcome Extracted(Stream package, PluginManifest manifest, PublisherKey signer)
     {
         var replacesInstalledVersion = VersionDirectories(manifest.Id).Any();
 
@@ -114,12 +137,13 @@ public sealed class PluginStore(string root, HostEnvironment host, IReadOnlyColl
         package.Position = 0;
         PluginPackage.ExtractPayload(package, staging);
         File.WriteAllText(Path.Combine(staging, PluginManifest.FileName), manifest.ToJson());
+        File.WriteAllText(Path.Combine(staging, InstalledPlugin.SignerFileName), JsonSerializer.Serialize(signer, JsonOptions));
 
         var target = VersionDirectory(manifest.Id, manifest.Version);
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         Directory.Move(staging, target);
 
-        var plugin = new InstalledPlugin(manifest, target);
+        var plugin = new InstalledPlugin(manifest, target, signer);
         return replacesInstalledVersion ? Staged(plugin) : new InstalledNow(plugin);
     }
 

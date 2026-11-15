@@ -12,6 +12,10 @@ public sealed class PluginStoreTests : IDisposable
     private readonly TempStoreRoot _root = new();
     private readonly ECDsa _publisher = ECDsa.Create(ECCurve.NamedCurves.nistP256);
 
+    private Publisher Owner => new("Tests", PublisherKey.Of(_publisher), ["ArcaPhylax"]);
+
+    private TrustPolicy Trust => TrustPolicy.Of([Owner], PublisherList.Empty, UserTrust.Empty);
+
     [Fact]
     public void Install_GivenValidPackage_ExtractsThePayloadIntoIdAndVersionDirectory()
     {
@@ -21,7 +25,7 @@ public sealed class PluginStoreTests : IDisposable
         var expectedFile = Path.Combine(_root.Path, "ArcaPhylax.Sample", "1.2.3", "runtimes", "win-x64", "native", "native.dll");
 
         // Act
-        sut.Install(package);
+        sut.Install(package, Trust);
 
         // Assert
         Assert.True(File.Exists(expectedFile));
@@ -36,26 +40,58 @@ public sealed class PluginStoreTests : IDisposable
         var expected = Path.Combine(_root.Path, "ArcaPhylax.Sample", "1.2.3", "Sample.dll");
 
         // Act
-        var outcome = sut.Install(package);
+        var outcome = sut.Install(package, Trust);
 
         // Assert
         Assert.Equal(expected, Assert.IsType<InstalledNow>(Assert.Right(outcome)).Plugin.EntryAssemblyPath);
     }
 
     [Fact]
-    public void Install_GivenPackageFromUntrustedPublisher_ReturnsInvalidPackageAndExtractsNothing()
+    public void Install_GivenPackageFromUnknownPublisher_ReturnsUntrustedAndExtractsNothing()
     {
         // Arrange
         using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var sut = Store();
         using var package = _payload.Package(stranger);
+        var expected = new Untrusted(new UnknownPublisher(PublisherKey.Of(stranger)));
 
         // Act
-        var outcome = sut.Install(package);
+        var outcome = sut.Install(package, Trust);
 
         // Assert
-        Assert.IsType<InvalidPackage>(Assert.Left(outcome));
+        Assert.Left(expected, outcome);
         Assert.Empty(sut.Installed());
+    }
+
+    [Fact]
+    public void Install_GivenPublisherThatDoesNotOwnTheId_ReturnsUntrusted()
+    {
+        // Arrange
+        var sut = Store();
+        using var package = _payload.Package(TempPayload.Manifest with { Id = "Contoso.Sample" }, _publisher);
+        var expected = new Untrusted(new NotOwner("Contoso.Sample", "Tests"));
+
+        // Act
+        var outcome = sut.Install(package, Trust);
+
+        // Assert
+        Assert.Left(expected, outcome);
+    }
+
+    [Fact]
+    public void Installed_RecordsTheSigningKey()
+    {
+        // Arrange
+        var sut = Store();
+        using var package = _payload.Package(_publisher);
+        sut.Install(package, Trust);
+        var expected = PublisherKey.Of(_publisher);
+
+        // Act
+        var installed = Assert.Single(sut.Installed());
+
+        // Assert
+        Assert.Equal(expected, installed.Signer);
     }
 
     [Fact]
@@ -67,7 +103,7 @@ public sealed class PluginStoreTests : IDisposable
         var expected = new WrongPlatform("linux-x64", "win-x64");
 
         // Act
-        var outcome = sut.Install(package);
+        var outcome = sut.Install(package, Trust);
 
         // Assert
         Assert.Left(expected, outcome);
@@ -79,12 +115,12 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var sut = Store();
         using var first = _payload.Package(_publisher);
-        sut.Install(first);
+        sut.Install(first, Trust);
         using var second = _payload.Package(_publisher);
         var expected = new AlreadyInstalled("ArcaPhylax.Sample", "1.2.3");
 
         // Act
-        var outcome = sut.Install(second);
+        var outcome = sut.Install(second, Trust);
 
         // Assert
         Assert.Left(expected, outcome);
@@ -96,12 +132,12 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var sut = Store();
         using var v1 = _payload.Package(_publisher);
-        sut.Install(v1);
+        sut.Install(v1, Trust);
         using var v2 = _payload.Package(TempPayload.Manifest with { Version = "2.0.0" }, _publisher);
         PendingOperation[] expected = [new Activate("ArcaPhylax.Sample", "2.0.0")];
 
         // Act
-        var outcome = sut.Install(v2);
+        var outcome = sut.Install(v2, Trust);
 
         // Assert
         Assert.IsType<UpdateStaged>(Assert.Right(outcome));
@@ -114,9 +150,9 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var sut = Store();
         using var v1 = _payload.Package(_publisher);
-        sut.Install(v1);
+        sut.Install(v1, Trust);
         using var v2 = _payload.Package(TempPayload.Manifest with { Version = "2.0.0" }, _publisher);
-        sut.Install(v2);
+        sut.Install(v2, Trust);
         string[] expected = ["2.0.0"];
 
         // Act
@@ -133,7 +169,7 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var sut = Store();
         using var package = _payload.Package(_publisher);
-        sut.Install(package);
+        sut.Install(package, Trust);
 
         // Act
         sut.ScheduleRemoval("ArcaPhylax.Sample");
@@ -149,7 +185,7 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var sut = Store();
         using var package = _payload.Package(_publisher);
-        sut.Install(package);
+        sut.Install(package, Trust);
 
         // Act
         sut.ScheduleRemoval("ArcaPhylax.Sample");
@@ -178,7 +214,7 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var first = Store();
         using var package = _payload.Package(_publisher);
-        first.Install(package);
+        first.Install(package, Trust);
         first.ScheduleRemoval("ArcaPhylax.Sample");
         PendingOperation[] expected = [new Remove("ArcaPhylax.Sample")];
 
@@ -195,7 +231,7 @@ public sealed class PluginStoreTests : IDisposable
         // Arrange
         var sut = Store();
         using var package = _payload.Package(_publisher);
-        sut.Install(package);
+        sut.Install(package, Trust);
 
         // Act
         var installed = Assert.Single(sut.Installed());
@@ -224,5 +260,5 @@ public sealed class PluginStoreTests : IDisposable
         _publisher.Dispose();
     }
 
-    private PluginStore Store() => new(_root.Path, Host, [PublisherKey.Of(_publisher)]);
+    private PluginStore Store() => new(_root.Path, Host);
 }

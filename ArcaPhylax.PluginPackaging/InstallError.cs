@@ -6,6 +6,9 @@ public closed record InstallError;
 /// <summary>The package itself was rejected (signature, layout, manifest).</summary>
 public sealed record InvalidPackage(PackageError Error) : InstallError;
 
+/// <summary>The package is intact, but its signer may not publish this plugin here.</summary>
+public sealed record Untrusted(TrustError Error) : InstallError;
+
 /// <summary>The package was published for a different platform than the running host.</summary>
 public sealed record WrongPlatform(string PluginPlatform, string HostPlatform) : InstallError;
 

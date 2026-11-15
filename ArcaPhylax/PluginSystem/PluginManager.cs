@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Reflection;
 using ArcaPhylax.Abstractions;
 using ArcaPhylax.PluginPackaging;
@@ -11,14 +11,16 @@ public sealed class PluginManager
 {
     private readonly ILifetimeScope _hostLifeTimeScope;
     private readonly PluginStore _store;
+    private readonly PluginTrust _trust;
     private readonly HashSet<string> _sharedAssemblyNames;
     private readonly List<LoadedPlugin> _loadedPlugins = [];
     private readonly List<PluginLoadFailure> _failures = [];
 
-    public PluginManager(ILifetimeScope hostLifetimeScope, PluginStore store)
+    public PluginManager(ILifetimeScope hostLifetimeScope, PluginStore store, PluginTrust trust)
     {
         _hostLifeTimeScope = hostLifetimeScope;
         _store = store;
+        _trust = trust;
 
         _sharedAssemblyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -39,6 +41,8 @@ public sealed class PluginManager
     public IReadOnlyList<PluginLoadFailure> Failures => _failures;
 
     public PluginStore Store => _store;
+
+    public PluginTrust Trust => _trust;
 
     /// <summary>The tabs contributed by one plugin (not the host tabs its scope can also see).</summary>
     public static IEnumerable<ITabContentViewModel> TabsOf(LoadedPlugin plugin) => ContributionsOf<ITabContentViewModel>(plugin);
@@ -121,16 +125,33 @@ public sealed class PluginManager
         throw new InvalidOperationException($"Neither the host nor any loaded plugin can resolve {serviceType.FullName}.");
     }
 
-    /// <summary>Applies staged store changes, then loads installed and bundled plugins. Call once at startup.</summary>
+    /// <summary>
+    /// Applies staged store changes, then loads installed and bundled plugins. Call once at startup.
+    /// Installed plugins whose publisher is no longer trusted (revoked, blocked) are not loaded; a bundled
+    /// copy of the same plugin loads in their place.
+    /// </summary>
     internal async Task LoadAllPluginsAsync()
     {
         _store.ApplyPending();
 
-        var results = await Task.WhenAll(StartupCandidates(_store.Installed()).Select(candidate => TryLoadAsync(candidate)));
+        var policy = _trust.Policy;
+        var installed = _store.Installed();
+        var trusted = installed.Where(plugin => IsTrusted(policy, plugin)).ToImmutableList();
+
+        var results = await Task.WhenAll(StartupCandidates(trusted).Select(candidate => TryLoadAsync(candidate)));
 
         _loadedPlugins.AddRange(results.WhereSelect(result => result.Match(left: _ => Option<LoadedPlugin>.None, right: Option.Some)));
         _failures.AddRange(results.WhereSelect(result => result.Match(left: Option.Some, right: _ => Option<PluginLoadFailure>.None)));
+        _failures.AddRange(installed.WhereSelect(plugin => TrustFailure(policy, plugin)));
     }
+
+    private static bool IsTrusted(TrustPolicy policy, InstalledPlugin plugin)
+        => policy.Check(plugin.Manifest.Id, plugin.Signer).Match(left: False, right: True);
+
+    private static Option<PluginLoadFailure> TrustFailure(TrustPolicy policy, InstalledPlugin plugin)
+        => policy.Check(plugin.Manifest.Id, plugin.Signer).Match(
+            left: error => Option.Some(new PluginLoadFailure(plugin.Manifest.Name, new FromStore(plugin), $"not loaded: {PluginMessages.Of(error)}")),
+            right: _ => Option<PluginLoadFailure>.None);
 
     // Yields every contribution of <typeparamref name="T"/> from the host scope plus each plugin scope.
     private IEnumerable<T> FindAll<T>()
@@ -182,7 +203,7 @@ public sealed class PluginManager
     private Either<InstallError, InstallOutcome> InstalledFrom(Func<Stream> openPackage)
     {
         using var package = openPackage();
-        return _store.Install(package);
+        return _store.Install(package, _trust.Policy);
     }
 
     private async Task<InstallReport> Activated(InstallOutcome outcome, CancellationToken cancellationToken)

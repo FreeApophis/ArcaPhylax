@@ -112,7 +112,9 @@ internal static class Pack
         }
 
         using var written = File.OpenRead(packagePath);
-        var verified = PluginPackage.Verify(written, [PublisherKey.Of(key)]);
+        var verified = PluginPackage.Verify(written).SelectMany(package => package.Signer == PublisherKey.Of(key)
+            ? Either<PackageError, VerifiedPackage>.Right(package)
+            : Either<PackageError, VerifiedPackage>.Left(new InvalidSignature()));
         written.Position = 0;
 
         return verified.Match(

@@ -280,10 +280,18 @@ If a plugin needs a type to cross the plugin/host boundary, that type must live 
   defaults in `Plugins/Directory.Build.props`). `ArcaPhylax.Plugin.Sdk`'s `<Version>` is the plugin
   contract version: bump the MAJOR on breaking changes to `IPlugin`/Abstractions.
 - **Packages** (`.arcaplugin`, one per platform): zip with `plugin.json`, `payload/`, `signature.json`
-  (ECDSA P-256 over the sorted SHA-256 listing of every entry). Build with
+  (ECDSA P-256 over the sorted SHA-256 listing of every entry, plus the signer's public key). Build with
   `dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/X/X.csproj --key <file>`.
-  The private key never enters the repo (`*.key` is git-ignored); trusted public keys are compiled
-  into `ArcaPhylax/PluginSystem/TrustedPublisherKeys.cs`.
+  Private keys never enter the repo (`*.key` is git-ignored).
+- **Trust** (`TrustPolicy`): verifying a package only proves WHO signed it; `TrustPolicy.Check(id, signer)`
+  decides whether that signer may publish that id. Sources: `TrustAnchors.BuiltIn` (first-party publisher,
+  prefix `ArcaPhylax`) + `publishers.json` (`PublisherList`, signed by the offline root key
+  `TrustAnchors.Root`, fetched next to the catalog, cached in `%LOCALAPPDATA%\ArcaPhylax`, never replaced
+  by a lower `Sequence`) + the user's overrides (`UserTrust`, `trust.json`). Revocation beats everything;
+  a user block beats an endorsement; a user-trusted key cannot claim an id an endorsed publisher owns.
+  Installed plugins record their signer (`signer.json`) and are re-checked at every start. Edit the
+  list locally with `pluginpack endorse|revoke site/publishers.json --root <root.key> ...` — the root key
+  never goes to CI. Signers are matched by full public key, not just the 16-char key id.
 - **Install** goes to the per-user `PluginStore` (`%LOCALAPPDATA%\ArcaPhylax\plugins\<id>\<version>\`).
   New plugins load live; updates/removals are staged in `pending.json` and applied at startup before
   any plugin loads. An installed plugin replaces a bundled one with the same entry assembly.

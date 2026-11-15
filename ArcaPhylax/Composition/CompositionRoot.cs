@@ -18,6 +18,7 @@ public static class CompositionRoot
         builder.RegisterType<App.App>().SingleInstance();
 
         builder.Register(_ => PluginHost.CreateStore()).SingleInstance();
+        builder.Register(_ => PluginHost.CreateTrust()).SingleInstance();
         builder.RegisterType<PluginManager>().SingleInstance();
         builder.Register(_ => new PluginCatalogClient(PluginHost.CatalogUri)).SingleInstance();
 

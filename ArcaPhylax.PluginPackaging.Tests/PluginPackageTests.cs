@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json.Nodes;
 using ArcaPhylax.PluginPackaging.Tests.Fakes;
 using Xunit;
 
@@ -9,16 +10,14 @@ public sealed class PluginPackageTests : IDisposable
     private readonly TempPayload _payload = new();
     private readonly ECDsa _publisher = ECDsa.Create(ECCurve.NamedCurves.nistP256);
 
-    private PublisherKey[] Trusted => [PublisherKey.Of(_publisher)];
-
     [Fact]
-    public void Verify_GivenPackageSignedByTrustedKey_ReturnsItsManifest()
+    public void Verify_GivenSignedPackage_ReturnsItsManifest()
     {
         // Arrange
         using var package = _payload.Package(_publisher);
 
         // Act
-        var verified = PluginPackage.Verify(package, Trusted);
+        var verified = PluginPackage.Verify(package);
 
         // Assert
         Assert.Equal(TempPayload.Manifest, Assert.Right(verified).Manifest);
@@ -32,39 +31,56 @@ public sealed class PluginPackageTests : IDisposable
         string[] expected = ["Sample.deps.json", "Sample.dll", "runtimes/win-x64/native/native.dll"];
 
         // Act
-        var verified = PluginPackage.Verify(package, Trusted);
+        var verified = PluginPackage.Verify(package);
 
         // Assert
         Assert.Equal(expected, Assert.Right(verified).PayloadFiles.Order(StringComparer.Ordinal));
     }
 
     [Fact]
-    public void Verify_GivenValidPackage_ReportsTheSigningKeyId()
+    public void Verify_GivenValidPackage_ReportsTheSigningKey()
     {
         // Arrange
         using var package = _payload.Package(_publisher);
-        var expected = PublisherKey.Of(_publisher).KeyId;
+        var expected = PublisherKey.Of(_publisher);
 
         // Act
-        var verified = PluginPackage.Verify(package, Trusted);
+        var verified = PluginPackage.Verify(package);
 
         // Assert
-        Assert.Equal(expected, Assert.Right(verified).KeyId);
+        Assert.Equal(expected, Assert.Right(verified).Signer);
     }
 
     [Fact]
-    public void Verify_GivenPackageSignedByUnknownKey_ReturnsUntrustedKey()
+    public void Verify_GivenSignatureNamingAnotherPublicKey_ReturnsInvalidSignature()
     {
         // Arrange
-        using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-        using var package = _payload.Package(stranger);
-        var expected = new UntrustedKey(PublisherKey.Of(stranger).KeyId);
+        using var original = _payload.Package(_publisher);
+        var signature = JsonNode.Parse(ZipEdits.Read(original, PluginPackage.SignatureFileName))!;
+        signature["publicKey"] = Keys.NewPublicKey().PublicKey;
+        using var tampered = ZipEdits.Replace(original, PluginPackage.SignatureFileName, signature.ToJsonString());
 
         // Act
-        var verified = PluginPackage.Verify(package, Trusted);
+        var verified = PluginPackage.Verify(tampered);
 
         // Assert
-        Assert.Left(expected, verified);
+        Assert.IsType<InvalidSignature>(Assert.Left(verified));
+    }
+
+    [Fact]
+    public void Verify_GivenKeyIdThatDoesNotMatchThePublicKey_ReturnsInvalidSignature()
+    {
+        // Arrange
+        using var original = _payload.Package(_publisher);
+        var signature = JsonNode.Parse(ZipEdits.Read(original, PluginPackage.SignatureFileName))!;
+        signature["keyId"] = Keys.NewPublicKey().KeyId;
+        using var tampered = ZipEdits.Replace(original, PluginPackage.SignatureFileName, signature.ToJsonString());
+
+        // Act
+        var verified = PluginPackage.Verify(tampered);
+
+        // Assert
+        Assert.IsType<InvalidSignature>(Assert.Left(verified));
     }
 
     [Fact]
@@ -75,7 +91,7 @@ public sealed class PluginPackageTests : IDisposable
         using var tampered = ZipEdits.Replace(original, "payload/Sample.dll", "malicious bytes");
 
         // Act
-        var verified = PluginPackage.Verify(tampered, Trusted);
+        var verified = PluginPackage.Verify(tampered);
 
         // Assert
         Assert.IsType<InvalidSignature>(Assert.Left(verified));
@@ -90,7 +106,7 @@ public sealed class PluginPackageTests : IDisposable
         using var tampered = ZipEdits.Replace(original, PluginManifest.FileName, forged);
 
         // Act
-        var verified = PluginPackage.Verify(tampered, Trusted);
+        var verified = PluginPackage.Verify(tampered);
 
         // Assert
         Assert.IsType<InvalidSignature>(Assert.Left(verified));
@@ -104,7 +120,7 @@ public sealed class PluginPackageTests : IDisposable
         using var tampered = ZipEdits.Add(original, "payload/Injected.dll", "evil");
 
         // Act
-        var verified = PluginPackage.Verify(tampered, Trusted);
+        var verified = PluginPackage.Verify(tampered);
 
         // Assert
         Assert.IsType<InvalidSignature>(Assert.Left(verified));
@@ -118,7 +134,7 @@ public sealed class PluginPackageTests : IDisposable
         using var tampered = ZipEdits.Remove(original, "payload/Sample.deps.json");
 
         // Act
-        var verified = PluginPackage.Verify(tampered, Trusted);
+        var verified = PluginPackage.Verify(tampered);
 
         // Assert
         Assert.IsType<InvalidSignature>(Assert.Left(verified));
@@ -133,7 +149,7 @@ public sealed class PluginPackageTests : IDisposable
         var expected = new MissingEntry(PluginPackage.SignatureFileName);
 
         // Act
-        var verified = PluginPackage.Verify(unsigned, Trusted);
+        var verified = PluginPackage.Verify(unsigned);
 
         // Assert
         Assert.Left(expected, verified);
@@ -147,7 +163,7 @@ public sealed class PluginPackageTests : IDisposable
         var expected = new MissingEntry("payload/Other.dll");
 
         // Act
-        var verified = PluginPackage.Verify(package, Trusted);
+        var verified = PluginPackage.Verify(package);
 
         // Assert
         Assert.Left(expected, verified);
@@ -169,7 +185,7 @@ public sealed class PluginPackageTests : IDisposable
         var expected = new UnsafeEntryPath(entryName);
 
         // Act
-        var verified = PluginPackage.Verify(package, Trusted);
+        var verified = PluginPackage.Verify(package);
 
         // Assert
         Assert.Left(expected, verified);
@@ -182,7 +198,7 @@ public sealed class PluginPackageTests : IDisposable
         using var garbage = new MemoryStream("definitely not a zip"u8.ToArray());
 
         // Act
-        var verified = PluginPackage.Verify(garbage, Trusted);
+        var verified = PluginPackage.Verify(garbage);
 
         // Assert
         Assert.IsType<NotAPackage>(Assert.Left(verified));

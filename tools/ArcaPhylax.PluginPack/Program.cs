@@ -9,6 +9,8 @@ internal static class Program
     private static int Main(string[] args) => args switch
     {
         ["keygen", var keyPath] => KeyGen.Run(keyPath),
+        ["endorse", var listPath, .. var options] => PublisherCommands.Endorse(listPath, options),
+        ["revoke", var listPath, .. var options] => PublisherCommands.Revoke(listPath, options),
         ["pack", var project, .. var options] => PackOptions.Parse(project, options, DefaultKeyPath(), RuntimeInformation.RuntimeIdentifier)
             .Match(none: Usage, some: Pack.Run),
         _ => Usage(),
@@ -29,6 +31,9 @@ internal static class Program
                   Publishes the plugin for <rid> (default: this machine), packs and signs it as .arcaplugin,
                   verifies the result and prints its catalog entry. --key defaults to ${KeyEnvironmentVariable}.
                   --catalog adds the package to that catalog.json (created if missing), linked relative to it.
+
+              arcaphylax-pluginpack endorse | revoke <publishers.json> ...
+                  Edit the root-signed publisher list (run without options for details).
             """);
         return 2;
     }

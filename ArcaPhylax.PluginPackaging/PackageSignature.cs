@@ -4,13 +4,12 @@ using System.Text.Json;
 
 namespace ArcaPhylax.PluginPackaging;
 
-/// <summary>The <c>signature.json</c> entry: which key signed the content listing, and the signature.</summary>
-internal sealed record PackageSignature(string KeyId, string Algorithm, string Signature)
+/// <summary>
+/// The <c>signature.json</c> entry: the signing key (id and public key) and the signature over the content
+/// listing. The package proves who signed it; whether that signer is trusted is decided by <see cref="TrustPolicy"/>.
+/// </summary>
+internal sealed record PackageSignature(string KeyId, string Algorithm, string Signature, string PublicKey)
 {
-    public const string EcdsaP256Sha256 = "ECDSA-P256-SHA256";
-
-    private const DSASignatureFormat Format = DSASignatureFormat.IeeeP1363FixedFieldConcatenation;
-
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
@@ -19,10 +18,10 @@ internal sealed record PackageSignature(string KeyId, string Algorithm, string S
     };
 
     public static PackageSignature Create(string contentListing, ECDsa signingKey)
-        => new(
-            PublisherKey.Of(signingKey).KeyId,
-            EcdsaP256Sha256,
-            Convert.ToBase64String(signingKey.SignData(Bytes(contentListing), HashAlgorithmName.SHA256, Format)));
+    {
+        var key = PublisherKey.Of(signingKey);
+        return new(key.KeyId, EcdsaSignature.Algorithm, EcdsaSignature.Sign(Bytes(contentListing), signingKey), key.PublicKey);
+    }
 
     public static Option<PackageSignature> Parse(string json)
     {
@@ -39,25 +38,18 @@ internal sealed record PackageSignature(string KeyId, string Algorithm, string S
 
     public string ToJson() => JsonSerializer.Serialize(this, JsonOptions);
 
+    /// <summary>The signing key, if the embedded public key is well-formed and really has <see cref="KeyId"/>.</summary>
+    public Option<PublisherKey> Signer()
+    {
+        var buffer = new byte[PublicKey.Length];
+        return Convert.TryFromBase64String(PublicKey, buffer, out var written)
+            ? Option.Some(PublisherKey.FromPublicKey(buffer[..written])).Where(key => key.KeyId == KeyId)
+            : Option<PublisherKey>.None;
+    }
+
     /// <summary>Whether this signature over <paramref name="contentListing"/> was made by <paramref name="key"/>.</summary>
     public bool IsValidFor(string contentListing, PublisherKey key)
-    {
-        using var verifier = ECDsa.Create();
-        verifier.ImportSubjectPublicKeyInfo(Convert.FromBase64String(key.PublicKey), out _);
-
-        return Algorithm == EcdsaP256Sha256
-            && SignatureBytes().Match(
-                none: false,
-                some: signature => verifier.VerifyData(Bytes(contentListing), signature, HashAlgorithmName.SHA256, Format));
-    }
+        => Algorithm == EcdsaSignature.Algorithm && EcdsaSignature.IsValid(Bytes(contentListing), Signature, key);
 
     private static byte[] Bytes(string text) => Encoding.UTF8.GetBytes(text);
-
-    private Option<byte[]> SignatureBytes()
-    {
-        var buffer = new byte[Signature.Length];
-        return Convert.TryFromBase64String(Signature, buffer, out var written)
-            ? buffer[..written]
-            : Option<byte[]>.None;
-    }
 }

@@ -24,6 +24,11 @@ public sealed class PluginCatalogClient(Uri catalogUri)
         => (await BytesAsync(catalogUri, cancellationToken))
             .SelectMany(bytes => PluginCatalog.Parse(System.Text.Encoding.UTF8.GetString(bytes)));
 
+    /// <summary>The signed publisher list published next to the catalog (verified by <see cref="PluginTrust"/>, not here).</summary>
+    public async Task<Either<string, string>> PublishersAsync(CancellationToken cancellationToken = default)
+        => (await BytesAsync(new Uri(catalogUri, PublisherList.FileName), cancellationToken))
+            .Select(bytes => System.Text.Encoding.UTF8.GetString(bytes));
+
     public async Task<Either<string, byte[]>> DownloadAsync(CatalogPackage package, CancellationToken cancellationToken = default)
     {
         var downloaded = await PackageUri(package).Match(

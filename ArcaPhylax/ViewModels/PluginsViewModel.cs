@@ -72,6 +72,11 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     {
         IsBusy = true;
         CatalogStatus = "Loading the plugin catalog…";
+
+        // The publisher list is optional (none is published until a third party is endorsed); a missing or
+        // refused list keeps the one already known.
+        (await _catalogClient.PublishersAsync()).SelectMany(_plugins.Trust.Accept);
+
         var catalog = await _catalogClient.CatalogAsync();
         _catalog = catalog.Match(left: _ => Option<PluginCatalog>.None, right: Option.Some);
         CatalogStatus = catalog.Match<string?>(left: error => $"The plugin catalog is unavailable: {error}", right: _ => null);
@@ -92,7 +97,7 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
         var downloaded = await _catalogClient.DownloadAsync(package);
         Status = await downloaded.Match(
             left: error => Task.FromResult($"{name} was not installed: {error}"),
-            right: async bytes => Message(await _plugins.InstallAsync(bytes)));
+            right: async bytes => PluginMessages.Of(await _plugins.InstallAsync(bytes)));
         IsBusy = false;
         Refresh();
     }
@@ -121,7 +126,7 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     {
         IsBusy = true;
         Status = "Installing…";
-        Status = Message(await _plugins.InstallFromFileAsync(path));
+        Status = PluginMessages.Of(await _plugins.InstallFromFileAsync(path));
         IsBusy = false;
         Refresh();
     }
@@ -131,7 +136,7 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
         => row.RemovableId.AndThen(id =>
         {
             Status = _plugins.ScheduleRemoval(id).Match(
-                left: Message,
+                left: PluginMessages.Of,
                 right: _ => $"{row.Name} will be removed when ArcaPhylax restarts.");
             Refresh();
         });
@@ -228,32 +233,4 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
 
     private static string AssemblyVersion(LoadedPlugin plugin)
         => plugin.Instance.GetType().Assembly.GetName().Version?.ToString(3) ?? "–";
-
-    private static string Message(InstallReport report) => report switch
-    {
-        PluginActivated activated => $"{activated.Manifest.Name} {activated.Manifest.Version} was installed and is ready.",
-        RestartRequired restart => $"{restart.Manifest.Name} {restart.Manifest.Version} was installed. Restart ArcaPhylax to use it.",
-        InstallRejected rejected => $"Not installed: {Message(rejected.Error)}",
-        LoadFailed failed => $"{failed.Manifest.Name} was installed but failed to load: {failed.Message}",
-    };
-
-    private static string Message(InstallError error) => error switch
-    {
-        InvalidPackage invalid => Message(invalid.Error),
-        WrongPlatform platform => $"the package is for {platform.PluginPlatform}, but this computer needs {platform.HostPlatform}.",
-        IncompatibleSdk sdk => $"it was built for plugin SDK {sdk.PluginSdkVersion}; this ArcaPhylax provides {sdk.HostSdkVersion}.",
-        AlreadyInstalled installed => $"{installed.Id} {installed.Version} is already installed.",
-        NotInstalled notInstalled => $"{notInstalled.Id} is not installed.",
-    };
-
-    private static string Message(PackageError error) => error switch
-    {
-        NotAPackage => "the file is not an ArcaPhylax plugin package.",
-        MissingEntry missing when missing.Path == PluginPackage.SignatureFileName => "the package is not signed.",
-        MissingEntry missing => $"the package is missing '{missing.Path}'.",
-        UnsafeEntryPath unsafePath => $"the package contains an unsafe file path ('{unsafePath.Path}').",
-        InvalidManifest manifest => $"its plugin.json is invalid: {manifest.Reason}",
-        UntrustedKey key => $"it is signed by an unknown publisher (key {key.KeyId}).",
-        InvalidSignature => "its signature does not match its contents; the file may have been tampered with.",
-    };
 }

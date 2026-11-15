@@ -8,11 +8,11 @@ namespace ArcaPhylax.PluginSystem;
 public static class PluginHost
 {
     /// <summary>Per-user install location (%LOCALAPPDATA%\ArcaPhylax\plugins on Windows, ~/.local/share/... on Linux).</summary>
-    public static string StoreRoot
-        => Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
-            "ArcaPhylax",
-            "plugins");
+    public static string StoreRoot => Path.Combine(DataRoot, "plugins");
+
+    /// <summary>Per-user ArcaPhylax data (%LOCALAPPDATA%\ArcaPhylax): plugin store, publisher list cache, trust overrides.</summary>
+    public static string DataRoot
+        => Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "ArcaPhylax");
 
     /// <summary>Bundled plugins shipped next to the application.</summary>
     public static string BundledRoot => Path.Combine(AppContext.BaseDirectory, "plugins");
@@ -30,7 +30,9 @@ public static class PluginHost
         .Where(value => !string.IsNullOrWhiteSpace(value))
         .Match(none: () => new Uri("https://freeapophis.github.io/ArcaPhylax/catalog.json"), some: CatalogUriFrom);
 
-    public static PluginStore CreateStore() => new(StoreRoot, Environment, TrustedPublisherKeys.All);
+    public static PluginStore CreateStore() => new(StoreRoot, Environment);
+
+    public static PluginTrust CreateTrust() => new(DataRoot);
 
     private static Uri CatalogUriFrom(string value)
         => Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : new Uri(Path.GetFullPath(value));

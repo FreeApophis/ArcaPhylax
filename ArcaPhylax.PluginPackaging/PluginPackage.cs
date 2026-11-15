@@ -7,7 +7,7 @@ namespace ArcaPhylax.PluginPackaging;
 
 /// <summary>
 /// The <c>.arcaplugin</c> layout: a zip with <c>plugin.json</c>, the published plugin under
-/// <c>payload/</c>, and <c>signature.json</c> (ECDSA P-256 / SHA-256 over <see cref="ContentListing"/>).
+/// <c>payload/</c>, and <c>signature.json</c> (ECDSA P-256 / SHA-256 over <see cref="ContentListing"/>, plus the signer's public key).
 /// </summary>
 public static class PluginPackage
 {
@@ -36,14 +36,14 @@ public static class PluginPackage
     }
 
     /// <summary>The verified package, or why it must not be installed.</summary>
-    public static Either<PackageError, VerifiedPackage> Verify(Stream package, IReadOnlyCollection<PublisherKey> trustedKeys)
+    public static Either<PackageError, VerifiedPackage> Verify(Stream package)
     {
         // ZipArchive reports a non-zip or corrupt archive via InvalidDataException (on open or while
         // reading an entry); translate it at this boundary.
         try
         {
             using var archive = new ZipArchive(package, ZipArchiveMode.Read, leaveOpen: true);
-            return Verified(archive, trustedKeys);
+            return Verified(archive);
         }
         catch (InvalidDataException exception)
         {
@@ -76,14 +76,14 @@ public static class PluginPackage
     private static bool IsPayloadFile(ZipArchiveEntry entry)
         => entry.FullName.StartsWith(PayloadPrefix, StringComparison.Ordinal) && !entry.FullName.EndsWith('/');
 
-    private static Either<PackageError, VerifiedPackage> Verified(ZipArchive archive, IReadOnlyCollection<PublisherKey> trustedKeys)
+    private static Either<PackageError, VerifiedPackage> Verified(ZipArchive archive)
         => from files in SafeFileEntries(archive)
            from signature in SignatureOf(archive)
-           from key in TrustedKeyFor(signature, trustedKeys)
+           from key in SignerOf(signature)
            from signed in SignatureMatches(files, signature, key)
            from manifest in ManifestOf(archive)
            from entryAssembly in RequiredEntry(files, PayloadPrefix + manifest.EntryAssembly)
-           select new VerifiedPackage(manifest, key.KeyId, PayloadPaths(files));
+           select new VerifiedPackage(manifest, key, PayloadPaths(files));
 
     /// <summary>All file entries, or the first one whose path is outside the allowed layout.</summary>
     private static Either<PackageError, ImmutableList<ZipArchiveEntry>> SafeFileEntries(ZipArchive archive)
@@ -113,9 +113,9 @@ public static class PluginPackage
                 none: () => Either<PackageError, PackageSignature>.Left(new InvalidSignature()),
                 some: Either<PackageError, PackageSignature>.Right));
 
-    private static Either<PackageError, PublisherKey> TrustedKeyFor(PackageSignature signature, IReadOnlyCollection<PublisherKey> trustedKeys)
-        => trustedKeys.FirstOrNone(key => key.KeyId == signature.KeyId).Match(
-            none: () => Either<PackageError, PublisherKey>.Left(new UntrustedKey(signature.KeyId)),
+    private static Either<PackageError, PublisherKey> SignerOf(PackageSignature signature)
+        => signature.Signer().Match(
+            none: () => Either<PackageError, PublisherKey>.Left(new InvalidSignature()),
             some: Either<PackageError, PublisherKey>.Right);
 
     private static Either<PackageError, Unit> SignatureMatches(
