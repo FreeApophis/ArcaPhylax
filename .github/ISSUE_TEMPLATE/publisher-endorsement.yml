@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Plugins run inside ArcaPhylax with full access to the user's computer, so only endorsed publishers are listed.
-        Create a signing key with `dotnet run --project tools/ArcaPhylax.PluginPack -- keygen my.key`, keep the
+        Create a signing key with `arcaphylax-pluginpack keygen my.key`, keep the
         private key file to yourself, and paste the **public** key it prints below. Never post the private key.
   - type: input
     id: name

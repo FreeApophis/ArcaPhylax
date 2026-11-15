@@ -1,0 +1,52 @@
+# Publishes the plugin author kit to nuget.org: ArcaPhylax.Abstractions, ArcaPhylax.Plugin.Sdk,
+# ArcaPhylax.Plugin.Templates and the ArcaPhylax.PluginPack tool. Runs when a tag like sdk-v1.0.0 is pushed,
+# or by hand. Needs the repository secret NUGET_API_KEY (a nuget.org API key scoped to ArcaPhylax.*).
+# The version comes from each project's <Version>. Versions already on nuget.org are skipped, so bump the
+# <Version> of every package that changed before tagging.
+name: Publish plugin author kit
+
+on:
+  push:
+    tags: ['sdk-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Pack
+        run: |
+          set -euo pipefail
+          for project in \
+            ArcaPhylax.Abstractions/ArcaPhylax.Abstractions.csproj \
+            ArcaPhylax.Plugin.Sdk/ArcaPhylax.Plugin.Sdk.csproj \
+            templates/ArcaPhylax.Plugin.Templates/ArcaPhylax.Plugin.Templates.csproj \
+            tools/ArcaPhylax.PluginPack/ArcaPhylax.PluginPack.csproj; do
+            dotnet pack "$project" -c Release -o artifacts/nuget -p:ContinuousIntegrationBuild=true
+          done
+          ls -l artifacts/nuget
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts/nuget/*.nupkg
+
+      - name: Push to nuget.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::error::The repository secret NUGET_API_KEY is not set."
+            exit 1
+          fi
+          dotnet nuget push "artifacts/nuget/*.nupkg" --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json --skip-duplicate

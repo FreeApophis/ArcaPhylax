@@ -16,12 +16,12 @@ After merging, the website workflow runs the same check again and adds the listi
 ## Listing your plugin
 
 1. **Get endorsed.** Open a *Publisher endorsement* issue with your public key (from
-   `dotnet run --project tools/ArcaPhylax.PluginPack -- keygen my.key`) and the plugin id prefix you want
+   `arcaphylax-pluginpack keygen my.key`) and the plugin id prefix you want
    (for example `Contoso`, which covers `Contoso` and `Contoso.*`).
 2. **Pack and upload.** For each platform, pack the plugin and upload the `.arcaplugin` files to a release:
 
    ```
-   dotnet run --project tools/ArcaPhylax.PluginPack -- pack path/to/Hello.csproj --key my.key --rid win-x64 \
+   arcaphylax-pluginpack pack path/to/Hello.csproj --key my.key --rid win-x64 \
        --out out --catalog catalog/contoso.json \
        --base-url https://github.com/contoso/hello/releases/download/v1.0.0
    ```

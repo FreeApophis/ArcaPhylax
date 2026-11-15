@@ -1,10 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<!-- Developer tool: builds, signs and verifies .arcaplugin packages. Not shipped with the app. -->
+	<!-- Plugin author tool: builds, signs and verifies .arcaplugin packages, writes catalog listings, and edits
+	     the root-signed publisher list. Published as the .NET tool `arcaphylax-pluginpack`. -->
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<IsPackable>false</IsPackable>
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>arcaphylax-pluginpack</ToolCommandName>
+		<PackageId>ArcaPhylax.PluginPack</PackageId>
+		<Version>1.0.0</Version>
+		<Description>Packs, signs and verifies ArcaPhylax plugins (.arcaplugin) and writes their catalog listings.</Description>
+		<!-- A tool built for .NET 11 keeps working when only a newer runtime is installed. -->
+		<RollForward>Major</RollForward>
 	</PropertyGroup>
 
 	<ItemGroup>

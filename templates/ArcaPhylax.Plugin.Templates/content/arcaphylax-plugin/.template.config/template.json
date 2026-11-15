@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Apophis",
+  "classifications": [ "ArcaPhylax", "Plugin", "Avalonia" ],
+  "identity": "ArcaPhylax.Plugin.CSharp",
+  "name": "ArcaPhylax plugin",
+  "description": "A plugin for ArcaPhylax with one page (view model, Avalonia view and Autofac module).",
+  "shortName": "arcaphylax-plugin",
+  "sourceName": "Company.HelloPlugin",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "title": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "Hello",
+      "replaces": "HELLO_TITLE",
+      "description": "The page title shown in the ArcaPhylax navigation and plugin browser."
+    },
+    "pluginAuthor": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "Your name",
+      "replaces": "PLUGIN_AUTHOR",
+      "description": "The author shown in the plugin browser."
+    }
+  },
+  "primaryOutputs": [ { "path": "Company.HelloPlugin.csproj" } ],
+  "postActions": [
+    {
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [ { "text": "Run 'dotnet restore'" } ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

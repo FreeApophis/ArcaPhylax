@@ -75,19 +75,28 @@ dotnet run --project ArcaPhylax/ArcaPhylax.csproj</code></pre>
         <section id="writing-a-plugin">
           <h2>Writing a plugin</h2>
           <p>A plugin is a .NET class library that references <code>ArcaPhylax.Plugin.Sdk</code> and nothing else from ArcaPhylax. It runs in its own load context; Avalonia, Autofac, CommunityToolkit.Mvvm and the SDK come from the app, everything else ships with the plugin.</p>
+          <h3>Start from the template</h3>
+          <p>You need the <a href="https://dotnet.microsoft.com/download">.NET 11 SDK</a>. Install the template and the pack tool once, then create a plugin:</p>
+<pre><code>dotnet new install ArcaPhylax.Plugin.Templates
+dotnet tool install --global ArcaPhylax.PluginPack
+
+dotnet new arcaphylax-plugin -n Contoso.Hello --title "Hello" --plugin-author "Contoso"</code></pre>
+          <p>The project builds as it is: one page with a view model, an Avalonia view and an Autofac module. Use a name made of dot-separated letters and digits; it becomes the plugin id.</p>
           <h3>Project</h3>
-          <p>Put it under <code>Plugins/</code> so it picks up the shared build settings, and describe it in the project file:</p>
+          <p>A plugin references the <code>ArcaPhylax.Plugin.Sdk</code> package and describes itself in the project file:</p>
 <pre><code>&lt;PropertyGroup&gt;
-  &lt;PluginId&gt;Example.Hello&lt;/PluginId&gt;
+  &lt;PluginId&gt;Contoso.Hello&lt;/PluginId&gt;
   &lt;Title&gt;Hello&lt;/Title&gt;
   &lt;Description&gt;Says hello.&lt;/Description&gt;
+  &lt;Authors&gt;Contoso&lt;/Authors&gt;
   &lt;Version&gt;1.0.0&lt;/Version&gt;
   &lt;!-- Optional: &lt;PluginPlatforms&gt;win-x64;win-arm64&lt;/PluginPlatforms&gt; --&gt;
 &lt;/PropertyGroup&gt;
 
 &lt;ItemGroup&gt;
-  &lt;ProjectReference Include="..\..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" /&gt;
+  &lt;PackageReference Include="ArcaPhylax.Plugin.Sdk" Version="1.0.0" /&gt;
 &lt;/ItemGroup&gt;</code></pre>
+          <p>The SDK package brings the Avalonia, Autofac and CommunityToolkit.Mvvm versions ArcaPhylax provides, and build rules that leave them out of your published output: the app supplies them at runtime.</p>
           <h3>Entry point</h3>
           <p>Implement <code>IPlugin</code> once and register your services in an Autofac module:</p>
 <pre><code>internal sealed class HelloPlugin : IPlugin
@@ -109,16 +118,17 @@ internal sealed class HelloModule : Module
 }</code></pre>
           <p>Every <code>ITabContentViewModel</code> becomes a page in the navigation bar. Its view is found by name: <code>Hello.ViewModels.HelloViewModel</code> → <code>Hello.Views.HelloView</code>, in the same assembly. <code>IConfigurationSection</code> registrations add a section to the Configure page.</p>
           <p>Types that cross between plugin and app must come from the SDK. Plugins get the app's repositories through their interfaces in <code>ArcaPhylax.Abstractions</code>.</p>
+          <p>Every other library your plugin uses ships inside your package, in your plugin's own copy. One exception: assemblies whose name starts with <code>Avalonia</code> always come from the app, so only use Avalonia packages that ArcaPhylax itself ships.</p>
         </section>
 
         <section id="packaging">
           <h2>Packaging and signing</h2>
           <p>A plugin is distributed as one <code>.arcaplugin</code> file per platform: a zip with <code>plugin.json</code>, the published files under <code>payload/</code>, and <code>signature.json</code> (ECDSA P-256 over the SHA-256 of every entry).</p>
-          <p>Create a signing key once and keep it out of the repository:</p>
-<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- keygen ~/arcaphylax-plugins.key</code></pre>
-          <p>It prints the public key. ArcaPhylax only trusts keys listed in <code>ArcaPhylax/PluginSystem/TrustedPublisherKeys.cs</code>.</p>
+          <p>The <code>arcaphylax-pluginpack</code> tool (<code>dotnet tool install --global ArcaPhylax.PluginPack</code>) does all of it. Create a signing key once and keep it out of your repository:</p>
+<pre><code>arcaphylax-pluginpack keygen ~/arcaphylax-plugins.key</code></pre>
+          <p>It prints the public key. To get your plugins listed, ask for that key to be endorsed (see <a href="#publish-your-plugin">Publish your plugin</a>); for testing on your own computer, trust it when you install.</p>
           <p>Pack, sign and verify a plugin:</p>
-<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/Hello/Hello.csproj \
+<pre><code>arcaphylax-pluginpack pack Contoso.Hello/Contoso.Hello.csproj \
     --key ~/arcaphylax-plugins.key --rid win-x64 --out artifacts/plugins</code></pre>
           <table>
             <tr><th>Option</th><th>Meaning</th></tr>
@@ -126,6 +136,7 @@ internal sealed class HelloModule : Module
             <tr><td><code>--rid</code></td><td>Platform to publish for. Defaults to this machine.</td></tr>
             <tr><td><code>--out</code></td><td>Output folder. Defaults to <code>artifacts/plugins</code>.</td></tr>
             <tr><td><code>--catalog</code></td><td>Also add the package to this <code>catalog.json</code> (created if missing).</td></tr>
+            <tr><td><code>--base-url</code></td><td>With <code>--catalog</code>: link the package as <code>&lt;url&gt;/&lt;file&gt;</code>, e.g. a release download URL.</td></tr>
           </table>
         </section>
 
@@ -134,7 +145,7 @@ internal sealed class HelloModule : Module
           <p>This website and the plugin catalog are built by <code>.github/workflows/pages.yml</code> on every push to <code>main</code>. It packs every plugin under <code>Plugins/</code> for each platform in its <code>PluginPlatforms</code> (skipping plugins with <code>&lt;PluginInCatalog&gt;false&lt;/PluginInCatalog&gt;</code>), writes <code>catalog.json</code> and deploys the site to GitHub Pages.</p>
           <p>The signing key comes from the repository secret <code>PLUGIN_SIGNING_KEY</code> (the PEM file's contents). To release a new version, raise <code>&lt;Version&gt;</code> in the plugin's project file and push.</p>
           <p>To try a catalog before publishing it, point the app at a local file:</p>
-<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/Hello/Hello.csproj --out site-test/plugins --catalog site-test/catalog.json
+<pre><code>arcaphylax-pluginpack pack Plugins/Hello/Hello.csproj --out site-test/plugins --catalog site-test/catalog.json
 ARCAPHYLAX_PLUGIN_CATALOG=site-test/catalog.json dotnet run --project ArcaPhylax/ArcaPhylax.csproj</code></pre>
         </section>
 
@@ -144,14 +155,14 @@ ARCAPHYLAX_PLUGIN_CATALOG=site-test/catalog.json dotnet run --project ArcaPhylax
           <ol>
             <li>
               <strong>Create your signing key</strong> and keep the private key file to yourself:
-<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- keygen my.key</code></pre>
+<pre><code>arcaphylax-pluginpack keygen my.key</code></pre>
             </li>
             <li>
               <strong>Get endorsed.</strong> Open a <a href="https://github.com/FreeApophis/ArcaPhylax/issues/new?template=publisher-endorsement.yml">publisher endorsement issue</a> with your public key and the plugin id prefix you want (for example <code>Contoso</code>, which covers <code>Contoso</code> and <code>Contoso.*</code>). Once endorsed, your key is in <a href="../publishers.json">publishers.json</a>.
             </li>
             <li>
               <strong>Pack for each platform and upload</strong> the <code>.arcaplugin</code> files to a release, for example on GitHub. With <code>--catalog</code> and <code>--base-url</code>, the pack tool writes your listing file:
-<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Hello/Hello.csproj --key my.key --rid win-x64 \
+<pre><code>arcaphylax-pluginpack pack Hello/Hello.csproj --key my.key --rid win-x64 \
     --out out --catalog catalog/contoso.json \
     --base-url https://github.com/contoso/hello/releases/download/v1.0.0</code></pre>
             </li>

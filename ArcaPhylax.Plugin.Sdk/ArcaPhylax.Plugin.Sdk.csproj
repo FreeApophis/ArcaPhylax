@@ -3,14 +3,26 @@
     <!-- The plugin contract version. Recorded as sdkVersion in every plugin.json; bump the major
          version on breaking changes to IPlugin / Abstractions so the host can refuse old plugins. -->
     <Version>1.0.0</Version>
+    <Description>Everything needed to write an ArcaPhylax plugin: IPlugin, the shared contracts, and the build rules that keep a plugin's output to its own files.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
+  <!-- PrivateAssets="none": plugins referencing the SDK package must get these packages' build assets
+       (Avalonia's XAML compiler) and analyzers (CommunityToolkit.Mvvm's source generators) as well; NuGet
+       excludes both from dependencies by default. -->
   <ItemGroup>
-    <PackageReference Include="Autofac" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Autofac" PrivateAssets="none" />
+    <PackageReference Include="CommunityToolkit.Mvvm" PrivateAssets="none" />
+    <!-- Not used by the SDK itself: pins plugins to the Avalonia version the host provides. -->
+    <PackageReference Include="Avalonia" PrivateAssets="none" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="buildTransitive\**" Pack="true" PackagePath="buildTransitive" />
   </ItemGroup>
 </Project>

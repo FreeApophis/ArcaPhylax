@@ -1,0 +1,8 @@
+<Project>
+  <!-- ArcaPhylax plugin defaults (shipped in the ArcaPhylax.Plugin.Sdk package; the repository's own plugins
+       import this file too). A plugin project may override any of these. -->
+  <PropertyGroup>
+    <!-- Plugins are published and packaged per platform (only that platform's native assets). -->
+    <RuntimeIdentifiers Condition="'$(RuntimeIdentifiers)' == ''">win-x64;win-arm64;linux-x64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+</Project>

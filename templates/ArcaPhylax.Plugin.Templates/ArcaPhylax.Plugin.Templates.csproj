@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The `dotnet new arcaphylax-plugin` template package. The project under content/ is template source: it is
+       packed as content and never compiled here. -->
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>ArcaPhylax.Plugin.Templates</PackageId>
+    <Version>1.0.0</Version>
+    <Title>ArcaPhylax plugin templates</Title>
+    <Description>Project template for ArcaPhylax plugins: dotnet new arcaphylax-plugin -n Contoso.Hello</Description>
+    <PackageTags>$(PackageTags);dotnet-new;templates</PackageTags>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!-- NU5128: a template package has no lib/ folder on purpose. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**"
+          Pack="true" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

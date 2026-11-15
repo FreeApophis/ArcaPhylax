@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Company.HelloPlugin.ViewModels"
+             x:Class="Company.HelloPlugin.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+  <!-- The host's styles apply: pageTitle, card, accent, secondary, subtle, ... -->
+  <StackPanel Spacing="12">
+    <TextBlock Classes="pageTitle" Text="{Binding Title}"/>
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <TextBlock Text="{Binding Message}"/>
+        <Button Classes="accent" HorizontalAlignment="Left" Content="Click me" Command="{Binding ClickCommand}"/>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

@@ -24,7 +24,9 @@ ArcaPhylax.Infrastructure/   Persistence + provisioning: SQLite/Dapper repositor
                              indexing queue/worker, Postgres provisioning, InfrastructureModule. No Avalonia.
 ArcaPhylax.PluginPackaging/  The .arcaplugin format: plugin.json manifest, signing/verification,
                              compatibility check, per-user PluginStore. No Avalonia. Used by host + tool.
-tools/ArcaPhylax.PluginPack/ Developer tool: `keygen`, `pack` (publish + sign + verify, `--catalog` adds to catalog.json).
+tools/ArcaPhylax.PluginPack/ .NET tool `arcaphylax-pluginpack`: `keygen`, `pack` (publish + sign + verify, `--catalog`
+                             [+ `--base-url`] adds to a catalog/listing), `endorse`/`revoke`, `add-listings`.
+templates/                   `dotnet new arcaphylax-plugin` template package (content/ is template source, never compiled).
 site/                        Static website (homepage, plugins page, docs) for GitHub Pages; site/publishers.json
                              (root-signed publisher list, edited locally with `pluginpack endorse|revoke`).
 catalog/                     Third-party plugin listings (one JSON per publisher), merged into the catalog by CI.
@@ -275,9 +277,19 @@ If a plugin needs a type to cross the plugin/host boundary, that type must live 
 
 ### Plugin Packaging & Installation
 
-- **Slim output.** `Plugins/Directory.Build.targets` makes host-provided packages (Avalonia, Autofac,
-  CommunityToolkit.Mvvm, SkiaSharp, HarfBuzzSharp, …) compile-only and drops foreign `runtimes/<rid>/`
-  folders. A plugin's publish output must contain only its OWN files; never re-add host assemblies.
+- **Slim output.** The rules live in `ArcaPhylax.Plugin.Sdk/buildTransitive/*.props|targets` — shipped in
+  the SDK NuGet package for outside authors AND imported by `Plugins/Directory.Build.*` (single source).
+  Publish drops host-provided packages (Avalonia.*, SkiaSharp.*, HarfBuzzSharp.*, Tmds.DBus.*, exact
+  Autofac/CommunityToolkit.Mvvm/ArcaPhylax.*) and foreign `runtimes/<rid>/` folders; in-repo plugins also
+  get `ExcludeAssets="runtime;native"`. A plugin's publish output must contain only its OWN files.
+  After changing these rules, compare the bundled plugin sizes (Fractal 2.3 MB, Nutrition 3.4 MB,
+  Scanner 30.2 MB, Demiurg 539 MB incl. CUDA) after deleting `ArcaPhylax/bin/.../Plugins`.
+- **Author kit** (nuget.org, `.github/workflows/nuget.yml` on tag `sdk-v*`, secret `NUGET_API_KEY`):
+  ArcaPhylax.Abstractions + ArcaPhylax.Plugin.Sdk (keep versions equal; the SDK depends on Autofac,
+  CommunityToolkit.Mvvm and Avalonia with `PrivateAssets="none"` so XAML compilation and source generators
+  reach plugins), ArcaPhylax.Plugin.Templates, ArcaPhylax.PluginPack. Polyadic.CodeStyle blocks local
+  `dotnet pack`; CI passes `-p:ContinuousIntegrationBuild=true` (do the same only for local test feeds).
+  Bump the template's SDK version when the SDK version changes.
 - **Metadata** lives in the plugin `.csproj`: `PluginId`, `Title`, `Description`, `Version` (`Authors`
   defaults in `Plugins/Directory.Build.props`). `ArcaPhylax.Plugin.Sdk`'s `<Version>` is the plugin
   contract version: bump the MAJOR on breaking changes to `IPlugin`/Abstractions.

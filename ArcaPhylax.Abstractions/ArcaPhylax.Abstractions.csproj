@@ -1,2 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Released together with ArcaPhylax.Plugin.Sdk; keep the versions equal. -->
+    <Version>1.0.0</Version>
+    <Description>Contracts shared between ArcaPhylax and its plugins (tabs, configuration sections, repositories, content records). Reference ArcaPhylax.Plugin.Sdk instead of this package.</Description>
+  </PropertyGroup>
 </Project>

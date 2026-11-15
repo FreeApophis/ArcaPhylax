@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Plugin metadata: written to plugin.json and shown in the ArcaPhylax plugin browser.
+       PluginId must be dot-separated identifiers (letters and digits). To list the plugin in the ArcaPhylax
+       catalog, it must start with the prefix your publisher key is endorsed for. -->
+  <PropertyGroup>
+    <PluginId>Company.HelloPlugin</PluginId>
+    <Title>HELLO_TITLE</Title>
+    <Description>Describe what your plugin does.</Description>
+    <Authors>PLUGIN_AUTHOR</Authors>
+    <Version>1.0.0</Version>
+    <!-- Optional: the platforms to publish packages for (default: win-x64;win-arm64;linux-x64;osx-arm64).
+    <PluginPlatforms>win-x64</PluginPlatforms> -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Brings IPlugin, the shared contracts, the host's Avalonia/Autofac/CommunityToolkit.Mvvm versions, and the
+         build rules that keep the published output to this plugin's own files. -->
+    <PackageReference Include="ArcaPhylax.Plugin.Sdk" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>

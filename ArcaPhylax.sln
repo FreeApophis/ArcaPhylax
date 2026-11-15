@@ -50,6 +50,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcaPhylax.PluginPack", "tools\ArcaPhylax.PluginPack\ArcaPhylax.PluginPack.csproj", "{F88A197C-D1CA-4A45-B2F3-04B50217FADE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{808186BE-9BD0-DD1D-D574-36EEAD1E7F8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcaPhylax.Plugin.Templates", "templates\ArcaPhylax.Plugin.Templates\ArcaPhylax.Plugin.Templates.csproj", "{798D4F41-875D-4903-9BBB-E93CDECCD449}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -228,6 +232,18 @@ Global
 		{F88A197C-D1CA-4A45-B2F3-04B50217FADE}.Release|x64.Build.0 = Release|Any CPU
 		{F88A197C-D1CA-4A45-B2F3-04B50217FADE}.Release|x86.ActiveCfg = Release|Any CPU
 		{F88A197C-D1CA-4A45-B2F3-04B50217FADE}.Release|x86.Build.0 = Release|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Debug|x64.Build.0 = Debug|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Debug|x86.Build.0 = Debug|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Release|Any CPU.Build.0 = Release|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Release|x64.ActiveCfg = Release|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Release|x64.Build.0 = Release|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Release|x86.ActiveCfg = Release|Any CPU
+		{798D4F41-875D-4903-9BBB-E93CDECCD449}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -240,6 +256,7 @@ Global
 		{3E1C5C09-60B9-4EBD-9309-8D77FE6CA557} = {ACF5C77D-57AC-4915-BF18-C93EFE0D13BD}
 		{6D1E8A4B-3C2F-4E5A-9B7D-1F0C2A3B4E5D} = {ACF5C77D-57AC-4915-BF18-C93EFE0D13BD}
 		{F88A197C-D1CA-4A45-B2F3-04B50217FADE} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{798D4F41-875D-4903-9BBB-E93CDECCD449} = {808186BE-9BD0-DD1D-D574-36EEAD1E7F8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B36B4351-6708-4FC2-9C92-475D8A543345}

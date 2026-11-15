@@ -2,10 +2,10 @@
   <!-- MSBuild only picks up the nearest Directory.Build.props, so chain to the repo root explicitly. -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
-    <!-- Plugins are published and packaged per platform (only that platform's native assets);
-         restore must know these RIDs so `publish -r <rid>` works without a separate restore. -->
-    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;osx-arm64</RuntimeIdentifiers>
+  <!-- Plugin defaults (RuntimeIdentifiers) ship in the SDK package; import the same file here. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\ArcaPhylax.Plugin.Sdk\buildTransitive\ArcaPhylax.Plugin.Sdk.props" />
+
+  <PropertyGroup>
     <!-- Default publisher shown in plugin.json / the plugin browser; a plugin may override it. -->
     <Authors>Apophis</Authors>
   </PropertyGroup>

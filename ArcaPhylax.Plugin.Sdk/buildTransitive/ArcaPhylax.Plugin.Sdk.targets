@@ -1,0 +1,58 @@
+<Project>
+  <!-- ArcaPhylax plugin build rules (shipped in the ArcaPhylax.Plugin.Sdk package; the repository's own plugins
+       import this file too, so there is one source of truth). Test projects are left alone: they need the real
+       runtime assets. -->
+
+  <!-- Catalog publishing (read by the ArcaPhylax Pages workflow). Override in the plugin .csproj:
+       PluginPlatforms  - RIDs to publish packages for (default: every RID in RuntimeIdentifiers).
+       PluginInCatalog  - false keeps the plugin bundled-only (not offered for download). -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <PluginPlatforms Condition="'$(PluginPlatforms)' == ''">$(RuntimeIdentifiers)</PluginPlatforms>
+    <PluginInCatalog Condition="'$(PluginInCatalog)' == ''">true</PluginInCatalog>
+  </PropertyGroup>
+
+  <!--
+    A plugin's publish output must contain only the plugin's OWN files. These packages are provided by the
+    ArcaPhylax host at runtime (PluginLoadContext resolves them from the default load context), so they are
+    compile-time only for plugins. Without this, every plugin published Avalonia + SkiaSharp/HarfBuzz natives
+    for every platform: ~600 MB per plugin instead of a few MB.
+    Prefix match for the UI stack (Avalonia.*, SkiaSharp.*, HarfBuzzSharp.*, Tmds.DBus.*); exact match for the
+    rest, so a plugin's own Autofac.Extensions.* or CommunityToolkit.* packages are still published.
+  -->
+  <PropertyGroup>
+    <_ArcaPhylaxHostPackagePattern>(?i)^(Avalonia(\..*)?|SkiaSharp(\..*)?|HarfBuzzSharp(\..*)?|Tmds\.DBus(\..*)?|MicroCom\.Runtime|Autofac|CommunityToolkit\.Mvvm|ArcaPhylax\.Abstractions|ArcaPhylax\.Plugin\.Sdk)$</_ArcaPhylaxHostPackagePattern>
+  </PropertyGroup>
+
+  <Target Name="_ArcaPhylaxDropHostPackages"
+          AfterTargets="ComputeResolvedFilesToPublishList"
+          Condition="'$(IsTestProject)' != 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(ResolvedFileToPublish.NuGetPackageId)' != ''
+                                        and $([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.NuGetPackageId)', '$(_ArcaPhylaxHostPackagePattern)'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- A plugin published for one RID only needs that RID's natives. Some packages (e.g. the LLamaSharp
+       backends) copy runtimes/<rid>/ folders for every OS via their own .props; drop the foreign ones. -->
+  <Target Name="_ArcaPhylaxDropForeignRuntimes"
+          AfterTargets="ComputeResolvedFilesToPublishList"
+          Condition="'$(IsTestProject)' != 'true' and '$(RuntimeIdentifier)' != ''">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/', '\').StartsWith('runtimes\'))
+                                        and !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/', '\').StartsWith('runtimes\$(RuntimeIdentifier)\'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- The ArcaPhylax contract assemblies are shared with the host; never copy them next to the plugin,
+       whether they arrive as packages or (inside the ArcaPhylax repository) as project references. -->
+  <Target Name="_ArcaPhylaxExcludeHostAssemblies"
+          AfterTargets="ResolveAssemblyReferences"
+          Condition="'$(IsTestProject)' != 'true'">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+                               Condition="'%(Filename)' == 'ArcaPhylax.Abstractions' or '%(Filename)' == 'ArcaPhylax.Plugin.Sdk'" />
+    </ItemGroup>
+  </Target>
+</Project>

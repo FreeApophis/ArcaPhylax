@@ -6,6 +6,18 @@
     <FunckyImplicitUsings>enable</FunckyImplicitUsings>
   </PropertyGroup>
 
+  <!-- NuGet metadata for the packages published for plugin authors (Abstractions, Plugin.Sdk, the
+       project template and the pack tool; see .github/workflows/nuget.yml). -->
+  <PropertyGroup Label="Package metadata">
+    <Authors>Apophis</Authors>
+    <PackageProjectUrl>https://freeapophis.github.io/ArcaPhylax/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/FreeApophis/ArcaPhylax</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>arcaphylax;plugin;avalonia</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) 2026 Thomas Bruderer</Copyright>
+  </PropertyGroup>
+
   <ItemGroup Label="Code Style">
     <PackageReference Include="Polyadic.CodeStyle" PrivateAssets="all" />
     <PackageReference Include="Funcky.Analyzers" PrivateAssets="all" />

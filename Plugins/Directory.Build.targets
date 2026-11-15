@@ -1,63 +1,13 @@
 <Project>
-  <!-- Catalog publishing (read by .github/workflows/pages.yml). Set in a plugin .csproj to override:
-       PluginPlatforms  - RIDs to publish packages for (default: every RID in RuntimeIdentifiers).
-       PluginInCatalog  - false keeps the plugin bundled-only (not offered for download). -->
-  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
-    <PluginPlatforms Condition="'$(PluginPlatforms)' == ''">$(RuntimeIdentifiers)</PluginPlatforms>
-    <PluginInCatalog Condition="'$(PluginInCatalog)' == ''">true</PluginInCatalog>
-  </PropertyGroup>
+  <!-- The plugin build rules ship in the ArcaPhylax.Plugin.Sdk package; the in-repo plugins reference the SDK as
+       a project, so import the same file directly. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\ArcaPhylax.Plugin.Sdk\buildTransitive\ArcaPhylax.Plugin.Sdk.targets" />
 
-  <!--
-    Plugin output must only contain the plugin's OWN files. Everything below is provided by the host
-    at runtime (PluginLoadContext resolves it from the default load context), so plugins reference it
-    for compilation only. Without this, every plugin published Avalonia + SkiaSharp/HarfBuzz natives
-    (incl. ~95 MB native .pdb files) for every platform: ~600 MB per plugin instead of 0.1-27 MB.
-    Test projects need the real runtime assets, so they are left alone.
-  -->
+  <!-- In-repo only: make the host-provided packages compile-only at restore time too, so they do not even
+       appear in the plugins' deps.json, and do not copy the SDK project's output next to the plugin. -->
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Update="Avalonia;Avalonia.Desktop;Avalonia.Themes.Fluent;Avalonia.Controls.ItemsRepeater;Avalonia.Controls.DataGrid;Autofac;CommunityToolkit.Mvvm"
                       ExcludeAssets="runtime;native" />
     <ProjectReference Update="..\..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" Private="false" />
   </ItemGroup>
-
-  <!-- Packages that can also arrive OUTSIDE the references above (e.g. NAPS2.Images.Skia -> SkiaSharp
-       -> SkiaSharp.NativeAssets.Win32). They are host-provided too (SkiaSharp/HarfBuzzSharp are shared
-       in PluginLoadContext; the native libSkiaSharp exists once per process), so drop them from the
-       published output by package id prefix. -->
-  <PropertyGroup>
-    <_ArcaPhylaxHostPackagePattern>(?i)^(Avalonia|SkiaSharp|HarfBuzzSharp|MicroCom\.Runtime|Tmds\.DBus)</_ArcaPhylaxHostPackagePattern>
-  </PropertyGroup>
-
-  <Target Name="_ArcaPhylaxDropHostPackages"
-          AfterTargets="ComputeResolvedFilesToPublishList"
-          Condition="'$(IsTestProject)' != 'true'">
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-                             Condition="'%(ResolvedFileToPublish.NuGetPackageId)' != ''
-                                        and $([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.NuGetPackageId)', '$(_ArcaPhylaxHostPackagePattern)'))" />
-    </ItemGroup>
-  </Target>
-
-  <!-- A plugin published for one RID only needs that RID's natives. Some packages (e.g. the LLamaSharp
-       backends) copy runtimes/<rid>/ folders for every OS via their own .props; drop the foreign ones. -->
-  <Target Name="_ArcaPhylaxDropForeignRuntimes"
-          AfterTargets="ComputeResolvedFilesToPublishList"
-          Condition="'$(IsTestProject)' != 'true' and '$(RuntimeIdentifier)' != ''">
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-                             Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/', '\').StartsWith('runtimes\'))
-                                        and !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/', '\').StartsWith('runtimes\$(RuntimeIdentifier)\'))" />
-    </ItemGroup>
-  </Target>
-
-  <!-- ArcaPhylax.Abstractions arrives transitively through the SDK project reference (Private=false does
-       not flow); it is shared with the host, so drop it from the copy-local set as well. -->
-  <Target Name="_ArcaPhylaxExcludeHostAssemblies"
-          AfterTargets="ResolveAssemblyReferences"
-          Condition="'$(IsTestProject)' != 'true'">
-    <ItemGroup>
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-                               Condition="'%(Filename)' == 'ArcaPhylax.Abstractions' or '%(Filename)' == 'ArcaPhylax.Plugin.Sdk'" />
-    </ItemGroup>
-  </Target>
 </Project>
