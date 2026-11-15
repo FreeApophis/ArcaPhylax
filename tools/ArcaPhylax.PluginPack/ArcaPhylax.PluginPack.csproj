@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Developer tool: builds, signs and verifies .arcaplugin packages. Not shipped with the app. -->
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Funcky" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\ArcaPhylax.PluginPackaging\ArcaPhylax.PluginPackaging.csproj" />
+	</ItemGroup>
+
+</Project>

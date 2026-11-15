@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- The .arcaplugin package format: manifest, layout, signing and verification. Shared by the host
+	     (install) and tools/ArcaPhylax.PluginPack (build + sign). No Avalonia, no host dependencies. -->
+
+	<ItemGroup>
+		<PackageReference Include="Funcky" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="ArcaPhylax.PluginPackaging.Tests" />
+	</ItemGroup>
+
+</Project>

@@ -3,9 +3,11 @@ using Autofac;
 
 namespace ArcaPhylax.PluginSystem;
 
-public sealed class LoadedPlugin(string name, PluginLoadContext loadContext, ILifetimeScope scope, IPlugin instance) : IAsyncDisposable
+public sealed class LoadedPlugin(string name, PluginOrigin origin, PluginLoadContext loadContext, ILifetimeScope scope, IPlugin instance) : IAsyncDisposable
 {
     public string Name { get; } = name;
+
+    public PluginOrigin Origin { get; } = origin;
 
     public PluginLoadContext LoadContext { get; } = loadContext;
 

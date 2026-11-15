@@ -17,6 +17,7 @@ public static class CompositionRoot
         // The Appplication
         builder.RegisterType<App.App>().SingleInstance();
 
+        builder.Register(_ => PluginHost.CreateStore()).SingleInstance();
         builder.RegisterType<PluginManager>().SingleInstance();
 
         // View factory: VM -> View (resolved via Autofac)
@@ -35,6 +36,7 @@ public static class CompositionRoot
         builder.RegisterType<DocumentsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<TagsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<ChatViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<PluginsViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<ConfigureViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<AboutViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<DashboardViewModel>().WithMetadata("Source", "Host").As<ITabContentViewModel>().AsSelf().SingleInstance();
@@ -46,6 +48,7 @@ public static class CompositionRoot
         builder.RegisterType<DocumentsView>();
         builder.RegisterType<TagsView>();
         builder.RegisterType<ChatView>();
+        builder.RegisterType<PluginsView>();
         builder.RegisterType<ConfigureView>();
         builder.RegisterType<AboutView>();
         builder.RegisterType<DashboardView>();

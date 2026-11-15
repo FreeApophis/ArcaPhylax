@@ -1,5 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+	<!-- Plugin package metadata (plugin.json / catalog). -->
+	<PropertyGroup>
+		<PluginId>ArcaPhylax.Fractal</PluginId>
+		<Title>Fractal</Title>
+		<Description>GPU-accelerated Mandelbrot explorer with pan and zoom (DirectX 12, Windows).</Description>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
+
 	<PropertyGroup>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<!-- ComputeSharp is DirectX 12 / Windows-only; this plugin only renders on Windows.

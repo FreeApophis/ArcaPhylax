@@ -55,6 +55,12 @@ public static class NavigationIcons
         "C19.3,18.7 19.5,18.7 19.6,18.5 L21.6,15 C21.7,14.9 21.6,14.6 21.5,14.5 Z " +
         "M12,15.5 A3.5,3.5 0 1 1 12,8.5 A3.5,3.5 0 0 1 12,15.5 Z";
 
+    /// <summary>Puzzle piece — plugins.</summary>
+    public const string Plugins =
+        "M20.5,11 H19 V7 A2,2 0 0 0 17,5 H13 V3.5 A2.5,2.5 0 0 0 8,3.5 V5 H4 A2,2 0 0 0 2,7 V10.8 H3.5 " +
+        "A2.7,2.7 0 0 1 3.5,16.2 H2 V20 A2,2 0 0 0 4,22 H7.8 V20.5 A2.7,2.7 0 0 1 13.2,20.5 V22 H17 " +
+        "A2,2 0 0 0 19,20 V16 H20.5 A2.5,2.5 0 0 0 20.5,11 Z";
+
     /// <summary>Info circle — the about page.</summary>
     public const string About =
         "M12,2 A10,10 0 1 0 12,22 A10,10 0 0 0 12,2 Z M11,7 H13 V9 H11 Z M11,11 H13 V17 H11 Z";

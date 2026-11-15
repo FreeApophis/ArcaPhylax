@@ -1,5 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+	<!-- Plugin package metadata (plugin.json / catalog). -->
+	<PropertyGroup>
+		<PluginId>ArcaPhylax.Nutrition</PluginId>
+		<Title>Nutrition</Title>
+		<Description>Track daily calories and body weight per person, with charts of your progress.</Description>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Avalonia" />
 		<PackageReference Include="Avalonia.Desktop" />

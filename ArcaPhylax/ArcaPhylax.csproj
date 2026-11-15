@@ -28,6 +28,7 @@
 		<ProjectReference Include="..\ArcaPhylax.Abstractions\ArcaPhylax.Abstractions.csproj" />
 		<ProjectReference Include="..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" />
 		<ProjectReference Include="..\ArcaPhylax.Infrastructure\ArcaPhylax.Infrastructure.csproj" />
+		<ProjectReference Include="..\ArcaPhylax.PluginPackaging\ArcaPhylax.PluginPackaging.csproj" />
 	</ItemGroup>
 
 

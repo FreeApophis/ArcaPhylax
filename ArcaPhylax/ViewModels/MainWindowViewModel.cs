@@ -28,6 +28,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             ordered.Where(IsBottomTab).Select(tab => new TabButtonViewModel(tab)));
 
         SelectedMainTab = Tabs.FirstOrDefault();
+
+        // A plugin installed while the app runs contributes its tabs immediately.
+        pluginManager.PluginLoaded += (_, plugin) => AddTabs(PluginManager.TabsOf(plugin));
     }
 
     [ObservableProperty]
@@ -73,16 +76,27 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private static bool IsBottomTab(ITabContentViewModel tab) => tab is ConfigureViewModel or AboutViewModel;
+    private static bool IsBottomTab(ITabContentViewModel tab) => tab is PluginsViewModel or ConfigureViewModel or AboutViewModel;
 
-    // Configure then About are pinned to the bottom; every other tab is ordered by its
+    // Plugins, Configure, then About are pinned to the bottom; every other tab is ordered by its
     // NavigationWeight (lower first). OrderBy is stable, so equal weights keep their original order.
     private static (int Section, int Weight) NavigationSortKey(ITabContentViewModel tab) => tab switch
     {
-        ConfigureViewModel => (1, 0),
-        AboutViewModel => (2, 0),
+        PluginsViewModel => (1, 0),
+        ConfigureViewModel => (2, 0),
+        AboutViewModel => (3, 0),
         _ => (0, tab.NavigationWeight),
     };
+
+    /// <summary>Inserts plugin tabs into the main list at their weight position.</summary>
+    private void AddTabs(IEnumerable<ITabContentViewModel> tabs)
+    {
+        foreach (var tab in tabs.Where(tab => !IsBottomTab(tab)))
+        {
+            var index = Tabs.TakeWhile(existing => existing.Tab.NavigationWeight <= tab.NavigationWeight).Count();
+            Tabs.Insert(index, new TabButtonViewModel(tab));
+        }
+    }
 
     [RelayCommand]
     private void TogglePane() => IsPaneOpen = !IsPaneOpen;

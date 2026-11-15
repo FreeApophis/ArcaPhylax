@@ -1,4 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- The plugin contract version. Recorded as sdkVersion in every plugin.json; bump the major
+         version on breaking changes to IPlugin / Abstractions so the host can refuse old plugins. -->
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="CommunityToolkit.Mvvm" />

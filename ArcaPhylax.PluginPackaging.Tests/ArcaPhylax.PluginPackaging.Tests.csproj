@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="xunit.v3" />
+		<PackageReference Include="FsCheck.Xunit.v3" />
+		<PackageReference Include="Funcky.Xunit.v3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ArcaPhylax.PluginPackaging\ArcaPhylax.PluginPackaging.csproj" />
+	</ItemGroup>
+
+</Project>

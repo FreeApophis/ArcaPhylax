@@ -22,6 +22,9 @@ ArcaPhylax.Plugin.Sdk/       Plugin-authoring surface: IPlugin, ViewModelBase. R
                              Autofac + CommunityToolkit.Mvvm. Plugins reference THIS (not Abstractions).
 ArcaPhylax.Infrastructure/   Persistence + provisioning: SQLite/Dapper repositories, DbInitializer,
                              indexing queue/worker, Postgres provisioning, InfrastructureModule. No Avalonia.
+ArcaPhylax.PluginPackaging/  The .arcaplugin format: plugin.json manifest, signing/verification,
+                             compatibility check, per-user PluginStore. No Avalonia. Used by host + tool.
+tools/ArcaPhylax.PluginPack/ Developer tool: `keygen`, `pack` (publish + sign + verify + catalog entry).
 Plugins/FractalPlugin/       Plugin example (with tabs, FractalPluginModule)
 Plugins/ScannerPlugin/       Plugin example (NAPS2 scanner workflow)
 ```
@@ -265,6 +268,23 @@ lets plugin VMs safely derive from `ViewModelBase` (in `ArcaPhylax.Plugin.Sdk`).
 Do not add Funcky or other runtime libraries to the shared list — each plugin carries its own copy.
 If a plugin needs a type to cross the plugin/host boundary, that type must live in
 `ArcaPhylax.Abstractions` (contracts/records) or `ArcaPhylax.Plugin.Sdk` (authoring base types).
+
+### Plugin Packaging & Installation
+
+- **Slim output.** `Plugins/Directory.Build.targets` makes host-provided packages (Avalonia, Autofac,
+  CommunityToolkit.Mvvm, SkiaSharp, HarfBuzzSharp, …) compile-only and drops foreign `runtimes/<rid>/`
+  folders. A plugin's publish output must contain only its OWN files; never re-add host assemblies.
+- **Metadata** lives in the plugin `.csproj`: `PluginId`, `Title`, `Description`, `Version` (`Authors`
+  defaults in `Plugins/Directory.Build.props`). `ArcaPhylax.Plugin.Sdk`'s `<Version>` is the plugin
+  contract version: bump the MAJOR on breaking changes to `IPlugin`/Abstractions.
+- **Packages** (`.arcaplugin`, one per platform): zip with `plugin.json`, `payload/`, `signature.json`
+  (ECDSA P-256 over the sorted SHA-256 listing of every entry). Build with
+  `dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/X/X.csproj --key <file>`.
+  The private key never enters the repo (`*.key` is git-ignored); trusted public keys are compiled
+  into `ArcaPhylax/PluginSystem/TrustedPublisherKeys.cs`.
+- **Install** goes to the per-user `PluginStore` (`%LOCALAPPDATA%\ArcaPhylax\plugins\<id>\<version>\`).
+  New plugins load live; updates/removals are staged in `pending.json` and applied at startup before
+  any plugin loads. An installed plugin replaces a bundled one with the same entry assembly.
 
 ### Plugin Registration Pattern
 

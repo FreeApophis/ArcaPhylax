@@ -34,5 +34,9 @@ coverage*.json
 *.log
 /run_err.txt
 
+# Plugin signing keys (private!) and packed plugins
+*.key
+/artifacts/
+
 # Six Labors license files (not committed; no longer needed after removing ImageSharp)
 sixlabors.lic

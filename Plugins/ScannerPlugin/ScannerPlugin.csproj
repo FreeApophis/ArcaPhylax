@@ -1,5 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+	<!-- Plugin package metadata (plugin.json / catalog). -->
+	<PropertyGroup>
+		<PluginId>ArcaPhylax.Scanner</PluginId>
+		<Title>Scanner</Title>
+		<Description>Scan documents from TWAIN/WIA/ESCL scanners and save them as PDF or images.</Description>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Avalonia" />
 		<PackageReference Include="Avalonia.Desktop" />

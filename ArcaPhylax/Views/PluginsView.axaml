@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ArcaPhylax.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="560"
+             x:Class="ArcaPhylax.Views.PluginsView"
+             x:DataType="vm:PluginsViewModel"
+             x:Name="Root">
+
+  <ScrollViewer>
+    <StackPanel Spacing="20">
+
+      <StackPanel Spacing="4">
+        <TextBlock Classes="pageTitle" Text="Plugins"/>
+        <TextBlock Classes="pageSubtitle"
+                   Text="Install signed plugin packages and manage what is loaded."/>
+      </StackPanel>
+
+      <!-- Restart notice: staged updates/removals and plugins that replace a loaded one. -->
+      <Border Classes="card" IsVisible="{Binding IsRestartPending}">
+        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource PrimaryTextBrush}"
+                   Text="Some changes take effect after ArcaPhylax restarts."/>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="sectionTitle" Text="Install"/>
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Classes="accent" Content="Install from file…" Command="{Binding InstallFromFileCommand}"/>
+            <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="520"
+                       Foreground="{DynamicResource PrimaryTextBrush}" Text="{Binding Status}"/>
+          </StackPanel>
+          <TextBlock Classes="subtle" FontSize="12" TextWrapping="Wrap"
+                     Text="{Binding StoreLocation, StringFormat='Installed plugins are stored in {0}'}"/>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="sectionTitle" Text="Plugins"/>
+          <Grid ColumnDefinitions="2*,90,100,3*,Auto" Margin="0,0,0,4">
+            <TextBlock Grid.Column="0" Classes="subtle" Text="Name"/>
+            <TextBlock Grid.Column="1" Classes="subtle" Text="Version"/>
+            <TextBlock Grid.Column="2" Classes="subtle" Text="Source"/>
+            <TextBlock Grid.Column="3" Classes="subtle" Text="State"/>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Rows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:PluginRowVm">
+                <Grid ColumnDefinitions="2*,90,100,3*,Auto" Margin="0,4">
+                  <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding Name}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Classes="subtle" Text="{Binding Version}"/>
+                  <TextBlock Grid.Column="2" VerticalAlignment="Center" Classes="subtle" Text="{Binding Source}"/>
+                  <TextBlock Grid.Column="3" VerticalAlignment="Center" TextWrapping="Wrap"
+                             Foreground="{DynamicResource PrimaryTextBrush}" Text="{Binding State}"/>
+                  <Button Grid.Column="4" Classes="secondary" Content="Remove"
+                          IsVisible="{Binding CanRemove}"
+                          Command="{Binding #Root.((vm:PluginsViewModel)DataContext).RemoveCommand}"
+                          CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
