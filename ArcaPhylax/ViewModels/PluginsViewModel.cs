@@ -10,14 +10,18 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ArcaPhylax.ViewModels;
 
-/// <summary>The Plugins page: what is loaded, what waits for a restart, and installing from a file.</summary>
+/// <summary>The Plugins page: what is loaded, what waits for a restart, the online catalog, and installing from a file.</summary>
 public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewModel
 {
     private readonly PluginManager _plugins;
+    private readonly PluginCatalogClient _catalogClient;
+    private Option<PluginCatalog> _catalog;
+    private bool _catalogRequested;
 
-    public PluginsViewModel(PluginManager plugins)
+    public PluginsViewModel(PluginManager plugins, PluginCatalogClient catalogClient)
     {
         _plugins = plugins;
+        _catalogClient = catalogClient;
         Refresh();
     }
 
@@ -27,7 +31,11 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
 
     public string StoreLocation => PluginHost.StoreRoot;
 
+    public string CatalogLocation => _catalogClient.CatalogUri.ToString();
+
     public ObservableCollection<PluginRowVm> Rows { get; } = [];
+
+    public ObservableCollection<CatalogRowVm> Available { get; } = [];
 
     /// <summary>Set by the view so the file picker has a parent window.</summary>
     public TopLevel? HostTopLevel { get; set; }
@@ -36,13 +44,58 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
     public partial string? Status { get; set; }
 
     [ObservableProperty]
+    public partial string? CatalogStatus { get; set; }
+
+    [ObservableProperty]
     public partial bool IsRestartPending { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallFromFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(InstallFromCatalogCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LoadCatalogCommand))]
     public partial bool IsBusy { get; set; }
 
     private bool CanInstall => !IsBusy;
+
+    /// <summary>Called when the page is shown: the catalog is fetched the first time only, not at startup.</summary>
+    public void OnShown()
+    {
+        if (!_catalogRequested)
+        {
+            _catalogRequested = true;
+            LoadCatalogCommand.Execute(null);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanInstall))]
+    private async Task LoadCatalog()
+    {
+        IsBusy = true;
+        CatalogStatus = "Loading the plugin catalog…";
+        var catalog = await _catalogClient.CatalogAsync();
+        _catalog = catalog.Match(left: _ => Option<PluginCatalog>.None, right: Option.Some);
+        CatalogStatus = catalog.Match<string?>(left: error => $"The plugin catalog is unavailable: {error}", right: _ => null);
+        RefreshCatalog();
+        IsBusy = false;
+    }
+
+    private bool CanInstallFromCatalog(CatalogRowVm? row) => !IsBusy && row is { CanInstall: true };
+
+    [RelayCommand(CanExecute = nameof(CanInstallFromCatalog))]
+    private async Task InstallFromCatalog(CatalogRowVm row)
+        => await row.Package.Match(none: Task.CompletedTask, some: package => DownloadAndInstallAsync(row.Name, package));
+
+    private async Task DownloadAndInstallAsync(string name, CatalogPackage package)
+    {
+        IsBusy = true;
+        Status = $"Downloading {name} {package.Version}…";
+        var downloaded = await _catalogClient.DownloadAsync(package);
+        Status = await downloaded.Match(
+            left: error => Task.FromResult($"{name} was not installed: {error}"),
+            right: async bytes => Message(await _plugins.InstallAsync(bytes)));
+        IsBusy = false;
+        Refresh();
+    }
 
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private async Task InstallFromFile()
@@ -95,7 +148,37 @@ public sealed partial class PluginsViewModel : ViewModelBase, ITabContentViewMod
         }
 
         IsRestartPending = !pending.IsEmpty || !waiting.IsEmpty;
+        RefreshCatalog();
     }
+
+    private void RefreshCatalog()
+    {
+        Available.Clear();
+        foreach (var row in _catalog.Match(none: [], some: CatalogRows))
+        {
+            Available.Add(row);
+        }
+
+        CatalogStatus = _catalog.Match(
+            none: CatalogStatus,
+            some: catalog => catalog.Plugins.IsEmpty ? "The catalog has no plugins yet." : null);
+    }
+
+    private IEnumerable<CatalogRowVm> CatalogRows(PluginCatalog catalog)
+        => catalog.Plugins.Select(plugin => CatalogRowVm.Of(plugin, PluginOffer.For(plugin, PluginHost.Environment, InstalledVersion(plugin))));
+
+    /// <summary>The version this app runs of <paramref name="plugin"/>: an installed copy, else a loaded bundled one.</summary>
+    private Option<string> InstalledVersion(CatalogPlugin plugin)
+        => _plugins.Store.Installed()
+            .FirstOrNone(installed => installed.Manifest.Id == plugin.Id)
+            .Select(installed => installed.Manifest.Version)
+            .OrElse(() => _plugins.LoadedPlugins
+                .FirstOrNone(loaded => loaded.Origin is Bundled && IsEntryAssembly(loaded, plugin.EntryAssembly))
+                .SelectMany(loaded => Option.FromNullable(loaded.Instance.GetType().Assembly.GetName().Version))
+                .Select(version => version.ToString(3)));
+
+    private static bool IsEntryAssembly(LoadedPlugin plugin, string entryAssembly)
+        => string.Equals($"{plugin.Instance.GetType().Assembly.GetName().Name}.dll", entryAssembly, StringComparison.OrdinalIgnoreCase);
 
     private IEnumerable<PluginRowVm> LoadedRows(ImmutableList<PendingOperation> pending)
         => _plugins.LoadedPlugins.Select(plugin => plugin.Origin switch

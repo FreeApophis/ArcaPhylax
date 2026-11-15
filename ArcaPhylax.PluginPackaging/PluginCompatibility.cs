@@ -15,8 +15,14 @@ public static class PluginCompatibility
             (true, true) => Either<InstallError, PluginManifest>.Right(manifest),
         };
 
-    private static bool SamePlatform(PluginManifest manifest, HostEnvironment host)
-        => string.Equals(manifest.Platform, host.Platform, StringComparison.OrdinalIgnoreCase);
+    /// <summary>Whether a package for <paramref name="platform"/> built against <paramref name="sdkVersion"/> runs on this host.</summary>
+    public static bool Accepts(string platform, string sdkVersion, HostEnvironment host)
+        => SamePlatform(platform, host) && CanServe(Version.Parse(sdkVersion), host.SdkVersion);
+
+    private static bool SamePlatform(PluginManifest manifest, HostEnvironment host) => SamePlatform(manifest.Platform, host);
+
+    private static bool SamePlatform(string platform, HostEnvironment host)
+        => string.Equals(platform, host.Platform, StringComparison.OrdinalIgnoreCase);
 
     private static bool CanServe(Version pluginSdk, Version hostSdk)
         => pluginSdk.Major == hostSdk.Major && pluginSdk.Minor <= hostSdk.Minor;

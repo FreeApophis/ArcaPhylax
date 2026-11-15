@@ -16,7 +16,7 @@ internal static class Pack
         var publishDirectory = Path.Combine(Path.GetTempPath(), "arcaphylax-pluginpack", Guid.NewGuid().ToString("N"));
         try
         {
-            return Packed(options, publishDirectory).Match(
+            return Packed(options, publishDirectory).SelectMany(entry => Catalogued(options, entry)).Match(
                 left: error =>
                 {
                     Console.Error.WriteLine($"error: {error}");
@@ -36,6 +36,11 @@ internal static class Pack
             }
         }
     }
+
+    private static Either<string, PackedPlugin> Catalogued(PackOptions options, PackedPlugin entry)
+        => options.Catalog.Match(
+            none: () => Either<string, PackedPlugin>.Right(entry),
+            some: catalog => CatalogFile.Add(catalog, entry, Path.Combine(options.OutputDirectory, entry.File)).Select(_ => entry));
 
     private static Either<string, PackedPlugin> Packed(PackOptions options, string publishDirectory)
         => from properties in ProjectProperties(options.Project)

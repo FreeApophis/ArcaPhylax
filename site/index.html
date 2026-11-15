@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArcaPhylax</title>
+  <meta name="description" content="ArcaPhylax keeps your documents and media on your own computer, and plugins add more to it.">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><img src="assets/logo.svg" width="24" height="24" alt="">ArcaPhylax</a>
+      <nav class="site-nav">
+        <a href="plugins.html">Plugins</a>
+        <a href="docs/">Documentation</a>
+        <a href="https://github.com/FreeApophis/ArcaPhylax">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Local-first · open source</div>
+      <h1>Your documents and media,<br>kept on your own computer.</h1>
+      <p class="lead">
+        ArcaPhylax is a desktop app for collecting, indexing and finding your documents, images and videos.
+        Everything stays local, in a database on your machine. Plugins add whatever else you need.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="docs/#getting-started">Get started</a>
+        <a class="button" href="plugins.html">Browse plugins</a>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <div class="wrap">
+      <h2 style="margin-top:0">What it does</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Documents</h3>
+          <p>Drop folders and files onto the app. ArcaPhylax indexes them in the background so you can find them again.</p>
+        </div>
+        <div class="card">
+          <h3>Images and videos</h3>
+          <p>Browse your media in one place and find similar images and duplicates.</p>
+        </div>
+        <div class="card">
+          <h3>Tags</h3>
+          <p>Organise anything with your own tags instead of a fixed folder structure.</p>
+        </div>
+        <div class="card">
+          <h3>Private by design</h3>
+          <p>No account and no cloud. Your library is a SQLite database in your user profile.</p>
+        </div>
+      </div>
+
+      <h2>Extend it with plugins</h2>
+      <p class="muted">
+        Plugins add new pages to the app. Install them from the <strong>Plugins</strong> page inside ArcaPhylax:
+        it lists everything on <a href="plugins.html">the plugin page</a> that runs on your computer. Every package
+        is signed, and ArcaPhylax only installs packages from publishers it trusts.
+      </p>
+      <div class="grid" id="featured-plugins">
+        <div class="card">
+          <h3>Scanner</h3>
+          <p>Scan documents from TWAIN, WIA and eSCL scanners and save them as PDF or images.</p>
+        </div>
+        <div class="card">
+          <h3>Nutrition</h3>
+          <p>Track daily calories and body weight per person, with charts of your progress.</p>
+        </div>
+        <div class="card">
+          <h3>Fractal</h3>
+          <p>A GPU-accelerated Mandelbrot explorer with pan and zoom (Windows).</p>
+        </div>
+      </div>
+      <p style="margin-top:16px"><a href="docs/#writing-a-plugin">Write your own plugin →</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">ArcaPhylax · built with .NET and Avalonia · <a href="https://github.com/FreeApophis/ArcaPhylax">source on GitHub</a></div>
+  </footer>
+</body>
+</html>

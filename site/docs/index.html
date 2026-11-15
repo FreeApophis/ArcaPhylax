@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArcaPhylax Documentation</title>
+  <meta name="description" content="Getting started with ArcaPhylax, installing plugins, and writing, signing and publishing your own.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><img src="../assets/logo.svg" width="24" height="24" alt="">ArcaPhylax</a>
+      <nav class="site-nav">
+        <a href="../plugins.html">Plugins</a>
+        <a href="./" aria-current="page">Documentation</a>
+        <a href="https://github.com/FreeApophis/ArcaPhylax">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap docs">
+      <nav aria-label="Contents">
+        <ol>
+          <li><a href="#getting-started">Getting started</a></li>
+          <li><a href="#installing-plugins">Installing plugins</a></li>
+          <li><a href="#writing-a-plugin">Writing a plugin</a></li>
+          <li><a href="#packaging">Packaging and signing</a></li>
+          <li><a href="#publishing">Publishing</a></li>
+          <li><a href="#catalog-format">Catalog format</a></li>
+        </ol>
+      </nav>
+
+      <article>
+        <section id="getting-started">
+          <h2>Getting started</h2>
+          <p>ArcaPhylax is built from source for now. You need the <a href="https://dotnet.microsoft.com/download">.NET 11 SDK</a>.</p>
+<pre><code>git clone https://github.com/FreeApophis/ArcaPhylax.git
+cd ArcaPhylax
+dotnet run --project ArcaPhylax/ArcaPhylax.csproj</code></pre>
+          <p>The build also publishes the bundled plugins next to the app. Your library lives in a SQLite database in your user profile; nothing leaves your computer.</p>
+        </section>
+
+        <section id="installing-plugins">
+          <h2>Installing plugins</h2>
+          <p>Open the <strong>Plugins</strong> page (bottom of the navigation bar):</p>
+          <ul>
+            <li><strong>Available online</strong> lists the plugins from the <a href="../plugins.html">catalog</a> with the version for your computer. <em>Install</em> downloads, checks and loads a plugin right away; its pages appear in the navigation bar.</li>
+            <li><strong>Update</strong> appears when a newer version is published. Updates and removals take effect when ArcaPhylax restarts, because a running plugin's files cannot be replaced.</li>
+            <li><strong>Install from file…</strong> installs a downloaded <code>.arcaplugin</code> package.</li>
+          </ul>
+          <p>Installed plugins live in <code>%LOCALAPPDATA%\ArcaPhylax\plugins</code> on Windows (<code>~/.local/share/ArcaPhylax/plugins</code> on Linux). An installed plugin replaces the bundled copy of the same plugin.</p>
+          <h3>What ArcaPhylax checks</h3>
+          <ol>
+            <li>The download has exactly the size and SHA-256 the catalog lists.</li>
+            <li>The package is signed by a publisher whose key is built into ArcaPhylax, and every file matches the signature.</li>
+            <li>The package is for this platform (for example <code>win-x64</code>) and this plugin SDK: same major version, minor version no newer than the app's.</li>
+          </ol>
+        </section>
+
+        <section id="writing-a-plugin">
+          <h2>Writing a plugin</h2>
+          <p>A plugin is a .NET class library that references <code>ArcaPhylax.Plugin.Sdk</code> and nothing else from ArcaPhylax. It runs in its own load context; Avalonia, Autofac, CommunityToolkit.Mvvm and the SDK come from the app, everything else ships with the plugin.</p>
+          <h3>Project</h3>
+          <p>Put it under <code>Plugins/</code> so it picks up the shared build settings, and describe it in the project file:</p>
+<pre><code>&lt;PropertyGroup&gt;
+  &lt;PluginId&gt;Example.Hello&lt;/PluginId&gt;
+  &lt;Title&gt;Hello&lt;/Title&gt;
+  &lt;Description&gt;Says hello.&lt;/Description&gt;
+  &lt;Version&gt;1.0.0&lt;/Version&gt;
+  &lt;!-- Optional: &lt;PluginPlatforms&gt;win-x64;win-arm64&lt;/PluginPlatforms&gt; --&gt;
+&lt;/PropertyGroup&gt;
+
+&lt;ItemGroup&gt;
+  &lt;ProjectReference Include="..\..\ArcaPhylax.Plugin.Sdk\ArcaPhylax.Plugin.Sdk.csproj" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+          <h3>Entry point</h3>
+          <p>Implement <code>IPlugin</code> once and register your services in an Autofac module:</p>
+<pre><code>internal sealed class HelloPlugin : IPlugin
+{
+    public void Configure(ContainerBuilder builder) =&gt; builder.RegisterModule&lt;HelloModule&gt;();
+
+    public Task StartAsync(CancellationToken cancellationToken) =&gt; Task.CompletedTask;
+
+    public Task StopAsync(CancellationToken cancellationToken) =&gt; Task.CompletedTask;
+}
+
+internal sealed class HelloModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        builder.RegisterType&lt;HelloViewModel&gt;().As&lt;ITabContentViewModel&gt;().AsSelf().SingleInstance();
+        builder.RegisterType&lt;HelloView&gt;();
+    }
+}</code></pre>
+          <p>Every <code>ITabContentViewModel</code> becomes a page in the navigation bar. Its view is found by name: <code>Hello.ViewModels.HelloViewModel</code> → <code>Hello.Views.HelloView</code>, in the same assembly. <code>IConfigurationSection</code> registrations add a section to the Configure page.</p>
+          <p>Types that cross between plugin and app must come from the SDK. Plugins get the app's repositories through their interfaces in <code>ArcaPhylax.Abstractions</code>.</p>
+        </section>
+
+        <section id="packaging">
+          <h2>Packaging and signing</h2>
+          <p>A plugin is distributed as one <code>.arcaplugin</code> file per platform: a zip with <code>plugin.json</code>, the published files under <code>payload/</code>, and <code>signature.json</code> (ECDSA P-256 over the SHA-256 of every entry).</p>
+          <p>Create a signing key once and keep it out of the repository:</p>
+<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- keygen ~/arcaphylax-plugins.key</code></pre>
+          <p>It prints the public key. ArcaPhylax only trusts keys listed in <code>ArcaPhylax/PluginSystem/TrustedPublisherKeys.cs</code>.</p>
+          <p>Pack, sign and verify a plugin:</p>
+<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/Hello/Hello.csproj \
+    --key ~/arcaphylax-plugins.key --rid win-x64 --out artifacts/plugins</code></pre>
+          <table>
+            <tr><th>Option</th><th>Meaning</th></tr>
+            <tr><td><code>--key</code></td><td>Private key file. Defaults to the <code>ARCAPHYLAX_PLUGIN_KEY</code> environment variable.</td></tr>
+            <tr><td><code>--rid</code></td><td>Platform to publish for. Defaults to this machine.</td></tr>
+            <tr><td><code>--out</code></td><td>Output folder. Defaults to <code>artifacts/plugins</code>.</td></tr>
+            <tr><td><code>--catalog</code></td><td>Also add the package to this <code>catalog.json</code> (created if missing).</td></tr>
+          </table>
+        </section>
+
+        <section id="publishing">
+          <h2>Publishing</h2>
+          <p>This website and the plugin catalog are built by <code>.github/workflows/pages.yml</code> on every push to <code>main</code>. It packs every plugin under <code>Plugins/</code> for each platform in its <code>PluginPlatforms</code> (skipping plugins with <code>&lt;PluginInCatalog&gt;false&lt;/PluginInCatalog&gt;</code>), writes <code>catalog.json</code> and deploys the site to GitHub Pages.</p>
+          <p>The signing key comes from the repository secret <code>PLUGIN_SIGNING_KEY</code> (the PEM file's contents). To release a new version, raise <code>&lt;Version&gt;</code> in the plugin's project file and push.</p>
+          <p>To try a catalog before publishing it, point the app at a local file:</p>
+<pre><code>dotnet run --project tools/ArcaPhylax.PluginPack -- pack Plugins/Hello/Hello.csproj --out site-test/plugins --catalog site-test/catalog.json
+ARCAPHYLAX_PLUGIN_CATALOG=site-test/catalog.json dotnet run --project ArcaPhylax/ArcaPhylax.csproj</code></pre>
+        </section>
+
+        <section id="catalog-format">
+          <h2>Catalog format</h2>
+          <p><code>catalog.json</code> lists every plugin with all published packages. Package URLs are relative to the catalog.</p>
+<pre><code>{
+  "schemaVersion": 1,
+  "plugins": [
+    {
+      "id": "ArcaPhylax.Nutrition",
+      "name": "Nutrition",
+      "description": "Track daily calories and body weight per person, with charts of your progress.",
+      "author": "Apophis",
+      "entryAssembly": "NutritionPlugin.dll",
+      "packages": [
+        {
+          "version": "1.0.0",
+          "platform": "win-x64",
+          "sdkVersion": "1.0.0",
+          "url": "plugins/ArcaPhylax.Nutrition-1.0.0-win-x64.arcaplugin",
+          "size": 1650000,
+          "sha256": "…"
+        }
+      ]
+    }
+  ]
+}</code></pre>
+          <p>The catalog only says what exists and where. Trust comes from each package's signature, so a changed catalog cannot make ArcaPhylax install an unsigned or foreign package.</p>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">ArcaPhylax · built with .NET and Avalonia · <a href="https://github.com/FreeApophis/ArcaPhylax">source on GitHub</a></div>
+  </footer>
+</body>
+</html>

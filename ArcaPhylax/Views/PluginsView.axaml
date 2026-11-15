@@ -38,6 +38,38 @@
 
       <Border Classes="card">
         <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Classes="sectionTitle" VerticalAlignment="Center" Text="Available online"/>
+            <Button Grid.Column="1" Classes="secondary" Content="Refresh" Command="{Binding LoadCatalogCommand}"/>
+          </Grid>
+          <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource PrimaryTextBrush}"
+                     IsVisible="{Binding CatalogStatus, Converter={x:Static ObjectConverters.IsNotNull}}"
+                     Text="{Binding CatalogStatus}"/>
+          <ItemsControl ItemsSource="{Binding Available}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CatalogRowVm">
+                <Grid ColumnDefinitions="*,110,Auto" Margin="0,6">
+                  <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBlock Classes="subtle" TextWrapping="Wrap" Text="{Binding Description}"/>
+                    <TextBlock Classes="subtle" FontSize="12" Text="{Binding Detail}"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Classes="subtle" Text="{Binding Version}"/>
+                  <Button Grid.Column="2" VerticalAlignment="Center" Classes="accent" MinWidth="96"
+                          Content="{Binding ActionText}"
+                          Command="{Binding #Root.((vm:PluginsViewModel)DataContext).InstallFromCatalogCommand}"
+                          CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Classes="subtle" FontSize="12" TextWrapping="Wrap"
+                     Text="{Binding CatalogLocation, StringFormat='Catalog: {0}'}"/>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
           <TextBlock Classes="sectionTitle" Text="Plugins"/>
           <Grid ColumnDefinitions="2*,90,100,3*,Auto" Margin="0,0,0,4">
             <TextBlock Grid.Column="0" Classes="subtle" Text="Name"/>

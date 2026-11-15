@@ -19,6 +19,7 @@ public partial class PluginsView : UserControl
         if (DataContext is PluginsViewModel vm)
         {
             vm.HostTopLevel = TopLevel.GetTopLevel(this);
+            vm.OnShown();
         }
     }
 }

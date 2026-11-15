@@ -24,7 +24,9 @@ ArcaPhylax.Infrastructure/   Persistence + provisioning: SQLite/Dapper repositor
                              indexing queue/worker, Postgres provisioning, InfrastructureModule. No Avalonia.
 ArcaPhylax.PluginPackaging/  The .arcaplugin format: plugin.json manifest, signing/verification,
                              compatibility check, per-user PluginStore. No Avalonia. Used by host + tool.
-tools/ArcaPhylax.PluginPack/ Developer tool: `keygen`, `pack` (publish + sign + verify + catalog entry).
+tools/ArcaPhylax.PluginPack/ Developer tool: `keygen`, `pack` (publish + sign + verify, `--catalog` adds to catalog.json).
+site/                        Static website (homepage, plugins page, docs) for GitHub Pages.
+.github/workflows/pages.yml  Builds site/ + packs/signs every catalog plugin + catalog.json, deploys to Pages.
 Plugins/FractalPlugin/       Plugin example (with tabs, FractalPluginModule)
 Plugins/ScannerPlugin/       Plugin example (NAPS2 scanner workflow)
 ```
@@ -285,6 +287,12 @@ If a plugin needs a type to cross the plugin/host boundary, that type must live 
 - **Install** goes to the per-user `PluginStore` (`%LOCALAPPDATA%\ArcaPhylax\plugins\<id>\<version>\`).
   New plugins load live; updates/removals are staged in `pending.json` and applied at startup before
   any plugin loads. An installed plugin replaces a bundled one with the same entry assembly.
+- **Catalog** (`catalog.json`, `PluginCatalog` in PluginPackaging) is published to GitHub Pages
+  (`https://freeapophis.github.io/ArcaPhylax/`, `PluginHost.CatalogUri`; override with the
+  `ARCAPHYLAX_PLUGIN_CATALOG` env var, URL or local path). The Plugins page offers installs/updates via
+  `PluginOffer`; downloads must match the catalog's size + SHA-256, then go through the normal signed install.
+  CI packs each plugin for its `PluginPlatforms` (default: all RIDs); `<PluginInCatalog>false</PluginInCatalog>`
+  keeps a plugin bundled-only. Releasing = bump the plugin's `<Version>` and push to main.
 
 ### Plugin Registration Pattern
 

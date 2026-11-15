@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<!-- Plugin package metadata (plugin.json / catalog). -->
 	<PropertyGroup>
@@ -6,6 +6,8 @@
 		<Title>Fractal</Title>
 		<Description>GPU-accelerated Mandelbrot explorer with pan and zoom (DirectX 12, Windows).</Description>
 		<Version>1.0.0</Version>
+		<!-- ComputeSharp needs DirectX 12: only offer Windows packages. -->
+		<PluginPlatforms>win-x64;win-arm64</PluginPlatforms>
 	</PropertyGroup>
 
 	<PropertyGroup>

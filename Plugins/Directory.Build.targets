@@ -1,4 +1,12 @@
 <Project>
+  <!-- Catalog publishing (read by .github/workflows/pages.yml). Set in a plugin .csproj to override:
+       PluginPlatforms  - RIDs to publish packages for (default: every RID in RuntimeIdentifiers).
+       PluginInCatalog  - false keeps the plugin bundled-only (not offered for download). -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <PluginPlatforms Condition="'$(PluginPlatforms)' == ''">$(RuntimeIdentifiers)</PluginPlatforms>
+    <PluginInCatalog Condition="'$(PluginInCatalog)' == ''">true</PluginInCatalog>
+  </PropertyGroup>
+
   <!--
     Plugin output must only contain the plugin's OWN files. Everything below is provided by the host
     at runtime (PluginLoadContext resolves it from the default load context), so plugins reference it

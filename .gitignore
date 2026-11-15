@@ -37,6 +37,9 @@ coverage*.json
 # Plugin signing keys (private!) and packed plugins
 *.key
 /artifacts/
+# Local website / catalog builds (CI builds the real one into _site)
+/_site/
+/site-test/
 
 # Six Labors license files (not committed; no longer needed after removing ImageSharp)
 sixlabors.lic

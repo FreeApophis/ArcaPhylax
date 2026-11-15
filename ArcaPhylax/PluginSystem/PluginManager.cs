@@ -72,14 +72,12 @@ public sealed class PluginManager
     /// Installs a <c>.arcaplugin</c> file. A plugin that is new to this app is loaded right away; one
     /// that replaces a loaded plugin (update, or an installed copy of a bundled plugin) waits for a restart.
     /// </summary>
-    public async Task<InstallReport> InstallFromFileAsync(string packagePath, CancellationToken cancellationToken = default)
-    {
-        var outcome = await Task.Run(() => InstalledFrom(packagePath), cancellationToken);
+    public Task<InstallReport> InstallFromFileAsync(string packagePath, CancellationToken cancellationToken = default)
+        => InstallAsync(() => File.OpenRead(packagePath), cancellationToken);
 
-        return await outcome.Match(
-            left: error => Task.FromResult<InstallReport>(new InstallRejected(error)),
-            right: installed => Activated(installed, cancellationToken));
-    }
+    /// <summary>Installs a downloaded package; same rules as <see cref="InstallFromFileAsync"/>.</summary>
+    public Task<InstallReport> InstallAsync(byte[] package, CancellationToken cancellationToken = default)
+        => InstallAsync(() => new MemoryStream(package, writable: false), cancellationToken);
 
     /// <summary>Schedules an installed plugin for removal at the next start.</summary>
     public Either<InstallError, Unit> ScheduleRemoval(string pluginId) => _store.ScheduleRemoval(pluginId);
@@ -172,9 +170,18 @@ public sealed class PluginManager
     private static bool IsSameAssembly(InstalledPlugin plugin, string assemblyPath)
         => string.Equals(plugin.Manifest.EntryAssembly, Path.GetFileName(assemblyPath), StringComparison.OrdinalIgnoreCase);
 
-    private Either<InstallError, InstallOutcome> InstalledFrom(string packagePath)
+    private async Task<InstallReport> InstallAsync(Func<Stream> openPackage, CancellationToken cancellationToken)
     {
-        using var package = File.OpenRead(packagePath);
+        var outcome = await Task.Run(() => InstalledFrom(openPackage), cancellationToken);
+
+        return await outcome.Match(
+            left: error => Task.FromResult<InstallReport>(new InstallRejected(error)),
+            right: installed => Activated(installed, cancellationToken));
+    }
+
+    private Either<InstallError, InstallOutcome> InstalledFrom(Func<Stream> openPackage)
+    {
+        using var package = openPackage();
         return _store.Install(package);
     }
 

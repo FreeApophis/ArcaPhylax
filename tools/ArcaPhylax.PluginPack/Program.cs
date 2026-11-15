@@ -25,9 +25,10 @@ internal static class Program
               arcaphylax-pluginpack keygen <private-key-file>
                   Creates an ECDSA P-256 signing key (PKCS#8 PEM). Keep it out of the repository.
 
-              arcaphylax-pluginpack pack <plugin.csproj> [--key <private-key-file>] [--rid <rid>] [--out <dir>] [--configuration <cfg>]
+              arcaphylax-pluginpack pack <plugin.csproj> [--key <private-key-file>] [--rid <rid>] [--out <dir>] [--configuration <cfg>] [--catalog <catalog.json>]
                   Publishes the plugin for <rid> (default: this machine), packs and signs it as .arcaplugin,
                   verifies the result and prints its catalog entry. --key defaults to ${KeyEnvironmentVariable}.
+                  --catalog adds the package to that catalog.json (created if missing), linked relative to it.
             """);
         return 2;
     }

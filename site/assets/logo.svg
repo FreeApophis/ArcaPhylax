@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#968AE0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- An ark (chest) with a lid: "arca phylax", keeper of the chest. -->
+  <path d="M4 9.5h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+  <path d="M3 9.5 5.5 4h13L21 9.5"/>
+  <path d="M10 13.5h4"/>
+</svg>

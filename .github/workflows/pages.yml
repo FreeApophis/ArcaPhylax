@@ -1,0 +1,98 @@
+# Builds the website (site/) plus the plugin catalog and deploys both to GitHub Pages.
+# Every plugin under Plugins/ is packed and signed for each platform in its PluginPlatforms, unless it sets
+# <PluginInCatalog>false</PluginInCatalog>. The signing key is the repository secret PLUGIN_SIGNING_KEY
+# (the PEM contents of the key created with `ArcaPhylax.PluginPack keygen`).
+name: Website and plugin catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - Plugins/**
+      - ArcaPhylax.Plugin.Sdk/**
+      - ArcaPhylax.Abstractions/**
+      - ArcaPhylax.PluginPackaging/**
+      - tools/ArcaPhylax.PluginPack/**
+      - Directory.Build.props
+      - Directory.Packages.props
+      - global.json
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Write signing key
+        env:
+          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+        run: |
+          if [ -z "$PLUGIN_SIGNING_KEY" ]; then
+            echo "::error::The repository secret PLUGIN_SIGNING_KEY is not set."
+            exit 1
+          fi
+          umask 077
+          printf '%s\n' "$PLUGIN_SIGNING_KEY" > "$RUNNER_TEMP/plugin.key"
+
+      - name: Build the pack tool
+        run: dotnet build tools/ArcaPhylax.PluginPack/ArcaPhylax.PluginPack.csproj -c Release
+
+      - name: Copy the website
+        run: |
+          mkdir -p _site/plugins
+          cp -r site/. _site/
+
+      - name: Pack plugins
+        run: |
+          set -euo pipefail
+          for project in Plugins/*/*.csproj; do
+            properties=$(dotnet msbuild "$project" -getProperty:PluginId -getProperty:PluginPlatforms -getProperty:PluginInCatalog)
+            id=$(jq -r '.Properties.PluginId' <<< "$properties")
+            platforms=$(jq -r '.Properties.PluginPlatforms' <<< "$properties")
+            in_catalog=$(jq -r '.Properties.PluginInCatalog' <<< "$properties")
+            if [ -z "$id" ] || [ "$in_catalog" != "true" ]; then
+              echo "Skipping $project"
+              continue
+            fi
+            for rid in ${platforms//;/ }; do
+              echo "::group::$id ($rid)"
+              dotnet run --project tools/ArcaPhylax.PluginPack -c Release --no-build -- \
+                pack "$project" --rid "$rid" --key "$RUNNER_TEMP/plugin.key" \
+                --out _site/plugins --catalog _site/catalog.json
+              echo "::endgroup::"
+            done
+          done
+
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/plugin.key"
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

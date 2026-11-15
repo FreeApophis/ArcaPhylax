@@ -19,6 +19,7 @@ public static class CompositionRoot
 
         builder.Register(_ => PluginHost.CreateStore()).SingleInstance();
         builder.RegisterType<PluginManager>().SingleInstance();
+        builder.Register(_ => new PluginCatalogClient(PluginHost.CatalogUri)).SingleInstance();
 
         // View factory: VM -> View (resolved via Autofac)
         builder.RegisterType<ViewFactory>().As<IViewFactory>().SingleInstance();

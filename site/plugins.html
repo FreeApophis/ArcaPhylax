@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArcaPhylax Plugins</title>
+  <meta name="description" content="Plugins for ArcaPhylax: signed packages for Windows, Linux and macOS.">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><img src="assets/logo.svg" width="24" height="24" alt="">ArcaPhylax</a>
+      <nav class="site-nav">
+        <a href="plugins.html" aria-current="page">Plugins</a>
+        <a href="docs/">Documentation</a>
+        <a href="https://github.com/FreeApophis/ArcaPhylax">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <h1>Plugins</h1>
+      <p class="muted" style="max-width:680px">
+        The easiest way to install a plugin is the <strong>Plugins</strong> page in ArcaPhylax: it shows this list,
+        picks the right package for your computer and keeps plugins up to date. You can also download a package
+        here and use <strong>Install from file…</strong>.
+      </p>
+      <p class="notice small" style="max-width:680px">
+        Every package is signed. ArcaPhylax checks the signature before installing and refuses packages from unknown publishers.
+      </p>
+
+      <div id="plugins" class="grid" style="margin-top:24px" aria-live="polite">
+        <p class="muted">Loading the catalog…</p>
+      </div>
+
+      <p class="small muted" style="margin-top:24px">
+        Machine-readable: <a href="catalog.json">catalog.json</a> (format in the <a href="docs/#catalog-format">documentation</a>).
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">ArcaPhylax · built with .NET and Avalonia · <a href="https://github.com/FreeApophis/ArcaPhylax">source on GitHub</a></div>
+  </footer>
+
+  <script src="assets/plugins.js"></script>
+</body>
+</html>

@@ -6,6 +6,8 @@
 		<Title>Demiurg Playground</Title>
 		<Description>Chat with a local LLM (GGUF models via LLamaSharp) in a Holodeck-style playground.</Description>
 		<Version>1.0.0</Version>
+		<!-- Not offered online until the CUDA backend is an optional download (~516 MB native). -->
+		<PluginInCatalog>false</PluginInCatalog>
 	</PropertyGroup>
 
 	<ItemGroup>

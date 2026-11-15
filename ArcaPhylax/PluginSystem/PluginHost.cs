@@ -22,5 +22,16 @@ public static class PluginHost
         RuntimeInformation.RuntimeIdentifier,
         typeof(IPlugin).Assembly.GetName().Version ?? new Version(1, 0, 0));
 
+    /// <summary>
+    /// The online plugin catalog (GitHub Pages, published by .github/workflows/pages.yml). Set
+    /// ARCAPHYLAX_PLUGIN_CATALOG to another URL or a local catalog.json path to test a catalog before publishing it.
+    /// </summary>
+    public static Uri CatalogUri { get; } = Option.FromNullable(System.Environment.GetEnvironmentVariable("ARCAPHYLAX_PLUGIN_CATALOG"))
+        .Where(value => !string.IsNullOrWhiteSpace(value))
+        .Match(none: () => new Uri("https://freeapophis.github.io/ArcaPhylax/catalog.json"), some: CatalogUriFrom);
+
     public static PluginStore CreateStore() => new(StoreRoot, Environment, TrustedPublisherKeys.All);
+
+    private static Uri CatalogUriFrom(string value)
+        => Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : new Uri(Path.GetFullPath(value));
 }
